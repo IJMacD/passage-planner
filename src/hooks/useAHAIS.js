@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { fetchAIS } from "./ais";
-import { getTileBounds } from "./geo";
+import { fetchAIS } from "../ais";
+import { getTileBounds } from "../geo";
 
 /**
  * @param {[number, number]} centre
  * @param {number} zoom
  */
 export function useAHAIS (centre, zoom) {
-    const [ vessels, setVessels ] = useState(/** @type {import("./ais").Vessel[]} */([]));
+    const [ vessels, setVessels ] = useState(/** @type {import("../ais").Vessel[]} */([]));
 
     useEffect(() => {
         async function run () {

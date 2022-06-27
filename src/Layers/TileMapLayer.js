@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { lat2tile, lon2tile } from "../geo";
-import { StaticMapContext } from "../StaticMap";
+import { StaticMapContext } from "../Components/StaticMap";
 
 const TILE_SIZE = 256;
 

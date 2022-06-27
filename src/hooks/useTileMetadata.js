@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 
+/**
+ *
+ * @param {string} baseURL
+ * @returns {object}
+ */
 export function useTileMetadata(baseURL) {
   const [metadata, setMetadata] = useState(null);
 
