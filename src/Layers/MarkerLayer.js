@@ -5,7 +5,14 @@ import { Marker } from "../Components/Marker";
 
 const TILE_SIZE = 256;
 
-export function MarkerLayer ({ markers }) {
+/**
+ *
+ * @param {object} props
+ * @param {object[]} props.markers
+ * @param {((index: number) => void)?} [props.onClick]
+ * @returns
+ */
+export function MarkerLayer ({ markers, onClick = null }) {
     const { centre, zoom, width, height } = useContext(StaticMapContext);
 
     const tileCountX = width / TILE_SIZE;
@@ -30,7 +37,17 @@ export function MarkerLayer ({ markers }) {
                     const x = (tileX - minTileX) / tileCountX * width;
                     const y  = (tileY - minTileY) / tileCountY * height;
 
-                    return <Marker key={i} name={marker.name??"green"} x={x} y={y} />;
+                    /**
+                     * @param {import("react").MouseEvent} e
+                     */
+                    function handleClick (e) {
+                        if (onClick) {
+                            e.stopPropagation();
+                            onClick(i);
+                        }
+                    }
+
+                    return <Marker key={i} name={marker.name??"green"} x={x} y={y} onClick={handleClick} />;
                 })
             }
         </div>

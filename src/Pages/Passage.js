@@ -47,8 +47,9 @@ const defaultPassage = {
 function Passage ({ }) {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
     const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
-    const [ editMode, setEditMode ] = useState("start");
     const [ savedPassages, setSavedPassages ] = useSavedState("passagePlanner.passages", /** @type {Passage[]} */([]));
+    const [ editMode, setEditMode ] = useState("start");
+    const [ selectedWaypoint, setSelectedWayPoint ] = useState(-1);
 
     const [ passage, setPassage ] = useState(defaultPassage);
 
@@ -66,12 +67,28 @@ function Passage ({ }) {
     const haveEnd = passage.end.lat !== 0 || passage.end.lon !== 0;
     const haveStartAndEnd = haveStart && haveEnd;
 
+    /**
+     * @param {Date} date
+     */
     function setPassageDate (date) {
-        setPassage(passage => ({ ...passage, date }));
+        setPassage(passage => {
+            let time = passage.start.time;
+            if (time) {
+                time.setFullYear(date.getFullYear());
+                time.setMonth(date.getMonth());
+                time.setDate(date.getDate());
+            }
+            return { ...passage, date, start: { ...passage.start, time } };
+        });
     }
 
     function removeWaypoint (index) {
         setPassage(passage => ({ ...passage, waypoints: passage.waypoints.filter((_, i) => i !== index) }));
+    }
+
+    function editWaypoint (index) {
+        setSelectedWayPoint(index === selectedWaypoint ? -1 : index);
+        setEditMode("edit-waypoint");
     }
 
     function setStartTime (time) {
@@ -124,6 +141,9 @@ function Passage ({ }) {
         else if (editMode === "add-waypoint") {
             setPassage(passage => ({ ...passage, waypoints: [ ...passage.waypoints, {lon, lat} ]}));
         }
+        else if (editMode === "edit-waypoint") {
+            setPassage(passage => ({ ...passage, waypoints: passage.waypoints.map((wp, i) => i === selectedWaypoint ? {lon, lat} : wp) }));
+        }
     }
 
     function handleSave () {
@@ -151,7 +171,7 @@ function Passage ({ }) {
     const legPaths = legs.map(leg => {
         const forecast = weather && leg.eta && findForecast(weather, leg.eta);
         const noGo = forecast && getPointOfSail(leg.bearing, forecast.ForecastWindDirection).label === "No Go";
-        return ({ points: [ leg.from, leg.to ], lineDash: noGo ? [4,4] : null });
+        return ({ points: [ leg.from, leg.to ], color: noGo ? "grey" : "red", lineDash: noGo ? [4,4] : null });
     });
 
     return (
@@ -189,7 +209,13 @@ function Passage ({ }) {
                     <h3>Waypoints</h3>
                     <ul>
                         {
-                            passage.waypoints.map((wp,i) => <li key={i}><Location location={wp} /><button onClick={() => removeWaypoint(i)}>Remove</button></li>)
+                            passage.waypoints.map((wp,i) => (
+                                <li key={i}>
+                                    <Location location={wp} style={{fontWeight:i === selectedWaypoint ? "bold":"normal"}} />
+                                    <button onClick={() => removeWaypoint(i)}>Remove</button>
+                                    <button onClick={() => editWaypoint(i)}>Edit</button>
+                                </li>
+                            ))
                         }
                     </ul>
                     <EditModeButton name="add-waypoint" label="Add" />
@@ -198,7 +224,7 @@ function Passage ({ }) {
                     <WorldLayer />
                     { basemapLayer && <TileMapLayer layer={basemapLayer} /> }
                     <PathLayer paths={legPaths} />
-                    <MarkerLayer markers={routePoints} />
+                    <MarkerLayer markers={routePoints} onClick={i => editWaypoint(i-1)} />
                 </StaticMap>
             </div>
 
@@ -283,10 +309,17 @@ function Passage ({ }) {
 
 export default Passage;
 
-function Location ({ location }) {
+/**
+ *
+ * @param {object} props
+ * @param {{lat: number, lon: number}} props.location
+ * @param {import("react").CSSProperties} [props.style]
+ * @returns
+ */
+function Location ({ location, style = {} }) {
     if (location.lat === 0 && location.lon === 0) return null;
 
-    return <span>{location.lat.toFixed(3)},{location.lon.toFixed(3)}</span>
+    return <span style={style}>{location.lat.toFixed(3)},{location.lon.toFixed(3)}</span>
 }
 
 function Time ({ hours }) {
