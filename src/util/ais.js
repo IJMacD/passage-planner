@@ -154,6 +154,7 @@ export function getVesselColours (vessel) {
 export class WSAIS {
     /** @type {((message: Vessel) => void)[]} */
     #listeners = [];
+    /** @type {WebSocket?} */
     #socket = null;
 
     /**
@@ -205,8 +206,10 @@ export class WSAIS {
     }
 
     #stop () {
-        this.#socket.close();
-        this.#socket = null;
+        if (this.#socket) {
+            this.#socket.close();
+            this.#socket = null;
+        }
     }
 }
 

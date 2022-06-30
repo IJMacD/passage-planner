@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { WSAIS } from "../ais";
+import { WSAIS } from "../util/ais";
 
 export function useWSAIS () {
     /** @type {import("react").MutableRefObject<WSAIS>} */
     const aisRef = useRef();
-    const vesselMapRef = useRef(/** @type {Map<number, import("../ais").Vessel>} */(new Map()));
+    const vesselMapRef = useRef(/** @type {Map<number, import("../util/ais").Vessel>} */(new Map()));
 
-    const [ vessels, setVessels ] = useState(/** @type {import("../ais").Vessel[]} */([]));
+    const [ vessels, setVessels ] = useState(/** @type {import("../util/ais").Vessel[]} */([]));
 
     if (!aisRef.current) {
         aisRef.current = new WSAIS();
@@ -15,7 +15,7 @@ export function useWSAIS () {
     useEffect(() => {
         /**
          *
-         * @param {import("../ais").Vessel & { type: number }} message
+         * @param {import("../util/ais").Vessel & { type: number }} message
          */
         function cb (message) {
             console.log(message);

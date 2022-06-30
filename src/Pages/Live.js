@@ -2,11 +2,8 @@ import { useEffect, useState } from 'react';
 import { StaticMap } from '../Components/StaticMap';
 import { useTileMetadata } from '../hooks/useTileMetadata';
 import { useSavedState } from '../hooks/useSavedState';
-import worldImageSrc from "../img/world.png";
-import { useImage } from "../hooks/useImage";
 import { TileMapLayer } from '../Layers/TileMapLayer';
 import { DebugLayer } from '../Layers/DebugLayer';
-import { ImageLayer } from '../Layers/ImageLayer';
 import { VectorFieldLayer } from '../Layers/VectorFieldLayer';
 import { useAHAIS } from '../hooks/useAHAIS';
 import { AISLayerSVG } from '../Layers/AISLayerSVG';
@@ -14,8 +11,9 @@ import { ToggleSelect } from '../Components/ToggleSelect';
 import { AISKey } from '../Components/AISKey';
 import { useWSAIS } from '../hooks/useWSAIS';
 import { useTides } from '../hooks/useTides';
-import { combineAIS } from '../ais';
-import { lat2tile, lon2tile, tile2lat, tile2long } from '../geo';
+import { combineAIS } from '../util/ais';
+import { lat2tile, lon2tile, tile2lat, tile2long } from '../util/geo';
+import { WorldLayer } from '../Layers/WorldLayer';
 /* @ts-ignore */
 
 const defaultLayers = [
@@ -29,20 +27,19 @@ const defaultLayers = [
 ];
 
 function Live () {
-  const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
   const [ selectedLayers, setSelectedLayers ] = useSavedState("passagePlanner.selectedLayers", defaultLayers);
   // const [ bounds, setBounds ] = useSavedState("passagePlanner.bounds", [-180,-85.05,180,85.05]);
   const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
   const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
   const [ time, setTime ] = useSavedState("passagePlanner.time", "09:00");
-  const backgroundMetadata = useTileMetadata(backgroundTileURL);
-  const worldImage = useImage(worldImageSrc);
   const tideVectors = useTides(time);
   const [ animateTime, setAnimateTime ] = useState(false);
   const vesselsAH = useAHAIS(centre, zoom);
   const vesselsWS = useWSAIS();
   const vessels = combineAIS([vesselsAH, vesselsWS]);
 
+  const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
+  const backgroundMetadata = useTileMetadata(backgroundTileURL);
   const basemapLayer = backgroundMetadata ? {
     layerType: "tiles",
     baseURL: backgroundTileURL,
@@ -145,7 +142,7 @@ function Live () {
         <AISKey />
       </div>
       <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])}>
-        { selectedLayersValues.includes("world") && worldImage && <ImageLayer image={worldImage} bounds={[-180,-85.05,180,85.05]} /> }
+        { selectedLayersValues.includes("world") && <WorldLayer /> }
         { selectedLayersValues.includes("tiles") && basemapLayer && <TileMapLayer layer={basemapLayer} /> }
         { selectedLayersValues.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} /> }
         { selectedLayersValues.includes("debug") && <DebugLayer /> }
@@ -158,3 +155,4 @@ function Live () {
 }
 
 export default Live;
+

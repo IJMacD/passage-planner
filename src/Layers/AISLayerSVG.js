@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { getVesselColours } from "../ais";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../geo";
+import { getVesselColours } from "../util/ais";
+import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
 
 const TILE_SIZE = 256;
@@ -8,7 +8,7 @@ const TILE_SIZE = 256;
 /**
  *
  * @param {object} props
- * @param {import("../ais").Vessel[]} props.vessels
+ * @param {import("../util/ais").Vessel[]} props.vessels
  * @returns
  */
 export function AISLayerSVG ({ vessels }) {

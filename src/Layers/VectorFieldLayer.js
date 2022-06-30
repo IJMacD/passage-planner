@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../geo";
+import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
 
 const TILE_SIZE = 256;
