@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Live from "./Pages/Live";
 import './App.css';
+import Passage from "./Pages/Passage";
 
 
 export default function App () {
@@ -13,7 +14,7 @@ export default function App () {
                 <button onClick={() => setTab("passage")} disabled={tab==="passage"}>Passage</button>
             </nav>
             { tab === "live" && <Live /> }
-            { tab === "passage" && <h1>Passage</h1> }
+            { tab === "passage" && <Passage /> }
         </div>
     );
 }

@@ -33,3 +33,36 @@ export function getTileBounds (centre, zoom) {
 
     return [minLon,minLat,maxLon,maxLat];
 }
+
+// Ref : https://www.movable-type.co.uk/scripts/latlong.html
+
+export function lat2nm (lat1, lat2) {
+    return Math.abs(lat1 - lat2) * 60;
+}
+
+export function lon2nm (point1, point2) {
+    const avgLat = (point1.lat + point2.lat) / 2;
+    const latRad = avgLat / 180 * Math.PI;
+    const distAtEquator = 60.1088246;
+    return Math.abs(point1.lon - point2.lon) * Math.cos(latRad) * distAtEquator;
+}
+
+// Equirectangualr approximation
+export function latlon2nm (point1, point2) {
+    const ns = lat2nm(point1.lat, point2.lat);
+    const ew = lon2nm(point1, point2);
+    return Math.sqrt(ns * ns + ew * ew);
+}
+
+// (Initial bearing)
+export function latlon2bearing (point1, point2) {
+    const λ1 = point1.lon / 180 * Math.PI;
+    const λ2 = point2.lon / 180 * Math.PI;
+    const φ1 = point1.lat / 180 * Math.PI;
+    const φ2 = point2.lat / 180 * Math.PI;
+    const y = Math.sin(λ2-λ1) * Math.cos(φ2);
+    const x = Math.cos(φ1)*Math.sin(φ2) -
+            Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1);
+    const θ = Math.atan2(y, x);
+    return (θ*180/Math.PI + 360) % 360; // in degrees
+}
