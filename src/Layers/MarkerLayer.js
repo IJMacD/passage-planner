@@ -6,9 +6,17 @@ import { Marker } from "../Components/Marker";
 const TILE_SIZE = 256;
 
 /**
+ * @typedef Marker
+ * @prop {number} lon
+ * @prop {number} lat
+ * @prop {string} name
+ * @prop {number} [rotation]
+ */
+
+/**
  *
  * @param {object} props
- * @param {object[]} props.markers
+ * @param {Marker[]} props.markers
  * @param {((index: number) => void)?} [props.onClick]
  * @returns
  */

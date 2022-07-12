@@ -10,6 +10,15 @@ export const StaticMapContext = React.createContext({
 
 const TILE_SIZE = 256;
 
+/**
+ *
+ * @param {object} props
+ * @param {[number,number]} props.centre
+ * @param {number} props.zoom
+ * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
+ * @param {React.ReactChild[]} [props.children]
+ * @returns
+ */
 export function StaticMap ({ centre, zoom, onClick, children }) {
     const width = 1024;
     const height = 1024;
@@ -36,7 +45,7 @@ export function StaticMap ({ centre, zoom, onClick, children }) {
             const maxLon = tile2long(rightTile, zoom);
             const maxLat = tile2lat(bottomTile, zoom);
 
-            onClick(minLon + x * (maxLon - minLon), minLat + y * (maxLat - minLat));
+            onClick(minLon + x * (maxLon - minLon), minLat + y * (maxLat - minLat), e);
         }
     }
 
