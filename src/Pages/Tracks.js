@@ -1,12 +1,9 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { StaticMap } from "../Components/StaticMap";
+import { BasicMap } from "../Components/BasicMap";
 import { useSavedState } from "../hooks/useSavedState";
-import { useTileMetadata } from "../hooks/useTileMetadata";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
-import { TileMapLayer } from "../Layers/TileMapLayer";
-import { WorldLayer } from "../Layers/WorldLayer";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -34,22 +31,12 @@ const KPH_TO_KNOTS = 0.539957;
 */
 
 function Tracks () {
-    const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
-    const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
     const [ savedTracks, setSavedTracks ] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
 
     const [ track, setTrack ] = useState(/** @type {Track?} */(null));
 
     const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
     const [ isPlaying, setIsPlaying ] = useState(false);
-
-    const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
-    const backgroundMetadata = useTileMetadata(backgroundTileURL);
-    const basemapLayer = backgroundMetadata ? {
-      layerType: "tiles",
-      baseURL: backgroundTileURL,
-      ...backgroundMetadata,
-    } : null;
 
     useEffect(() => {
         const trackPoints = track ? track.segments.flat() : [];
@@ -133,12 +120,10 @@ function Tracks () {
                         </>
                     }
                 </div>
-                <StaticMap centre={centre} zoom={zoom}>
-                    <WorldLayer />
-                    { basemapLayer && <TileMapLayer layer={basemapLayer} /> }
+                <BasicMap>
                     <PathLayer paths={trackPath} />
                     <MarkerLayer markers={markers} />
-                </StaticMap>
+                </BasicMap>
             </div>
 
         </div>

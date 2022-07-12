@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { HeadingIndicator } from "../Components/HeadingIndicator";
-import { StaticMap } from "../Components/StaticMap";
 import { lat2nm, latlon2bearing, latlon2nm, lon2nm } from "../util/geo";
 import { useSavedState } from "../hooks/useSavedState";
 import { useTileMetadata } from "../hooks/useTileMetadata";
 import { useWeather } from "../hooks/useWeather";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
-import { TileMapLayer } from "../Layers/TileMapLayer";
-import { WorldLayer } from "../Layers/WorldLayer";
 import { findForecast, getPointOfSail } from "../util/weather";
 import { PointOfSail } from "../Components/PointOfSail";
 import { ParticleLayer } from "../Layers/ParticleLayer";
+import { BasicMap } from "../Components/BasicMap";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -49,20 +47,11 @@ const defaultPassage = {
 
 function Passage ({ }) {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
-    const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
     const [ savedPassages, setSavedPassages ] = useSavedState("passagePlanner.passages", /** @type {Passage[]} */([]));
     const [ editMode, setEditMode ] = useState("start");
     const [ selectedWaypoint, setSelectedWayPoint ] = useState(-1);
 
     const [ passage, setPassage ] = useState(defaultPassage);
-
-    const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
-    const backgroundMetadata = useTileMetadata(backgroundTileURL);
-    const basemapLayer = backgroundMetadata ? {
-      layerType: "tiles",
-      baseURL: backgroundTileURL,
-      ...backgroundMetadata,
-    } : null;
 
     const weather = useWeather(centre);
 
@@ -265,14 +254,12 @@ function Passage ({ }) {
                     </ul>
                     <EditModeButton name="add-waypoint" label="Add" />
                 </div>
-                <StaticMap centre={centre} zoom={zoom} onClick={handleMapClick}>
-                    <WorldLayer />
-                    { basemapLayer && <TileMapLayer layer={basemapLayer} /> }
+                <BasicMap onClick={handleMapClick}>
                     <PathLayer paths={legPaths} />
                     { weatherVector && <ParticleLayer vector={weatherVector} /> }
                     <MarkerLayer markers={posMarkers} />
                     <MarkerLayer markers={routePoints} onClick={i => (i-1) !== selectedWaypoint && editWaypoint(i-1)} />
-                </StaticMap>
+                </BasicMap>
             </div>
 
             <h1>Details</h1>

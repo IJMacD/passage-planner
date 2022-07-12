@@ -12,8 +12,7 @@ import { AISKey } from '../Components/AISKey';
 import { useWSAIS } from '../hooks/useWSAIS';
 import { useTides } from '../hooks/useTides';
 import { combineAIS } from '../util/ais';
-import { lat2tile, lon2tile, tile2lat, tile2long } from '../util/geo';
-import { WorldLayer } from '../Layers/WorldLayer';
+import { BasicMap } from '../Components/BasicMap';
 /* @ts-ignore */
 
 const defaultLayers = [
@@ -80,23 +79,6 @@ function Live () {
     });
   }
 
-  /**
-   *
-   * @param {number} dx Number of tiles to move horizontally
-   * @param {number} dy Number of tiles to move vertically
-   */
-  function moveCentre (dx, dy) {
-    setCentre(centre => {
-      const tileX = lon2tile(centre[0], zoom);
-      const tileY = lat2tile(centre[1], zoom);
-
-      const lon = tile2long(tileX + dx, zoom);
-      const lat = tile2lat(tileY + dy, zoom);
-
-      return [lon, lat];
-    });
-  }
-
   const selectedLayersValues = selectedLayers.filter(l => l.visible).map(l => l.id);
   return (
     <div className="Live">
@@ -110,10 +92,6 @@ function Live () {
           <input type="number" value={centre[0]} onChange={e => setCentre(c => [+e.target.value, c[1]])} style={{width: 80}} />,
           <input type="number" value={centre[1]} onChange={e => setCentre(c => [c[0], +e.target.value])} style={{width: 80}} />)
         </label>
-        <button onClick={() => moveCentre(-1, 0)}>West</button>
-        <button onClick={() => moveCentre(0, -1)}>North</button>
-        <button onClick={() => moveCentre(0, 1.1)}>South</button>
-        <button onClick={() => moveCentre(1, 0)}>East</button>
         <label>
           Zoom
           <input type="number" value={zoom} onChange={e => setZoom(+e.target.value)} style={{width: 80}} />
@@ -141,15 +119,13 @@ function Live () {
         </label>
         <AISKey />
       </div>
-      <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])}>
-        { selectedLayersValues.includes("world") && <WorldLayer /> }
-        { selectedLayersValues.includes("tiles") && basemapLayer && <TileMapLayer layer={basemapLayer} /> }
+      <BasicMap onClick={(lon, lat) => setCentre([lon, lat])}>
         { selectedLayersValues.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} /> }
         { selectedLayersValues.includes("debug") && <DebugLayer /> }
         { selectedLayersValues.includes("ahais") && <AISLayerSVG vessels={vesselsAH} /> }
         { selectedLayersValues.includes("wsais") && <AISLayerSVG vessels={vesselsWS} /> }
         { selectedLayersValues.includes("ais") && <AISLayerSVG vessels={vessels} /> }
-      </StaticMap>
+      </BasicMap>
     </div>
   );
 }
