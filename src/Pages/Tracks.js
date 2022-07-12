@@ -63,7 +63,19 @@ function Tracks () {
 
             return () => clearInterval(id);
         }
-    }, [isPlaying, track])
+    }, [isPlaying, track]);
+
+    function loadTrack (trackSerialized) {
+        const segments = trackSerialized.segments.map(seg => {
+            return seg.map(point => {
+                if (typeof point.time === "string") {
+                    point.time = new Date(point.time);
+                }
+                return point;
+            });
+        });
+        setTrack({ ...trackSerialized, segments });
+    }
 
     /**
      * @param {React.ChangeEvent<HTMLInputElement>} e
@@ -106,7 +118,7 @@ function Tracks () {
                 <div>
                     <ul>
                         {
-                            savedTracks.map(t => <li key={t.name}>{t.name} <button onClick={() => setTrack(t)}>Load</button></li>)
+                            savedTracks.map(t => <li key={t.name}>{t.name} <button onClick={() => loadTrack(t)}>Load</button></li>)
                         }
                     </ul>
                     <button onClick={() => setTrack(null)}>Clear</button><br/>
@@ -117,6 +129,7 @@ function Tracks () {
                             <p>{track.name}</p>
                             <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
                             <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
+                            <p>{selectedPoint.time?.toLocaleString()}</p>
                         </>
                     }
                 </div>
