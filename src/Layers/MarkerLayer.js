@@ -27,6 +27,8 @@ export function MarkerLayer ({ markers, onClick = null }) {
         <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, lineHeight: 0, }}>
             {
                 markers.map((marker, i) => {
+                    if (!marker) return null;
+
                     const tileX = lon2tileFrac(marker.lon, zoom);
                     const tileY = lat2tileFrac(marker.lat, zoom);
 
@@ -47,7 +49,7 @@ export function MarkerLayer ({ markers, onClick = null }) {
                         }
                     }
 
-                    return <Marker key={i} name={marker.name??"green"} x={x} y={y} onClick={handleClick} />;
+                    return <Marker key={i} name={marker.name??"green"} x={x} y={y} rotation={marker.rotation} onClick={handleClick} />;
                 })
             }
         </div>

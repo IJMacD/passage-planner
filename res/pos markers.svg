@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="pos markers.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.96662479"
+     inkscape:cx="343.46315"
+     inkscape:cy="810.55235"
+     inkscape:window-width="1500"
+     inkscape:window-height="930"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g393"
+       transform="matrix(1.0648488,0,0,0.99981778,-2.1043815,0.00942475)">
+      <path
+         id="path330"
+         style="fill:#ffffff;stroke:#999999;stroke-width:0.96916026;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+         d="m 32.518942,82.216557 c -0.03361,-28.66343 0.611866,-47.5214 12.594281,-60.908785 11.982415,13.387385 12.627895,32.245355 12.594281,60.908785 z"
+         sodipodi:nodetypes="cccc" />
+      <circle
+         style="fill:#999999;stroke:#999999;stroke-width:0.226483;stroke-linecap:round;stroke-miterlimit:3.864;stroke-dasharray:0.452967, 0.226483"
+         id="path389"
+         cx="45.113243"
+         cy="39.043304"
+         r="1.2235793" />
+    </g>
+    <g
+       id="g405"
+       inkscape:export-filename="..\src\img\markers\2x\starboard-close-hauled.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use395"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+         d="m 43.381451,110.12214 c -5.280114,8.04136 -8.066391,21.10338 -7.786415,33.59282"
+         id="path397"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g411"
+       transform="translate(40.711823,-0.88987591)"
+       inkscape:export-filename="..\src\img\markers\2x\starboard-close-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use407"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+         d="m 43.381451,110.12214 c -9.284556,4.25939 -17.855026,17.98881 -17.57505,30.47825"
+         id="path409"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g417"
+       transform="translate(82.980929,-1.7797518)"
+       inkscape:export-filename="..\src\img\markers\2x\starboard-beam-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use413"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="m 43.381451,110.12214 c -9.729494,-1.5248 -20.952122,7.08783 -27.346215,20.46715"
+         id="path415"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g423"
+       transform="translate(133.03645,-2.2246898)"
+       inkscape:export-filename="..\src\img\markers\2x\starboard-broad-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use419"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+         d="m 43.381451,110.12214 c -9.729494,-1.5248 -22.749343,0.1913 -32.925409,14.23802"
+         id="path421"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g1155"
+       transform="matrix(-1,0,0,1,219.25845,69.850013)"
+       inkscape:export-filename="..\src\img\markers\2x\port-close-hauled.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use1151"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="m 43.381451,110.12214 c -5.280114,8.04136 -8.066391,21.10338 -7.786415,33.59282"
+         id="path1153"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g1161"
+       transform="matrix(-1,0,0,1,178.54663,68.960137)"
+       inkscape:export-filename="..\src\img\markers\2x\port-close-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use1157"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="m 43.381451,110.12214 c -9.284556,4.25939 -17.855026,17.98881 -17.57505,30.47825"
+         id="path1159"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g1173"
+       transform="matrix(-1,0,0,1,86.222005,67.625322)"
+       inkscape:export-filename="..\src\img\markers\2x\port-broad-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use1169"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="m 43.381451,110.12214 c -9.729494,-1.5248 -22.749343,0.1913 -32.925409,14.23802"
+         id="path1171"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g2714"
+       inkscape:export-filename="..\src\img\markers\2x\no-go.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52"
+       transform="translate(53.612903,-71.419355)">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use2710"
+         transform="translate(-2.0022208,71.190073)"
+         inkscape:export-filename="..\src\img\markers\2x\no-go.png"
+         inkscape:export-xdpi="26.52"
+         inkscape:export-ydpi="26.52" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="m 43.71707,110.31569 c -3.731727,20.04136 6.643286,17.61951 -1.20577,33.78637"
+         id="path2712"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <g
+       id="g2726"
+       transform="translate(39.882733,130.85435)"
+       inkscape:export-filename="..\src\img\markers\2x\starboard-dead-run.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g393"
+         id="use2722"
+         transform="translate(-2.0022208,71.190073)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+         d="M 43.381451,110.12214 C 37.48402,106.40759 21.179546,103.19675 8.266292,110.67422"
+         id="path2724"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g417"
+       id="use2808"
+       transform="matrix(-1,0,0,1,217.15905,70.619439)"
+       inkscape:export-filename="..\src\img\markers\2x\port-beam-reach.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g2726"
+       id="use2810"
+       transform="matrix(-1,0,0,1,215.14214,0)"
+       inkscape:export-filename="..\src\img\markers\2x\port-dead-run.png"
+       inkscape:export-xdpi="26.52"
+       inkscape:export-ydpi="26.52" />
+  </g>
+</svg>

@@ -11,6 +11,9 @@ import { TileMapLayer } from "../Layers/TileMapLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
 import { findForecast, getPointOfSail } from "../util/weather";
 import { PointOfSail } from "../Components/PointOfSail";
+import { ParticleLayer } from "../Layers/ParticleLayer";
+
+const KPH_TO_KNOTS = 0.539957;
 
 /**
  * @typedef {{name: string;date: Date;averageSpeed: number;start: Point;end: Point;waypoints: Point[];}} Passage
@@ -150,10 +153,10 @@ function Passage ({ }) {
         setSavedPassages(passages => [ passage, ...passages.filter(p => p.name !== passage.name) ]);
     }
 
-    const startMarker = { ...passage.start, name: "green" };
-    const endMarker = { ...passage.end, name: "finish" };
+    const startMarker = { ...passage.start, name: "green-pin" };
+    const endMarker = { ...passage.end, name: "finish-pin" };
 
-    const wayPointMarkers = passage.waypoints.map(wp => ({ ...wp, name: "red-dot" }));
+    const wayPointMarkers = passage.waypoints.map((wp, i) => ({ ...wp, name: i === selectedWaypoint ? "blue-dot" : "red-dot" }));
 
     const routePoints = haveStartAndEnd ? [ startMarker, ...wayPointMarkers, endMarker ] :
         (haveStart ? [startMarker] : (haveEnd ? [endMarker] : []));
@@ -168,11 +171,36 @@ function Passage ({ }) {
 
     const totalTime = passage.averageSpeed > 0 ? totalDistance / passage.averageSpeed : 0;
 
-    const legPaths = legs.map(leg => {
-        const forecast = weather && leg.eta && findForecast(weather, leg.eta);
-        const noGo = forecast && getPointOfSail(leg.bearing, forecast.ForecastWindDirection).label === "No Go";
+    const legWeathers = legs.map(leg => weather && leg.eta && findForecast(weather, leg.eta) || null);
+
+    const legPaths = legs.map((leg, i) => {
+        const forecast = legWeathers[i];
+        const noGo = forecast && getPointOfSail(leg.bearing, forecast.ForecastWindDirection).id === "no-go";
         return ({ points: [ leg.from, leg.to ], color: noGo ? "grey" : "red", lineDash: noGo ? [4,4] : null });
     });
+
+    let firstForecast = legWeathers.find(x => x) || null;
+
+    /** @type {[number,number]?} */
+    const weatherVector = firstForecast &&
+        [
+            firstForecast.ForecastWindSpeed * -Math.sin(firstForecast.ForecastWindDirection/180*Math.PI),
+            firstForecast.ForecastWindSpeed * Math.cos(firstForecast.ForecastWindDirection/180*Math.PI)
+        ];
+
+    const posMarkers = legs.map((leg, i) => {
+        const forecast = legWeathers[i];
+        if (!forecast) return null;
+
+        const pointOfSail = getPointOfSail(leg.bearing, forecast.ForecastWindDirection);
+
+        return {
+            lat: (leg.from.lat + leg.to.lat) / 2,
+            lon: (leg.from.lon + leg.to.lon) / 2,
+            name: pointOfSail.id,
+            rotation: leg.bearing,
+        };
+    })
 
     return (
         <div style={{padding: "1em"}}>
@@ -193,19 +221,36 @@ function Passage ({ }) {
                         <input type="date" value={passage.date.toISOString().substring(0,10)} onChange={e => setPassageDate(e.target.valueAsDate||new Date())} />
                     </label>
                     <h2>Route</h2>
-                    <h3>Start Point</h3>
+
+                    <h3>Start</h3>
                     <Location location={passage.start} />
                     <EditModeButton name="start" />
+                    <label style={{display:"block"}}>
+                        Time
+                        <input type="time" value={passage.start.time?.toLocaleTimeString()||""} onChange={e => setStartTime(e.target.value)} />
+                    </label>
+                    <label style={{display:"block"}}>
+                        Average Speed
+                        <input type="number" value={passage.averageSpeed} onChange={e => setPassage(passage => ({ ...passage, averageSpeed: +e.target.value }))} size={4} />
+                        knots
+                    </label>
+
                     <h3>Destination</h3>
                     <Location location={passage.end} />
                     <EditModeButton name="end" />
-                    { haveStartAndEnd &&
+                    <p>Distance: {totalDistance.toFixed(2)} NM</p>
+                    { passage.averageSpeed > 0 && <p>Time: <Time hours={totalTime} /></p> }
+                    { passage.averageSpeed > 0 && passage.start.time &&
+                        <p>ETA: {legs[legs.length - 1].eta?.toLocaleTimeString()}</p>
+                    }
+                    { haveStartAndEnd && false &&
                         <>
                             <h3>Displacement</h3>
                             <p>Total Displacement: {latlon2nm(passage.start, passage.end).toFixed(2)} NM</p>
                             <p>Initial Bearing to Destination: {latlon2bearing(passage.start, passage.end).toFixed(0)}°</p>
                         </>
                     }
+
                     <h3>Waypoints</h3>
                     <ul>
                         {
@@ -224,22 +269,13 @@ function Passage ({ }) {
                     <WorldLayer />
                     { basemapLayer && <TileMapLayer layer={basemapLayer} /> }
                     <PathLayer paths={legPaths} />
-                    <MarkerLayer markers={routePoints} onClick={i => editWaypoint(i-1)} />
+                    { weatherVector && <ParticleLayer vector={weatherVector} /> }
+                    <MarkerLayer markers={posMarkers} />
+                    <MarkerLayer markers={routePoints} onClick={i => (i-1) !== selectedWaypoint && editWaypoint(i-1)} />
                 </StaticMap>
             </div>
 
             <h1>Details</h1>
-
-            <h2>Timings</h2>
-            <label>
-                Start Time
-                <input type="time" value={passage.start.time?.toLocaleTimeString()||""} onChange={e => setStartTime(e.target.value)} />
-            </label>
-            <label>
-                Average Speed
-                <input type="number" value={passage.averageSpeed} onChange={e => setPassage(passage => ({ ...passage, averageSpeed: +e.target.value }))} />
-                knots
-            </label>
 
             <h2>Legs</h2>
             <table style={{width:"100%"}}>
@@ -286,7 +322,7 @@ function Passage ({ }) {
                                     <td>{ forecast &&
                                         <>
                                             <HeadingIndicator heading={(forecast.ForecastWindDirection + 180) % 360} fill="blue" stroke="darkblue" />
-                                            {forecast.ForecastWindSpeed} km/h
+                                            {(forecast.ForecastWindSpeed * KPH_TO_KNOTS).toFixed()} knots
                                         </>
                                     }</td>
                                     <td>{ forecast && <PointOfSail heading={leg.bearing} windDirection={forecast.ForecastWindDirection} /> }</td>
@@ -296,13 +332,6 @@ function Passage ({ }) {
                     }
                 </tbody>
             </table>
-
-            <h2>Totals</h2>
-            <p>Distance: {totalDistance.toFixed(2)} NM</p>
-            { passage.averageSpeed > 0 && <p>Time: <Time hours={totalTime} /></p> }
-            { passage.averageSpeed > 0 && passage.start.time &&
-                <p>ETA: {legs[legs.length - 1].eta?.toLocaleTimeString()}</p>
-            }
         </div>
     )
 }

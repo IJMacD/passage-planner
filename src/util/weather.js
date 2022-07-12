@@ -74,17 +74,20 @@ export function getPointOfSail(heading, windDirection) {
     let tack = delta > 0 ? "Port" : "Starboard";
     let label;
 
-    if (theta < 22.5) {
+    if (theta < 45) {
         label = "No Go";
         tack = "";
     }
-    else if (theta < 45 + 22.5) {
+    else if (theta < 45 + 10) {
         label = "Close Hauled";
     }
-    else if (theta < 90 + 22.5) {
+    else if (theta < 90 - 10) {
+        label = "Close Reach";
+    }
+    else if (theta < 90 + 10) {
         label = "Beam Reach";
     }
-    else if (theta < 180 - 12.25) {
+    else if (theta < 180 - 22.5) {
         label = "Broad Reach";
     }
     else {
@@ -92,5 +95,7 @@ export function getPointOfSail(heading, windDirection) {
         tack = "";
     }
 
-    return { theta, tack, label };
+    const id = `${tack?tack.toLowerCase()+'-':""}${label.toLowerCase().replace(" ","-")}`;
+
+    return { theta, id, tack, label };
 }
