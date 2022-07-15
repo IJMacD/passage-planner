@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { LightDemo } from "../Components/LightDemo";
 import { StaticMap } from "../Components/StaticMap";
 import { useBasemapLayer } from "../hooks/useBasemapLayer";
 import { useSavedState } from "../hooks/useSavedState";
@@ -16,6 +17,7 @@ function Test () {
 
             <div style={{display:"flex"}}>
                 <div>
+                    <LightDemo />
 
                 </div>
                 <StaticMap centre={centre} zoom={zoom} width={500} height={500} >
