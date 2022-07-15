@@ -39,8 +39,8 @@ export function TileMapLayer ({ layer }) {
         return null;
     }
 
-    const tileCountX = width / TILE_SIZE;
-    const tileCountY = height / TILE_SIZE;
+    const tileCountX = Math.ceil(width / TILE_SIZE);
+    const tileCountY = Math.ceil(height / TILE_SIZE);
 
     const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
     const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;

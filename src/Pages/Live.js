@@ -13,6 +13,7 @@ import { useWSAIS } from '../hooks/useWSAIS';
 import { useTides } from '../hooks/useTides';
 import { combineAIS } from '../util/ais';
 import { BasicMap } from '../Components/BasicMap';
+import React from 'react';
 /* @ts-ignore */
 
 const defaultLayers = [

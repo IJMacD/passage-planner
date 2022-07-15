@@ -15,13 +15,13 @@ const TILE_SIZE = 256;
  * @param {object} props
  * @param {[number,number]} props.centre
  * @param {number} props.zoom
+ * @param {number} [props.width]
+ * @param {number} [props.height]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
- * @param {React.ReactChildren} [props.children]
+ * @param {React.ReactChild[]} [props.children]
  * @returns
  */
-export function StaticMap ({ centre, zoom, onClick, children }) {
-    const width = 1024;
-    const height = 1024;
+export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, children }) {
 
     /**
      * @param {import("react").MouseEvent<HTMLDivElement>} e

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useBasemapLayer } from "../hooks/useBasemapLayer";
 import { useSavedState } from "../hooks/useSavedState";
 import { useTileMetadata } from "../hooks/useTileMetadata";
+import { CanvasTileMapLayer } from "../Layers/CanvasTileLayer";
 import { TileMapLayer } from "../Layers/TileMapLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
 import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
@@ -10,21 +12,17 @@ import { StaticMap } from "./StaticMap";
  *
  * @param {object} props
  * @param {(lon: number, lat: number, e: React.MouseEvent) => void} [props.onClick]
- * @param {React.ReactChildren} [props.children]
+ * @param {JSX.Element|React.ReactChild[]} [props.children]
+ * @param {number} [props.width]
+ * @param {number} [props.height]
  * @returns
  */
-export function BasicMap ({ onClick, children }) {
+export function BasicMap ({ onClick, children, width, height }) {
 
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
     const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
 
-    const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
-    const backgroundMetadata = useTileMetadata(backgroundTileURL);
-    const basemapLayer = backgroundMetadata ? {
-      layerType: "tiles",
-      baseURL: backgroundTileURL,
-      ...backgroundMetadata,
-    } : null;
+    const basemapLayer = useBasemapLayer();
 
     /**
      *
@@ -44,7 +42,7 @@ export function BasicMap ({ onClick, children }) {
     }
 
     return (
-        <StaticMap centre={centre} zoom={zoom} onClick={onClick}>
+        <StaticMap centre={centre} zoom={zoom} width={width} height={height} onClick={onClick}>
             <WorldLayer />
             { basemapLayer && <TileMapLayer layer={basemapLayer} /> }
             { children }

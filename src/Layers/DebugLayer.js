@@ -25,8 +25,8 @@ export function DebugLayer ({}) {
         const tileWidth = TILE_SIZE * devicePixelRatio;
         const tileHeight = TILE_SIZE * devicePixelRatio;
 
-        const tileCountX = width / TILE_SIZE;
-        const tileCountY = height / TILE_SIZE;
+        const tileCountX = Math.ceil(width / TILE_SIZE);
+        const tileCountY = Math.ceil(height / TILE_SIZE);
 
         // Gridlines
         ctx.beginPath();
