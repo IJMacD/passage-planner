@@ -11,9 +11,12 @@ const COLOUR_MAP = {
 
 const OFF_LIGHT = "transparent";
 
-export function LightFlasher ({ spec, width = 32, height = 32 }) {
+export function LightFlasher ({ spec, x, y, width, height }) {
     const [ lightFill, setLightFill ]  = useState(OFF_LIGHT);
 
+    const match = /^(F|Oc|Iso|Fl|Q|VQ|UQ)(?:\(([^)]+)\))?\.?(\s|W|R|G|Bu|Y|Or)\.?(?:(\d+)s)?\s?(?:(\d+)m)?\s?(?:(\d+)M)?/.exec(spec);
+
+    const [ _, mode, groupSpec, colour, seconds, elevation, range = 1 ] = match || [];
 
     function runCycle (on_period, period, groups, fillA, fillB) {
         const cycle = period / on_period;
@@ -34,10 +37,8 @@ export function LightFlasher ({ spec, width = 32, height = 32 }) {
     }
 
     useEffect(() => {
-        const match = /^(F|Oc|Iso|Fl|Q|VQ|UQ)(?:\(([^)]+)\))?\.?(\s|W|R|G|Bu|Y|Or)\.?(?:(\d+)s)?\s?(?:(\d+)m)?\s?(?:(\d+)M)?/.exec(spec);
 
         if (match) {
-            const [ _, mode, groupSpec, colour, seconds, elevation, distance ] = match;
 
             const fill = COLOUR_MAP[colour] || COLOUR_MAP.W;
 
@@ -81,8 +82,21 @@ export function LightFlasher ({ spec, width = 32, height = 32 }) {
 
     }, [spec]);
 
+    const size = (Math.log2(+range * 10) * 5) || 32;
+
+    if (!width) {
+        width = size;
+    }
+
+    if (!height) {
+        height = size;
+    }
+
+    const left = x - width / 2;
+    const top = y - height / 2;
+
     return (
-        <svg viewBox="0 0 32 32" style={{width,height}}>
+        <svg viewBox="0 0 32 32" style={{width,height,position:"absolute",top,left}}>
             <ellipse cx={16} cy={16} rx={16} ry={16} style={{fill:lightFill}} />
         </svg>
     );

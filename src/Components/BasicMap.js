@@ -12,7 +12,7 @@ import { StaticMap } from "./StaticMap";
  *
  * @param {object} props
  * @param {(lon: number, lat: number, e: React.MouseEvent) => void} [props.onClick]
- * @param {JSX.Element|React.ReactChild[]} [props.children]
+ * @param {JSX.Element|(React.ReactChild|false)[]} [props.children]
  * @param {number} [props.width]
  * @param {number} [props.height]
  * @returns

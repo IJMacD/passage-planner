@@ -14,20 +14,24 @@ import { useTides } from '../hooks/useTides';
 import { combineAIS } from '../util/ais';
 import { BasicMap } from '../Components/BasicMap';
 import React from 'react';
+import { LightLayer } from '../Layers/LightLayer';
 /* @ts-ignore */
 
-const defaultLayers = [
-  { name: "World", id: "world" ,visible: true },
-  { name: "Tiles", id: "tiles", visible: true },
-  { name: "Tides", id: "tides", visible: false },
-  { name: "Debug", id: "debug", visible: false },
-  { name: "AIS AisHub.net", id: "ahais", visible: false },
-  { name: "AIS RTLSDR", id: "wsais", visible: true },
-  { name: "AIS Combined", id: "ais", visible: true },
+const layers = [
+  { name: "World", id: "world" },
+  { name: "Tiles", id: "tiles" },
+  { name: "Tides", id: "tides" },
+  { name: "Debug", id: "debug" },
+  { name: "AIS AisHub.net", id: "ahais" },
+  { name: "AIS RTLSDR", id: "wsais" },
+  { name: "AIS Combined", id: "ais" },
+  { name: "Lights", id: "lights" },
 ];
 
+const defaultSelected = [ "world", "tiles", "ais", "wsais" ];
+
 function Live () {
-  const [ selectedLayers, setSelectedLayers ] = useSavedState("passagePlanner.selectedLayers", defaultLayers);
+  const [ selectedLayers, setSelectedLayers ] = useSavedState("passagePlanner.selectedLayers", defaultSelected);
   // const [ bounds, setBounds ] = useSavedState("passagePlanner.bounds", [-180,-85.05,180,85.05]);
   const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
   const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
@@ -39,12 +43,6 @@ function Live () {
   const vessels = combineAIS([vesselsAH, vesselsWS]);
 
   const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
-  const backgroundMetadata = useTileMetadata(backgroundTileURL);
-  const basemapLayer = backgroundMetadata ? {
-    layerType: "tiles",
-    baseURL: backgroundTileURL,
-    ...backgroundMetadata,
-  } : null;
 
   useEffect(() => {
     if (animateTime) {
@@ -75,12 +73,9 @@ function Live () {
 
   function handleSelectChange (e) {
     const newSelectedIDs = [...e.target.selectedOptions].map(option => option.value);
-    setSelectedLayers(layers => {
-      return layers.map(layer => ({ ...layer, visible: newSelectedIDs.includes(layer.id) }));
-    });
+    setSelectedLayers(newSelectedIDs);
   }
 
-  const selectedLayersValues = selectedLayers.filter(l => l.visible).map(l => l.id);
   return (
     <div className="Live">
       <div className="Controls">
@@ -108,24 +103,25 @@ function Live () {
         <label>
           Layers
           <ToggleSelect
-            values={selectedLayersValues}
-            onChange={values => setSelectedLayers(layers => layers.map(layer => ({ ...layer, visible: values.includes(layer.id) }))) }
-            options={selectedLayers.map(layer => ({ value: layer.id, label: layer.name }))}
+            values={selectedLayers}
+            onChange={values => setSelectedLayers(values)}
+            options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
           />
-          <select multiple onChange={handleSelectChange} value={selectedLayersValues} style={{width:180,height:180}}>
+          <select multiple onChange={handleSelectChange} value={selectedLayers} style={{width:180,height:180}}>
             {
-              selectedLayers.map(layer => <option key={layer.id} value={layer.id}>{layer.name}</option>)
+              layers.map(layer => <option key={layer.id} value={layer.id}>{layer.name}</option>)
             }
           </select>
         </label>
         <AISKey />
       </div>
       <BasicMap onClick={(lon, lat) => setCentre([lon, lat])}>
-        { selectedLayersValues.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} /> }
-        { selectedLayersValues.includes("debug") && <DebugLayer /> }
-        { selectedLayersValues.includes("ahais") && <AISLayerSVG vessels={vesselsAH} /> }
-        { selectedLayersValues.includes("wsais") && <AISLayerSVG vessels={vesselsWS} /> }
-        { selectedLayersValues.includes("ais") && <AISLayerSVG vessels={vessels} /> }
+        { selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} /> }
+        { selectedLayers.includes("debug") && <DebugLayer /> }
+        { selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} /> }
+        { selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} /> }
+        { selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} /> }
+        { selectedLayers.includes("lights") && <LightLayer /> }
       </BasicMap>
     </div>
   );
