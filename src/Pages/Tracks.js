@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { BasicMap } from "../Components/BasicMap";
+import { PolarPlot } from "../Components/PolarPlot";
 import { useSavedState } from "../hooks/useSavedState";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
+import { latlon2bearing, latlon2nm } from "../util/geo";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -90,12 +92,18 @@ function Tracks () {
 
     const trackPoints = track ? track.segments.flat() : [];
 
+    /** @type {Point?} */
     const selectedPoint = trackPoints[selectedPointIndex];
 
     const trackPath = [{ points: trackPoints }];
 
     const markers = selectedPoint ? [{ lon: selectedPoint.lon, lat: selectedPoint.lat, name: "red-dot" }] : [];
 
+    const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to)}));
+
+    const totalDistance = trackLegs.reduce((total, leg) => total + leg.distance, 0);
+
+    const coursePlotData = makeCoursePlot(trackLegs);
 
     return (
         <div style={{padding: "1em"}}>
@@ -116,14 +124,24 @@ function Tracks () {
                             <p>{track.name}</p>
                             <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
                             <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
-                            <p>{selectedPoint.time?.toLocaleString()}</p>
+                            <p>{selectedPoint?.time?.toLocaleString()}</p>
                         </>
                     }
                 </div>
-                <BasicMap>
-                    <PathLayer paths={trackPath} />
-                    <MarkerLayer markers={markers} />
-                </BasicMap>
+                <div>
+                    <BasicMap>
+                        <PathLayer paths={trackPath} />
+                        <MarkerLayer markers={markers} />
+                    </BasicMap>
+                    { track &&
+                        <div>
+                            <p>
+                                {totalDistance} NM
+                            </p>
+                            <PolarPlot values={coursePlotData} marker={trackLegs[selectedPointIndex]?.heading} />
+                        </div>
+                    }
+                </div>
             </div>
 
         </div>
@@ -201,4 +219,22 @@ function parsePoint (el) {
         name,
         time,
     }
+}
+
+/**
+ * @param {{ from: Point; to: Point; distance: number; heading: number; }[]} legs
+ * @returns {[number, number][]}
+ */
+function makeCoursePlot (legs, divisions = 24) {
+    const out = Array.from({length: divisions}).fill(0);
+    const theta = 360 / divisions;
+
+    for (const leg of legs) {
+        let index = Math.floor((leg.heading + theta/2) / theta);
+        if (index >= divisions) index = 0;
+
+        out[index] += leg.distance;
+    }
+
+    return out.map((v, i) => [i * theta, v]);
 }
