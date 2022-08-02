@@ -62,7 +62,7 @@ function Tracks () {
             method: "post",
             body,
         })
-        .then((/** @type {Response} */ r) => r.json())
+        .then(r => r.json())
         .then(result => {
             const { id } = result;
 

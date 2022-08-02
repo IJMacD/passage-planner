@@ -7,6 +7,7 @@ import { lat2tile, latlon2bearing, latlon2nm, lon2tile, tile2lat, tile2long } fr
 import { makeCoursePlot } from "../util/makeCoursePlot";
 import { PolarPlot } from "./PolarPlot";
 import { StaticMap } from "./StaticMap";
+import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
 
 /**
  *
@@ -14,10 +15,18 @@ import { StaticMap } from "./StaticMap";
  * @param {import("../util/gpx").Track?} props.track
  */
 export function TrackDetails ({ track }) {
-    const trackPoints = track ? track.segments.flat() : [];
+    const [ { centre, zoom }, setCentreAndZoom ] = useCentreAndZoom(track);
 
-    const [ centre, setCentre ] = useState(/** @type {[number, number]} */([trackPoints[0]?.lon, trackPoints[0]?.lat]));
-    const [ zoom, setZoom ] = useState(14);
+    /**
+     * @param {number|((oldValue: number) => number)} zoom
+     */
+    function setZoom (zoom) {
+        if (typeof zoom === "function") {
+            setCentreAndZoom(cam => ({ ...cam, zoom: zoom(cam.zoom) }));
+        } else {
+            setCentreAndZoom(cam => ({ ...cam, zoom }));
+        }
+    }
 
     const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
     const [ isPlaying, setIsPlaying ] = useState(false);
@@ -46,16 +55,18 @@ export function TrackDetails ({ track }) {
      * @param {number} dy Number of tiles to move vertically
      */
     function moveCentre (dx, dy) {
-      setCentre(centre => {
+      setCentreAndZoom(({ centre, zoom }) => {
         const tileX = lon2tile(centre[0], zoom);
         const tileY = lat2tile(centre[1], zoom);
 
         const lon = tile2long(tileX + dx, zoom);
         const lat = tile2lat(tileY + dy, zoom);
 
-        return [lon, lat];
+        return { centre: [lon, lat], zoom };
       });
     }
+
+    const trackPoints = track ? track.segments.flat() : [];
 
     /** @type {import("../util/gpx").Point?} */
     const selectedPoint = trackPoints[selectedPointIndex];
@@ -63,6 +74,8 @@ export function TrackDetails ({ track }) {
     const trackPath = [{ points: trackPoints }];
 
     const markers = selectedPoint ? [{ lon: selectedPoint.lon, lat: selectedPoint.lat, name: "red-dot" }] : [];
+
+    // markers.push({ lon: centre[0], lat: centre[1], name: "grey-pin" });
 
     const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to)}));
 
@@ -79,7 +92,7 @@ export function TrackDetails ({ track }) {
                 <p>{selectedPoint?.time?.toLocaleString()}</p>
             </div>
             <div>
-                <StaticMap centre={centre} zoom={zoom}>
+                <StaticMap centre={centre} zoom={zoom} width={800} height={800}>
                     <WorldLayer />
                     <HongKongMarineLayer />
                     <PathLayer paths={trackPath} />

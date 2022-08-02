@@ -1,5 +1,5 @@
 import React from "react";
-import { useBasemap } from "../hooks/useBasemapLayer";
+import { useBasemap } from "../hooks/useBasemap";
 import { useSavedState } from "../hooks/useSavedState";
 import { TileMapLayer } from "../Layers/TileMapLayer";
 import { WorldLayer } from "../Layers/WorldLayer";

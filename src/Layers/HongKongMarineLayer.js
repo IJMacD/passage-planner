@@ -1,9 +1,9 @@
 import React from "react";
 import { useBasemap } from "../hooks/useBasemap";
-import { TileMapLayer } from "./TileMapLayer";
+import { CanvasTileLayer } from "./CanvasTileLayer";
 
 export function HongKongMarineLayer () {
     const basemap = useBasemap("https://ijmacd.com/tiles/hongkong-marine");
 
-    return basemap ? <TileMapLayer layer={basemap} /> : null;
+    return basemap ? <CanvasTileLayer layer={basemap} /> : null;
 }

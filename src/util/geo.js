@@ -66,3 +66,22 @@ export function latlon2bearing (point1, point2) {
     const θ = Math.atan2(y, x);
     return (θ*180/Math.PI + 360) % 360; // in degrees
 }
+
+/**
+ * @param {import("./gpx").Point[]} points
+ */
+export function getBoundingBox (points) {
+    let minLon = Number.POSITIVE_INFINITY;
+    let minLat = Number.POSITIVE_INFINITY;
+    let maxLon = Number.NEGATIVE_INFINITY;
+    let maxLat = Number.NEGATIVE_INFINITY;
+
+    for (const point of points) {
+        minLon = Math.min(minLon, point.lon);
+        minLat = Math.min(minLat, point.lat);
+        maxLon = Math.max(maxLon, point.lon);
+        maxLat = Math.max(maxLat, point.lat);
+    }
+
+    return [ minLon, minLat, maxLon, maxLat ];
+}

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
+import { lonLat2XY, StaticMapContext } from "../Components/StaticMap";
 import { Marker } from "../Components/Marker";
 
 const TILE_SIZE = 256;
@@ -21,15 +21,7 @@ const TILE_SIZE = 256;
  * @returns
  */
 export function MarkerLayer ({ markers, onClick = null }) {
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
-
-    const tileCountX = width / TILE_SIZE;
-    const tileCountY = height / TILE_SIZE;
-
-    const minTileX = lon2tile(centre[0], zoom) - tileCountX / 2;
-    const minTileY = lat2tile(centre[1], zoom) - tileCountY / 2;
-    const maxTileX = minTileX + tileCountX;
-    const maxTileY = minTileY + tileCountY;
+    const context = useContext(StaticMapContext);
 
     return (
         <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, lineHeight: 0, }}>
@@ -37,15 +29,11 @@ export function MarkerLayer ({ markers, onClick = null }) {
                 markers.map((marker, i) => {
                     if (!marker) return null;
 
-                    const tileX = lon2tileFrac(marker.lon, zoom);
-                    const tileY = lat2tileFrac(marker.lat, zoom);
+                    const [ x, y ] = lonLat2XY(marker.lon, marker.lat, context);
 
-                    if (tileX < minTileX || tileX > maxTileX || tileY < minTileY || tileY > maxTileY) {
+                    if (x < 0 || x > context.width || y < 0 || y > context.height) {
                         return null;
                     }
-
-                    const x = (tileX - minTileX) / tileCountX * width;
-                    const y  = (tileY - minTileY) / tileCountY * height;
 
                     /**
                      * @param {import("react").MouseEvent} e

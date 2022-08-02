@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { lat2tile, lon2tile } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
+import { StaticMapContext, tileXY2CanvasXY } from "../Components/StaticMap";
 
 const TILE_SIZE = 256;
+const DEBUG = false;
 
 /**
  * @typedef Layer
@@ -32,29 +33,20 @@ const TILE_SIZE = 256;
  * @returns
  */
 
-export function CanvasTileMapLayer ({ layer }) {
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+export function CanvasTileLayer ({ layer }) {
+    const context = useContext(StaticMapContext);
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
+
+    const { centre, zoom, width, height } = context;
 
     const tiles = useTiles(centre, zoom, width, height, layer);
 
     useEffect(() => {
-        console.log(tiles);
-
         if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
             return;
         }
 
-        const tileCountX = Math.ceil(width / TILE_SIZE);
-        const tileCountY = Math.ceil(height / TILE_SIZE);
-
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
-
-        const imageOffsetX = 0;
-        const imageOffsetY = 0;
-
-        const device_tile_size = TILE_SIZE * devicePixelRatio;
+        let current = true;
 
         if (canvasRef.current) {
             canvasRef.current.width = width * devicePixelRatio;
@@ -65,15 +57,32 @@ export function CanvasTileMapLayer ({ layer }) {
             if (ctx) {
                 for (const tile of tiles) {
                     loadImage(tile.url).then(img => {
-                        const i = tile.x - tileOffsetX;
-                        const j = tile.y - tileOffsetY;
-                        const x = i * device_tile_size - imageOffsetX;
-                        const y = j * device_tile_size - imageOffsetY;
-                        ctx.drawImage(img, x, y, device_tile_size, device_tile_size);
-                    });
+                        if (current) {
+                            const [x, y] = tileXY2CanvasXY(tile.x, tile.y, context);
+
+                            ctx.drawImage(img,
+                                x * devicePixelRatio,
+                                y * devicePixelRatio,
+                                TILE_SIZE * devicePixelRatio,
+                                TILE_SIZE * devicePixelRatio
+                            );
+
+                            if (DEBUG) {
+                                ctx.strokeStyle = "#F00";
+                                ctx.strokeRect(
+                                    x * devicePixelRatio,
+                                    y * devicePixelRatio,
+                                    TILE_SIZE * devicePixelRatio,
+                                    TILE_SIZE * devicePixelRatio
+                                );
+                            }
+                        }
+                    }).catch(e => {});
                 }
             }
         }
+
+        return () => { current = false; };
     }, [tiles]);
 
     return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
@@ -109,11 +118,11 @@ function useTiles (centre, zoom, width, height, layer) {
             return [];
         }
 
-        const tileCountX = Math.ceil(width / TILE_SIZE);
-        const tileCountY = Math.ceil(height / TILE_SIZE);
+        const tileCountX = Math.ceil(width / TILE_SIZE) + 1;
+        const tileCountY = Math.ceil(height / TILE_SIZE) + 1;
 
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
+        const tileOffsetX = lon2tile(centre[0], zoom) - Math.floor(tileCountX / 2);
+        const tileOffsetY = lat2tile(centre[1], zoom) - Math.floor(tileCountY / 2);
 
         const tiles = [];
         for (let i = 0; i < tileCountX; i++) {

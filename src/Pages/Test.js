@@ -3,7 +3,7 @@ import { LightDemo } from "../Components/LightDemo";
 import { StaticMap } from "../Components/StaticMap";
 import { useBasemap } from "../hooks/useBasemap";
 import { useSavedState } from "../hooks/useSavedState";
-import { CanvasTileMapLayer } from "../Layers/CanvasTileLayer";
+import { CanvasTileLayer } from "../Layers/CanvasTileLayer";
 import { DebugLayer } from "../Layers/DebugLayer";
 
 function Test () {
@@ -21,7 +21,7 @@ function Test () {
 
                 </div>
                 <StaticMap centre={centre} zoom={zoom} width={500} height={500} >
-                    { basemapLayer && <CanvasTileMapLayer layer={basemapLayer} /> }
+                    { basemapLayer && <CanvasTileLayer layer={basemapLayer} /> }
                     <DebugLayer />
                 </StaticMap>
             </div>

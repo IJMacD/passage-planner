@@ -71,11 +71,6 @@ function Live () {
     }
   }, [animateTime, setTime]);
 
-  function handleSelectChange (e) {
-    const newSelectedIDs = [...e.target.selectedOptions].map(option => option.value);
-    setSelectedLayers(newSelectedIDs);
-  }
-
   return (
     <div className="Live">
       <div className="Controls">
@@ -107,11 +102,6 @@ function Live () {
             onChange={values => setSelectedLayers(values)}
             options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
           />
-          <select multiple onChange={handleSelectChange} value={selectedLayers} style={{width:180,height:180}}>
-            {
-              layers.map(layer => <option key={layer.id} value={layer.id}>{layer.name}</option>)
-            }
-          </select>
         </label>
         <AISKey />
       </div>
