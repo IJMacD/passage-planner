@@ -1,14 +1,16 @@
 import { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
+import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
+import React from "react";
+import { getBounds } from "../util/projection";
 
 const TILE_SIZE = 256;
 
 export function DebugLayer ({}) {
-    /** @type {import("react").MutableRefObject<HTMLCanvasElement>} */
-    const canvasRef = useRef(null);
+    const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+    const context = useContext(StaticMapContext);
+    const { centre, zoom, width, height } = context;
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
@@ -18,46 +20,57 @@ export function DebugLayer ({}) {
 
         const ctx = canvasRef.current.getContext("2d");
 
+        if (!ctx) {
+            return;
+        }
+
         ctx.canvas.width = pxWidth;
         ctx.canvas.height = pxHeight;
+
         const fontSize = 20;
+
+        const lonLatBounds = getBounds(context);
+        const minTileX = lon2tile(lonLatBounds[0], context.zoom);
+        const minTileY = lat2tile(lonLatBounds[3], context.zoom);
+        const maxTileX = lon2tile(lonLatBounds[2], context.zoom);
+        const maxTileY = lat2tile(lonLatBounds[1], context.zoom);
 
         const tileWidth = TILE_SIZE * devicePixelRatio;
         const tileHeight = TILE_SIZE * devicePixelRatio;
 
-        const tileCountX = Math.ceil(width / TILE_SIZE);
-        const tileCountY = Math.ceil(height / TILE_SIZE);
+        const tileCountX = maxTileX - minTileX;
+        const tileCountY = maxTileY - minTileY;
+
+        const xOffset = (lon2tileFrac(lonLatBounds[0], context.zoom) - minTileX) * tileWidth;
+        const yOffset = (lat2tileFrac(lonLatBounds[3], context.zoom) - minTileY) * tileHeight;
 
         // Gridlines
         ctx.beginPath();
-        for (let x = 0; x <= pxWidth; x += tileWidth) {
+        for (let x = -xOffset; x <= pxWidth; x += tileWidth) {
             ctx.moveTo(x, 0);
             ctx.lineTo(x, pxHeight);
         }
-        for (let y = 0; y <= pxHeight; y += tileHeight) {
+        for (let y = -yOffset; y <= pxHeight; y += tileHeight) {
             ctx.moveTo(0, y);
             ctx.lineTo(pxWidth, y);
         }
         ctx.strokeStyle = "black";
         ctx.stroke();
 
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
+        const tileOffsetX = lon2tile(centre[0], zoom) - Math.floor(tileCountX / 2);
+        const tileOffsetY = lat2tile(centre[1], zoom) - Math.floor(tileCountY / 2);
 
         // Tile ID
         ctx.fillStyle = "black";
         const pxFontSize = fontSize * devicePixelRatio;
         ctx.font = `${pxFontSize}px sans-serif`;
-        for (let i = 0; i < tileCountX; i++) {
-            for (let j = 0; j < tileCountY; j++) {
-                ctx.fillText(`${tileOffsetX + i},${tileOffsetY + j},${zoom}`, i * tileWidth + 10, j * tileHeight + 10 + pxFontSize);
+        for (let i = 0; i < tileCountX + 1; i++) {
+            for (let j = 0; j < tileCountY + 1; j++) {
+                ctx.fillText(`${tileOffsetX + i},${tileOffsetY + j},${zoom}`, i * tileWidth - xOffset + 10, j * tileHeight - yOffset + 10 + pxFontSize);
             }
         }
 
-        const minLon = tile2long(tileOffsetX, zoom);
-        const maxLat = tile2lat(tileOffsetY, zoom);
-        const maxLon = tile2long(tileOffsetX + tileCountX, zoom);
-        const minLat = tile2lat(tileOffsetY + tileCountY, zoom);
+        const [ minLon, minLat, maxLon, maxLat ] = lonLatBounds;
         const lonFrac = (centre[0]-minLon)/(maxLon-minLon);
         const latFrac = (maxLat-centre[1])/(maxLat-minLat);
 
@@ -80,10 +93,12 @@ export function DebugLayer ({}) {
         ctx.resetTransform();
 
         // Bounds
-        ctx.fillText(`${minLon.toFixed(3)}`, pxFontSize, pxHeight / 2);
-        ctx.fillText(`${maxLon.toFixed(3)}`, pxWidth - pxFontSize * 4, pxHeight / 2);
-        ctx.fillText(`${maxLat.toFixed(2)}`, pxWidth / 2, 10 + pxFontSize * 2);
-        ctx.fillText(`${minLat.toFixed(2)}`, pxWidth / 2, pxHeight - 10 - pxFontSize);
+        ctx.fillText(`${minLon.toFixed(3)}`, 0, pxHeight / 2);
+        ctx.textAlign = "right";
+        ctx.fillText(`${maxLon.toFixed(3)}`, pxWidth, pxHeight / 2);
+        ctx.textAlign = "center";
+        ctx.fillText(`${maxLat.toFixed(3)}`, pxWidth / 2, pxFontSize);
+        ctx.fillText(`${minLat.toFixed(3)}`, pxWidth / 2, pxHeight);
 
 
     }, [centre, zoom, pxWidth, pxHeight]);

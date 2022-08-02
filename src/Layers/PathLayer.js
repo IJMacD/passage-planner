@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
-import { lonLat2XY, StaticMapContext } from "../Components/StaticMap";
-
-const TILE_SIZE = 256;
+import { StaticMapContext } from "../Components/StaticMap";
+import { lonLat2XY } from "../util/projection";
 
 /**
  *
@@ -28,6 +26,8 @@ export function PathLayer ({ paths }) {
         ctx.canvas.width = pxWidth;
         ctx.canvas.height = pxHeight;
 
+        const projection = lonLat2XY(context);
+
         for (const path of paths) {
             ctx.strokeStyle = path.color ?? "red";
 
@@ -35,7 +35,7 @@ export function PathLayer ({ paths }) {
             ctx.beginPath();
 
             for (const point of path.points) {
-                const [x, y] = lonLat2XY(point.lon, point.lat, context);
+                const [x, y] = projection(point.lon, point.lat);
 
                 ctx.lineTo(x * devicePixelRatio, y * devicePixelRatio);
             }

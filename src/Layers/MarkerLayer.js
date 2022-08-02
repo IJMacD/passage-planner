@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo";
-import { lonLat2XY, StaticMapContext } from "../Components/StaticMap";
+import { StaticMapContext } from "../Components/StaticMap";
+import { lonLat2XY } from "../util/projection";
 import { Marker } from "../Components/Marker";
 
 const TILE_SIZE = 256;
@@ -22,6 +22,7 @@ const TILE_SIZE = 256;
  */
 export function MarkerLayer ({ markers, onClick = null }) {
     const context = useContext(StaticMapContext);
+    const projection = lonLat2XY(context);
 
     return (
         <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, lineHeight: 0, }}>
@@ -29,7 +30,7 @@ export function MarkerLayer ({ markers, onClick = null }) {
                 markers.map((marker, i) => {
                     if (!marker) return null;
 
-                    const [ x, y ] = lonLat2XY(marker.lon, marker.lat, context);
+                    const [ x, y ] = projection(marker.lon, marker.lat);
 
                     if (x < 0 || x > context.width || y < 0 || y > context.height) {
                         return null;

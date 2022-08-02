@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { lat2tile, lon2tile } from "../util/geo";
-import { StaticMapContext, tileXY2CanvasXY } from "../Components/StaticMap";
+import { StaticMapContext } from "../Components/StaticMap";
+import { tileXY2CanvasXY } from "../util/projection";
 
 const TILE_SIZE = 256;
 const DEBUG = false;
@@ -61,11 +62,13 @@ export function CanvasTileLayer ({ layer }) {
 
             const ctx = canvasRef.current.getContext("2d");
 
+            const projection = tileXY2CanvasXY(context);
+
             if (ctx) {
                 for (const tile of tiles) {
                     loadImage(tile.url).then(img => {
                         if (current) {
-                            const [x, y] = tileXY2CanvasXY(tile.x * overscale, tile.y * overscale, context);
+                            const [x, y] = projection(tile.x * overscale, tile.y * overscale);
 
                             ctx.drawImage(img,
                                 x * devicePixelRatio,
@@ -75,6 +78,7 @@ export function CanvasTileLayer ({ layer }) {
                             );
 
                             if (DEBUG) {
+                                ctx.lineWidth = 3;
                                 ctx.strokeStyle = "#F00";
                                 ctx.strokeRect(
                                     x * devicePixelRatio,
@@ -84,7 +88,10 @@ export function CanvasTileLayer ({ layer }) {
                                 );
                             }
                         }
-                    }).catch(e => {});
+                    })
+                    .catch(e => {
+                        console.log(`Couldn't load image: ${tile.url}`);
+                    });
                 }
             }
         }

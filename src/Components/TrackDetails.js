@@ -8,6 +8,7 @@ import { makeCoursePlot } from "../util/makeCoursePlot";
 import { PolarPlot } from "./PolarPlot";
 import { StaticMap } from "./StaticMap";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
+import { DebugLayer } from "../Layers/DebugLayer";
 
 /**
  *
@@ -95,6 +96,7 @@ export function TrackDetails ({ track }) {
                 <StaticMap centre={centre} zoom={zoom} width={800} height={800}>
                     <WorldLayer />
                     <HongKongMarineLayer />
+                    {/* <DebugLayer /> */}
                     <PathLayer paths={trackPath} />
                     <MarkerLayer markers={markers} />
                     <div className="BasicMap-Controls" style={{ position: "absolute", top: 20, right: 20 }} onClick={e => e.stopPropagation()}>
