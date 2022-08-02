@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
 

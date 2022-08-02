@@ -1,8 +1,6 @@
-import React, { useMemo } from "react";
-import { useBasemapLayer } from "../hooks/useBasemapLayer";
+import React from "react";
+import { useBasemap } from "../hooks/useBasemapLayer";
 import { useSavedState } from "../hooks/useSavedState";
-import { useTileMetadata } from "../hooks/useTileMetadata";
-import { CanvasTileMapLayer } from "../Layers/CanvasTileLayer";
 import { TileMapLayer } from "../Layers/TileMapLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
 import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
@@ -22,7 +20,7 @@ export function BasicMap ({ onClick, children, width, height }) {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
     const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
 
-    const basemapLayer = useBasemapLayer();
+    const basemapLayer = useBasemap();
 
     /**
      *

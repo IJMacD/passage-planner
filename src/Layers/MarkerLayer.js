@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
 import { Marker } from "../Components/Marker";

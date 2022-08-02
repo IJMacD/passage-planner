@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { useSavedState } from "./useSavedState";
 import { useTileMetadata } from "./useTileMetadata";
 
-export function useBasemapLayer () {
-    const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", "");
+export function useBasemap (initalURL = "") {
+    const [ backgroundTileURL, setBackgroundTileURL ] = useSavedState("passagePlanner.backgroundUrl", initalURL);
     const backgroundMetadata = useTileMetadata(backgroundTileURL);
 
     return useMemo(() => backgroundMetadata ? {

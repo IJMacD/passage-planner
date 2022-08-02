@@ -1,3 +1,5 @@
+import React from "react";
+
 const CUSTOM_SIZES = {
     "no-go": [14,32],
     "port-close-hauled": [14,32],
