@@ -37,15 +37,22 @@ export function CanvasTileLayer ({ layer }) {
     const context = useContext(StaticMapContext);
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const { centre, zoom, width, height } = context;
+    let { centre, zoom, width, height } = context;
 
-    const tiles = useTiles(centre, zoom, width, height, layer);
+    let overscale = 1;
+
+    if (zoom < +layer.minzoom) {
+        overscale = 1 / Math.pow(2, +layer.minzoom - zoom);
+        zoom = +layer.minzoom;
+    }
+    else if (zoom > +layer.maxzoom) {
+        overscale = Math.pow(2, zoom - +layer.maxzoom);
+        zoom = +layer.maxzoom;
+    }
+
+    const tiles = useTiles(centre, zoom, width / overscale, height / overscale, layer);
 
     useEffect(() => {
-        if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
-            return;
-        }
-
         let current = true;
 
         if (canvasRef.current) {
@@ -58,13 +65,13 @@ export function CanvasTileLayer ({ layer }) {
                 for (const tile of tiles) {
                     loadImage(tile.url).then(img => {
                         if (current) {
-                            const [x, y] = tileXY2CanvasXY(tile.x, tile.y, context);
+                            const [x, y] = tileXY2CanvasXY(tile.x * overscale, tile.y * overscale, context);
 
                             ctx.drawImage(img,
                                 x * devicePixelRatio,
                                 y * devicePixelRatio,
-                                TILE_SIZE * devicePixelRatio,
-                                TILE_SIZE * devicePixelRatio
+                                TILE_SIZE * devicePixelRatio * overscale,
+                                TILE_SIZE * devicePixelRatio * overscale
                             );
 
                             if (DEBUG) {
@@ -72,8 +79,8 @@ export function CanvasTileLayer ({ layer }) {
                                 ctx.strokeRect(
                                     x * devicePixelRatio,
                                     y * devicePixelRatio,
-                                    TILE_SIZE * devicePixelRatio,
-                                    TILE_SIZE * devicePixelRatio
+                                    TILE_SIZE * devicePixelRatio * overscale,
+                                    TILE_SIZE * devicePixelRatio * overscale
                                 );
                             }
                         }
@@ -83,7 +90,7 @@ export function CanvasTileLayer ({ layer }) {
         }
 
         return () => { current = false; };
-    }, [tiles]);
+    }, [tiles, overscale]);
 
     return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
 }
@@ -112,25 +119,41 @@ function useImageUrls (centre, zoom, width, height, layer) {
     }, [centre, zoom, width, height, layer]);
 }
 
+/**
+ * @param {[number, number]} centre
+ * @param {number} zoom
+ * @param {number} width
+ * @param {number} height
+ * @param {Layer} layer
+ */
 function useTiles (centre, zoom, width, height, layer) {
     return useMemo(() => {
         if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
             return [];
         }
 
-        const tileCountX = Math.ceil(width / TILE_SIZE) + 1;
-        const tileCountY = Math.ceil(height / TILE_SIZE) + 1;
+        const tileCountX = Math.ceil(width / TILE_SIZE) + 2;
+        const tileCountY = Math.ceil(height / TILE_SIZE) + 2;
 
         const tileOffsetX = lon2tile(centre[0], zoom) - Math.floor(tileCountX / 2);
         const tileOffsetY = lat2tile(centre[1], zoom) - Math.floor(tileCountY / 2);
+
+        const layerBounds = layer.bounds.split(",");
+        const layerMinX = lon2tile(+layerBounds[0], zoom);
+        const layerMinY = lat2tile(+layerBounds[3], zoom);
+        const layerMaxX = lon2tile(+layerBounds[2], zoom);
+        const layerMaxY = lat2tile(+layerBounds[1], zoom);
 
         const tiles = [];
         for (let i = 0; i < tileCountX; i++) {
             for (let j = 0; j < tileCountY; j++) {
                 const x = tileOffsetX + i;
                 const y = tileOffsetY + j;
-                const url = `${layer.baseURL}/${zoom}/${x}/${y}.png`;
-                tiles.push({ x, y, url });
+
+                if (x >= layerMinX && x <= layerMaxX && y >= layerMinY && y <= layerMaxY) {
+                    const url = `${layer.baseURL}/${zoom}/${x}/${y}.png`;
+                    tiles.push({ x, y, url });
+                }
             }
         }
 
