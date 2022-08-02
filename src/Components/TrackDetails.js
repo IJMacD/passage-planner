@@ -78,11 +78,11 @@ export function TrackDetails ({ track }) {
 
     // markers.push({ lon: centre[0], lat: centre[1], name: "grey-pin" });
 
-    const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to)}));
+    const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to), duration: +(l.to.time || 0) - +(l.from.time || 0)}));
 
-    const totalDistance = trackLegs.reduce((total, leg) => total + leg.distance, 0);
-
-    const coursePlotData = makeCoursePlot(trackLegs);
+    const distancePlotData = makeCoursePlot(trackLegs, leg => leg.distance, 16);
+    const durationPlotData = makeCoursePlot(trackLegs, leg => leg.duration, 16);
+    const speedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, 16, true);
 
     return (
         <div style={{display:"flex"}}>
@@ -109,10 +109,9 @@ export function TrackDetails ({ track }) {
                     </div>
                 </StaticMap>
                 <div>
-                    <p>
-                        {totalDistance} NM
-                    </p>
-                    <PolarPlot values={coursePlotData} marker={trackLegs[selectedPointIndex]?.heading} />
+                    <PolarPlot values={distancePlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} />
+                    <PolarPlot values={durationPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="blue" />
+                    <PolarPlot values={speedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="purple" />
                 </div>
             </div>
         </div>

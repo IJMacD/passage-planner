@@ -7,8 +7,9 @@ import { useEffect, useRef } from "react";
  * @param {number} [props.width]
  * @param {number} [props.height]
  * @param {number} [props.marker] Degrees
+ * @param {string} [props.color] CSS Color
  */
-export function PolarPlot ({ values, width = 512, height = 512, marker = NaN }) {
+export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, color = "#F00" }) {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     useEffect(() => {
@@ -42,6 +43,8 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN }) 
 
                 ctx.arc(demiWidth, demiHeight, radius, 0, Math.PI * 2);
                 ctx.arc(demiWidth, demiHeight, radius / 2, 0, Math.PI * 2);
+                ctx.arc(demiWidth, demiHeight, radius / 4, 0, Math.PI * 2);
+                ctx.arc(demiWidth, demiHeight, 3 * radius / 4, 0, Math.PI * 2);
 
                 for (let th = 0; th < 360; th += 45) {
                     ctx.moveTo(demiWidth, demiHeight);
@@ -63,7 +66,7 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN }) 
                 }
                 ctx.closePath();
 
-                ctx.strokeStyle = "#F00";
+                ctx.strokeStyle = color;
                 ctx.lineWidth = 1 * devicePixelRatio;
                 ctx.stroke();
 
@@ -73,7 +76,7 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN }) 
                     const [x, y] = polar2xy(marker, radius);
                     ctx.lineTo(x, y);
 
-                    ctx.strokeStyle = "#F80";
+                    ctx.strokeStyle = "#000";
                     ctx.lineWidth = 2 * devicePixelRatio;
                     ctx.lineCap = "round";
                     ctx.stroke();
