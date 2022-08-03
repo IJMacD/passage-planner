@@ -9,6 +9,7 @@ import { PolarPlot } from "./PolarPlot";
 import { StaticMap } from "./StaticMap";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
 import { DebugLayer } from "../Layers/DebugLayer";
+import { PolarPlotSVG } from "./PolarPlotSVG";
 
 /**
  *
@@ -78,11 +79,14 @@ export function TrackDetails ({ track }) {
 
     // markers.push({ lon: centre[0], lat: centre[1], name: "grey-pin" });
 
-    const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to), duration: +(l.to.time || 0) - +(l.from.time || 0)}));
+    const trackLegs = makeTrackLegs(trackPoints);
 
-    const distancePlotData = makeCoursePlot(trackLegs, leg => leg.distance, 16);
-    const durationPlotData = makeCoursePlot(trackLegs, leg => leg.duration, 16);
-    const speedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, 16, true);
+    const plotDivisions = 16;
+
+    const distancePlotData = makeCoursePlot(trackLegs, leg => leg.distance, plotDivisions);
+    const durationPlotData = makeCoursePlot(trackLegs, leg => leg.duration, plotDivisions);
+    const speedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, plotDivisions, "average");
+    const maxSpeedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, plotDivisions, "max");
 
     return (
         <div style={{display:"flex"}}>
@@ -109,11 +113,40 @@ export function TrackDetails ({ track }) {
                     </div>
                 </StaticMap>
                 <div>
-                    <PolarPlot values={distancePlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} />
-                    <PolarPlot values={durationPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="blue" />
-                    <PolarPlot values={speedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="purple" />
+                    <PolarPlotSVG values={distancePlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="red" labelFn={v => `${v.toFixed(1)} NM`} />
+                    <PolarPlotSVG values={durationPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="blue" labelFn={v => `${(v / 3600000).toFixed(1)} hrs`} />
+                    <PolarPlotSVG values={speedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="purple" labelFn={v => `${(v * 3600000).toFixed(1)} knots`} />
+                    <PolarPlotSVG values={maxSpeedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="green" labelFn={v => `${(v * 3600000).toFixed(1)} knots`} />
                 </div>
             </div>
         </div>
     );
 }
+
+/**
+ * @param {import("../util/gpx").Point[]} trackPoints
+ */
+function makeTrackLegs(trackPoints) {
+    return trackPoints.map((p, i, a) => ({ from: a[i - 1], to: p })).slice(1).map(({ from, to }) => {
+        const duration = +(to.time || 0) - +(from.time || 0);
+
+        if (from.lon === to.lon && from.lat === to.lat) {
+            return {
+                from,
+                to,
+                distance: 0,
+                heading: NaN,
+                duration,
+            };
+        }
+
+        return {
+            from,
+            to,
+            distance: latlon2nm(from, to),
+            heading: latlon2bearing(from, to),
+            duration: duration
+        };
+    });
+}
+

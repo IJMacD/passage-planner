@@ -8,8 +8,9 @@ import { useEffect, useRef } from "react";
  * @param {number} [props.height]
  * @param {number} [props.marker] Degrees
  * @param {string} [props.color] CSS Color
+ * @param {(value: number) => string} [props.labelFn]
  */
-export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, color = "#F00" }) {
+export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, color = "#F00", labelFn }) {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     useEffect(() => {
@@ -40,12 +41,12 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, co
                 const radius = Math.min(demiWidth, demiHeight);
 
                 ctx.beginPath();
+                // Axial lines
+                for (let t = 0.25; t <= 1; t += 0.25) {
+                    ctx.arc(demiWidth, demiHeight, t * radius, 0, Math.PI * 2);
+                }
 
-                ctx.arc(demiWidth, demiHeight, radius, 0, Math.PI * 2);
-                ctx.arc(demiWidth, demiHeight, radius / 2, 0, Math.PI * 2);
-                ctx.arc(demiWidth, demiHeight, radius / 4, 0, Math.PI * 2);
-                ctx.arc(demiWidth, demiHeight, 3 * radius / 4, 0, Math.PI * 2);
-
+                // Radial Lines
                 for (let th = 0; th < 360; th += 45) {
                     ctx.moveTo(demiWidth, demiHeight);
                     const [x, y] = polar2xy(th, radius);
@@ -57,6 +58,16 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, co
                 ctx.stroke();
 
                 const maxVal = Math.max(...values.map(v => v[1]));
+
+                // Axial Text
+                if (typeof labelFn === "function") {
+                    ctx.fillStyle = "#999";
+                    for (let t = 0.25; t <= 1; t += 0.25) {
+                        const [ x, y ] = polar2xy(0, t * radius);
+                        ctx.fillText(labelFn(t * maxVal), x, y + 5 * devicePixelRatio);
+                    }
+                }
+
                 const radialScale = radius / maxVal;
 
                 ctx.beginPath()
@@ -68,6 +79,7 @@ export function PolarPlot ({ values, width = 512, height = 512, marker = NaN, co
 
                 ctx.strokeStyle = color;
                 ctx.lineWidth = 1 * devicePixelRatio;
+                ctx.lineJoin = "bevel";
                 ctx.stroke();
 
                 if (!isNaN(marker)) {
