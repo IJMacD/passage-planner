@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { lat2tile, lon2tile } from "../util/geo";
+import React, { useContext, useEffect, useRef } from "react";
 import { StaticMapContext } from "../Components/StaticMap";
 import { tileXY2CanvasXY } from "../util/projection";
+import { useTiles } from "../hooks/useTiles";
+import { loadImage } from "../util/loadImage";
 
 const TILE_SIZE = 256;
 const DEBUG = false;
@@ -67,8 +68,8 @@ export function CanvasTileLayer ({ layer }) {
                 Promise.all(tiles.map(tile => loadImage(tile.url).catch(()=>null))).then(images => {
 
                     if (current && canvasRef.current) {
-                        canvasRef.current.width = width * devicePixelRatio;
-                        canvasRef.current.height = height * devicePixelRatio;
+                        canvasRef.current.width = context.width * devicePixelRatio;
+                        canvasRef.current.height = context.height * devicePixelRatio;
 
                         for (let i = 0; i < tiles.length; i++) {
                             const tile = tiles[i];
@@ -102,120 +103,7 @@ export function CanvasTileLayer ({ layer }) {
         }
 
         return () => { current = false; };
-    }, [tiles, overscale]);
+    }, [tiles, overscale, context]);
 
     return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
-}
-
-function useImageUrls (centre, zoom, width, height, layer) {
-    return useMemo(() => {
-        if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
-            return [];
-        }
-
-        const tileCountX = Math.ceil(width / TILE_SIZE);
-        const tileCountY = Math.ceil(height / TILE_SIZE);
-
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
-
-        const imageURLs = [];
-        for (let i = 0; i < tileCountX; i++) {
-            for (let j = 0; j < tileCountY; j++) {
-                imageURLs.push(`${layer.baseURL}/${zoom}/${tileOffsetX + i}/${tileOffsetY + j}.png`);
-            }
-        }
-
-        return imageURLs;
-
-    }, [centre, zoom, width, height, layer]);
-}
-
-/**
- * @param {[number, number]} centre
- * @param {number} zoom
- * @param {number} width
- * @param {number} height
- * @param {Layer} layer
- */
-function useTiles (centre, zoom, width, height, layer) {
-    return useMemo(() => {
-        if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
-            return [];
-        }
-
-        const tileCountX = Math.ceil(width / TILE_SIZE) + 2;
-        const tileCountY = Math.ceil(height / TILE_SIZE) + 2;
-
-        const tileOffsetX = lon2tile(centre[0], zoom) - Math.floor(tileCountX / 2);
-        const tileOffsetY = lat2tile(centre[1], zoom) - Math.floor(tileCountY / 2);
-
-        const layerBounds = layer.bounds.split(",");
-        const layerMinX = lon2tile(+layerBounds[0], zoom);
-        const layerMinY = lat2tile(+layerBounds[3], zoom);
-        const layerMaxX = lon2tile(+layerBounds[2], zoom);
-        const layerMaxY = lat2tile(+layerBounds[1], zoom);
-
-        const tiles = [];
-        for (let i = 0; i < tileCountX; i++) {
-            for (let j = 0; j < tileCountY; j++) {
-                const x = tileOffsetX + i;
-                const y = tileOffsetY + j;
-
-                if (x >= layerMinX && x <= layerMaxX && y >= layerMinY && y <= layerMaxY) {
-                    const url = `${layer.baseURL}/${zoom}/${x}/${y}.png`;
-                    tiles.push({ x, y, url });
-                }
-            }
-        }
-
-        return tiles;
-
-    }, [centre, zoom, width, height, layer]);
-}
-
-function useImageTiles (centre, zoom, width, height, layer) {
-    const [ loadedTiles, setLoadedTiles ] = useState(/** @type {{ image: ImageBitmap, x: number, y: number}[]} */([]));
-
-    useEffect(() => {
-        setLoadedTiles([]);
-
-        if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
-            return;
-        }
-
-        const tileCountX = Math.ceil(width / TILE_SIZE);
-        const tileCountY = Math.ceil(height / TILE_SIZE);
-
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
-
-        for (let i = 0; i < tileCountX; i++) {
-            for (let j = 0; j < tileCountY; j++) {
-                const x = tileOffsetX + i;
-                const y = tileOffsetY + j;
-                const url = `${layer.baseURL}/${zoom}/${x}/${y}.png`;
-                loadImage(url).then(image => {
-                    setLoadedTiles(tiles => [ ...tiles, { image, x, y }]);
-                });
-            }
-        }
-
-    }, [centre, zoom, width, height, layer]);
-
-    return loadedTiles;
-}
-
-/**
- *
- * @param {string} src
- * @returns {Promise<HTMLImageElement>}
- */
-function loadImage (src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(Error(`Unable to load ${src}`));
-    });
 }

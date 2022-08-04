@@ -19,12 +19,12 @@ const playSpeed = 60; // 1 minute per second
  */
 export function TrackDetails ({ track }) {
     const [ { centre, zoom }, setCentreAndZoom ] = useCentreAndZoom(track);
-    const trackPoints = track ? track.segments.flat() : [];
     // const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
     const [ selectedTime, setSelectedTime ] = useState(0);
     const [ isPlaying, setIsPlaying ] = useState(false);
     const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
 
+    const trackPoints = track ? track.segments.flat() : [];
     const startTime = +(trackPoints[0]?.time || 0);
     const trackLength = +(trackPoints[trackPoints.length-1]?.time||0) - startTime;
 
@@ -41,6 +41,7 @@ export function TrackDetails ({ track }) {
 
     useEffect(() => {
         if (isPlaying && track) {
+            const trackPoints = track ? track.segments.flat() : [];
 
             const refreshInterval = 100;
 
@@ -59,7 +60,7 @@ export function TrackDetails ({ track }) {
 
             return () => clearInterval(id);
         }
-    }, [isPlaying, followPlayingCentre, track]);
+    }, [isPlaying, followPlayingCentre, track, setCentreAndZoom, startTime, trackLength]);
 
     if (!track) {
         return null;
