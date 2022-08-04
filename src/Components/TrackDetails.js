@@ -5,10 +5,9 @@ import { PathLayer } from "../Layers/PathLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
 import { lat2tile, latlon2bearing, latlon2nm, lon2tile, tile2lat, tile2long } from "../util/geo";
 import { makeCoursePlot } from "../util/makeCoursePlot";
-import { PolarPlot } from "./PolarPlot";
 import { StaticMap } from "./StaticMap";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
-import { DebugLayer } from "../Layers/DebugLayer";
+// import { DebugLayer } from "../Layers/DebugLayer";
 import { PolarPlotSVG } from "./PolarPlotSVG";
 
 /**
@@ -88,15 +87,27 @@ export function TrackDetails ({ track }) {
     const speedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, plotDivisions, "average");
     const maxSpeedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, plotDivisions, "max");
 
+    /** @type {[number, number][]} */
+    const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading||0, leg.distance/leg.duration]);
+
+    const selectedLeg = trackLegs[selectedPointIndex];
+
+    const colorFns = {
+        rainbow: (_, i) => `hsl(${i % 360},100%,50%)`,
+        faded: (_, i, values) => `rgba(255, 0, 0, ${i/values.length})`,
+        heading: (value) => `hsl(${value[0]},100%,50%)`,
+        fadedRainbow: (_, i,values) => `hsla(${i % 360},100%,50%,${i/values.length})`,
+    };
+
+    const labelFns = {
+        distance: v => `${v.toFixed(1)} NM`,
+        duration: v => `${(v / 3600000).toFixed(1)} hrs`,
+        speed: v => `${(v * 3600000).toFixed(1)} knots`,
+    };
+
     return (
-        <div style={{display:"flex"}}>
-            <div>
-                <p>{track.name}</p>
-                <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
-                <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
-                <p>{selectedPoint?.time?.toLocaleString()}</p>
-            </div>
-            <div>
+        <div>
+            <div style={{display:"flex"}}>
                 <StaticMap centre={centre} zoom={zoom} width={800} height={800}>
                     <WorldLayer />
                     <HongKongMarineLayer />
@@ -113,10 +124,24 @@ export function TrackDetails ({ track }) {
                     </div>
                 </StaticMap>
                 <div>
-                    <PolarPlotSVG values={distancePlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="red" labelFn={v => `${v.toFixed(1)} NM`} />
-                    <PolarPlotSVG values={durationPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="blue" labelFn={v => `${(v / 3600000).toFixed(1)} hrs`} />
-                    <PolarPlotSVG values={speedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="purple" labelFn={v => `${(v * 3600000).toFixed(1)} knots`} />
-                    <PolarPlotSVG values={maxSpeedPlotData} marker={trackLegs[selectedPointIndex]?.heading} width={200} height={200} color="green" labelFn={v => `${(v * 3600000).toFixed(1)} knots`} />
+                <div>
+                    <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
+                    <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
+                    <p>{selectedPoint?.time?.toLocaleString()}</p>
+                </div>
+                    <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />
+                    <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} />
+                    <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} />
+                    <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} />
+                    <PolarPlotSVG
+                        values={instantSpeedHeadingData.slice(0, selectedPointIndex+1)}
+                        marker={selectedLeg?.heading}
+                        markerValue={selectedLeg?.distance/selectedLeg?.duration}
+                        width={250}
+                        height={250}
+                        color={colorFns.faded}
+                        labelFn={labelFns.speed}
+                    />
                 </div>
             </div>
         </div>
