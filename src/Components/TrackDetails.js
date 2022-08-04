@@ -17,6 +17,7 @@ import { PolarPlotSVG } from "./PolarPlotSVG";
  */
 export function TrackDetails ({ track }) {
     const [ { centre, zoom }, setCentreAndZoom ] = useCentreAndZoom(track);
+    const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
 
     /**
      * @param {number|((oldValue: number) => number)} zoom
@@ -33,18 +34,24 @@ export function TrackDetails ({ track }) {
     const [ isPlaying, setIsPlaying ] = useState(false);
 
     useEffect(() => {
-        const trackPoints = track ? track.segments.flat() : [];
-
         if (isPlaying && track) {
+            const trackPoints = track.segments.flat();
+
             const id = setInterval(() => setSelectedPointIndex(index => {
                 index++;
                 if (index >= trackPoints.length) { index = 0; }
+
+                if (followPlayingCentre) {
+                    const { lon, lat } = trackPoints[index];
+                    setCentreAndZoom(({ zoom }) => ({ centre: [lon, lat], zoom }));
+                }
+
                 return index;
             }), 500);
 
             return () => clearInterval(id);
         }
-    }, [isPlaying, track]);
+    }, [isPlaying, followPlayingCentre, track]);
 
     if (!track) {
         return null;
@@ -127,6 +134,10 @@ export function TrackDetails ({ track }) {
                 <div>
                     <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
+                    <label>
+                        <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
+                        Follow
+                    </label>
                     <p>{selectedPoint?.time?.toLocaleString()}</p>
                 </div>
                     <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />

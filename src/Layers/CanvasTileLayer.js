@@ -57,17 +57,25 @@ export function CanvasTileLayer ({ layer }) {
         let current = true;
 
         if (canvasRef.current) {
-            canvasRef.current.width = width * devicePixelRatio;
-            canvasRef.current.height = height * devicePixelRatio;
 
             const ctx = canvasRef.current.getContext("2d");
 
             const projection = tileXY2CanvasXY(context);
 
             if (ctx) {
-                for (const tile of tiles) {
-                    loadImage(tile.url).then(img => {
-                        if (current) {
+
+                Promise.all(tiles.map(tile => loadImage(tile.url).catch(()=>null))).then(images => {
+
+                    if (current && canvasRef.current) {
+                        canvasRef.current.width = width * devicePixelRatio;
+                        canvasRef.current.height = height * devicePixelRatio;
+
+                        for (let i = 0; i < tiles.length; i++) {
+                            const tile = tiles[i];
+                            const img = images[i];
+
+                            if (!img) continue;
+
                             const [x, y] = projection(tile.x * overscale, tile.y * overscale);
 
                             ctx.drawImage(img,
@@ -88,11 +96,8 @@ export function CanvasTileLayer ({ layer }) {
                                 );
                             }
                         }
-                    })
-                    .catch(e => {
-                        console.log(`Couldn't load image: ${tile.url}`);
-                    });
-                }
+                    }
+                });
             }
         }
 
@@ -201,11 +206,16 @@ function useImageTiles (centre, zoom, width, height, layer) {
     return loadedTiles;
 }
 
+/**
+ *
+ * @param {string} src
+ * @returns {Promise<HTMLImageElement>}
+ */
 function loadImage (src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = src;
         img.onload = () => resolve(img);
-        img.onerror = reject;
+        img.onerror = () => reject(Error(`Unable to load ${src}`));
     });
 }
