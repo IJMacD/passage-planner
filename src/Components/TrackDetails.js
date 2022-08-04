@@ -10,6 +10,8 @@ import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
 // import { DebugLayer } from "../Layers/DebugLayer";
 import { PolarPlotSVG } from "./PolarPlotSVG";
 
+const playSpeed = 60; // 1 minute per second
+
 /**
  *
  * @param {object} props
@@ -17,7 +19,14 @@ import { PolarPlotSVG } from "./PolarPlotSVG";
  */
 export function TrackDetails ({ track }) {
     const [ { centre, zoom }, setCentreAndZoom ] = useCentreAndZoom(track);
+    const trackPoints = track ? track.segments.flat() : [];
+    // const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
+    const [ selectedTime, setSelectedTime ] = useState(0);
+    const [ isPlaying, setIsPlaying ] = useState(false);
     const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
+
+    const startTime = +(trackPoints[0]?.time || 0);
+    const trackLength = +(trackPoints[trackPoints.length-1]?.time||0) - startTime;
 
     /**
      * @param {number|((oldValue: number) => number)} zoom
@@ -30,24 +39,23 @@ export function TrackDetails ({ track }) {
         }
     }
 
-    const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
-    const [ isPlaying, setIsPlaying ] = useState(false);
-
     useEffect(() => {
         if (isPlaying && track) {
-            const trackPoints = track.segments.flat();
 
-            const id = setInterval(() => setSelectedPointIndex(index => {
-                index++;
-                if (index >= trackPoints.length) { index = 0; }
+            const refreshInterval = 100;
+
+            const id = setInterval(() => setSelectedTime(time => {
+                time += playSpeed * refreshInterval;
+
+                if (time > trackLength) { time = 0; }
 
                 if (followPlayingCentre) {
-                    const { lon, lat } = trackPoints[index];
+                    const { lon, lat } = interpolatePoint(trackPoints, startTime + time);
                     setCentreAndZoom(({ zoom }) => ({ centre: [lon, lat], zoom }));
                 }
 
-                return index;
-            }), 500);
+                return time;
+            }), refreshInterval);
 
             return () => clearInterval(id);
         }
@@ -74,18 +82,21 @@ export function TrackDetails ({ track }) {
       });
     }
 
-    const trackPoints = track ? track.segments.flat() : [];
+    const trackLegs = makeTrackLegs(trackPoints);
 
-    /** @type {import("../util/gpx").Point?} */
-    const selectedPoint = trackPoints[selectedPointIndex];
+    // const selectedPoint = trackPoints[selectedPointIndex];
+    // const selectedLeg = trackLegs[selectedPointIndex];
 
-    const trackPath = [{ points: trackPoints }];
+    const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
+    const selectedLeg = findLegByTime(trackLegs, startTime + selectedTime);
 
-    const markers = selectedPoint ? [{ lon: selectedPoint.lon, lat: selectedPoint.lat, name: "red-dot" }] : [];
+    const markers = [];
+
+    if (selectedPoint) {
+        markers.push({ lon: selectedPoint.lon, lat: selectedPoint.lat, name: "red-dot" });
+    }
 
     // markers.push({ lon: centre[0], lat: centre[1], name: "grey-pin" });
-
-    const trackLegs = makeTrackLegs(trackPoints);
 
     const plotDivisions = 16;
 
@@ -96,8 +107,6 @@ export function TrackDetails ({ track }) {
 
     /** @type {[number, number][]} */
     const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading||0, leg.distance/leg.duration]);
-
-    const selectedLeg = trackLegs[selectedPointIndex];
 
     const colorFns = {
         rainbow: (_, i) => `hsl(${i % 360},100%,50%)`,
@@ -119,7 +128,7 @@ export function TrackDetails ({ track }) {
                     <WorldLayer />
                     <HongKongMarineLayer />
                     {/* <DebugLayer /> */}
-                    <PathLayer paths={trackPath} />
+                    <PathLayer paths={[{ points: trackPoints }]} />
                     <MarkerLayer markers={markers} />
                     <div className="BasicMap-Controls" style={{ position: "absolute", top: 20, right: 20 }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => moveCentre(-1, 0)}>West</button>
@@ -132,20 +141,20 @@ export function TrackDetails ({ track }) {
                 </StaticMap>
                 <div>
                 <div>
-                    <input type="range" min={0} max={trackPoints.length} value={selectedPointIndex} onChange={e => setSelectedPointIndex(e.target.valueAsNumber)} />
+                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
                     <label>
                         <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
                         Follow
                     </label>
-                    <p>{selectedPoint?.time?.toLocaleString()}</p>
+                    <p>{new Date(selectedPoint?.time||0).toLocaleString()}</p>
                 </div>
                     <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />
                     <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} />
                     <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} />
                     <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} />
                     <PolarPlotSVG
-                        values={instantSpeedHeadingData.slice(0, selectedPointIndex+1)}
+                        values={instantSpeedHeadingData}// .slice(0, selectedPointIndex+1)}
                         marker={selectedLeg?.heading}
                         markerValue={selectedLeg?.distance/selectedLeg?.duration}
                         width={250}
@@ -186,3 +195,38 @@ function makeTrackLegs(trackPoints) {
     });
 }
 
+/**
+ * @typedef {{from: import("../util/gpx").Point; to: import("../util/gpx").Point; distance: number; heading: number; duration: number;}} TrackLeg
+ */
+
+/**
+ * @param {import("../util/gpx").Point[]} points
+ * @param {number} time
+ */
+function interpolatePoint (points, time) {
+    let prev = points[0];
+    for (const point of points) {
+        if (point.time && +point.time > time) {
+            if (prev && prev.time) {
+                const t = (time - +prev.time)/(+point.time - +prev.time);
+
+                return {
+                    lon: prev.lon + (point.lon - prev.lon) * t,
+                    lat: prev.lat + (point.lat - prev.lat) * t,
+                    time,
+                };
+            }
+            return point;
+        }
+        prev = point;
+    }
+    return prev;
+}
+
+/**
+ * @param {TrackLeg[]} legs
+ * @param {number} time
+ */
+function findLegByTime (legs, time) {
+    return legs.find(leg => +(leg.from.time||0) <= time && +(leg.to.time||0) > time) || legs[0];
+}
