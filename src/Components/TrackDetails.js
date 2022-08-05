@@ -9,6 +9,7 @@ import { StaticMap } from "./StaticMap";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
 // import { DebugLayer } from "../Layers/DebugLayer";
 import { PolarPlotSVG } from "./PolarPlotSVG";
+import { ControlsLayer } from "../Layers/ControlsLayer";
 
 const playSpeed = 60; // 1 minute per second
 
@@ -18,8 +19,9 @@ const playSpeed = 60; // 1 minute per second
  * @param {import("../util/gpx").Track?} props.track
  */
 export function TrackDetails ({ track }) {
-    const [ { centre, zoom }, setCentreAndZoom ] = useCentreAndZoom(track);
-    // const [ selectedPointIndex, setSelectedPointIndex ] = useState(0);
+    const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
+    const [ centre, setCentre ] = useState(initialCentre);
+    const [ zoom, setZoom ] = useState(initialZoom);
     const [ selectedTime, setSelectedTime ] = useState(0);
     const [ isPlaying, setIsPlaying ] = useState(false);
     const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
@@ -28,17 +30,13 @@ export function TrackDetails ({ track }) {
     const startTime = +(trackPoints[0]?.time || 0);
     const trackLength = +(trackPoints[trackPoints.length-1]?.time||0) - startTime;
 
-    /**
-     * @param {number|((oldValue: number) => number)} zoom
-     */
-    function setZoom (zoom) {
-        if (typeof zoom === "function") {
-            setCentreAndZoom(cam => ({ ...cam, zoom: zoom(cam.zoom) }));
-        } else {
-            setCentreAndZoom(cam => ({ ...cam, zoom }));
-        }
-    }
+    // If track changes then recentre
+    useEffect(() => {
+        setCentre(initialCentre);
+        setZoom(initialZoom);
+    }, [initialCentre, initialZoom]);
 
+    // Playback
     useEffect(() => {
         if (isPlaying && track) {
             const trackPoints = track ? track.segments.flat() : [];
@@ -52,7 +50,7 @@ export function TrackDetails ({ track }) {
 
                 if (followPlayingCentre) {
                     const { lon, lat } = interpolatePoint(trackPoints, startTime + time);
-                    setCentreAndZoom(({ zoom }) => ({ centre: [lon, lat], zoom }));
+                    setCentre([lon, lat]);
                 }
 
                 return time;
@@ -60,27 +58,10 @@ export function TrackDetails ({ track }) {
 
             return () => clearInterval(id);
         }
-    }, [isPlaying, followPlayingCentre, track, setCentreAndZoom, startTime, trackLength]);
+    }, [isPlaying, followPlayingCentre, track, setCentre, startTime, trackLength]);
 
     if (!track) {
         return null;
-    }
-
-    /**
-     *
-     * @param {number} dx Number of tiles to move horizontally
-     * @param {number} dy Number of tiles to move vertically
-     */
-    function moveCentre (dx, dy) {
-      setCentreAndZoom(({ centre, zoom }) => {
-        const tileX = lon2tile(centre[0], zoom);
-        const tileY = lat2tile(centre[1], zoom);
-
-        const lon = tile2long(tileX + dx, zoom);
-        const lat = tile2lat(tileY + dy, zoom);
-
-        return { centre: [lon, lat], zoom };
-      });
     }
 
     const trackLegs = makeTrackLegs(trackPoints);
@@ -89,7 +70,8 @@ export function TrackDetails ({ track }) {
     // const selectedLeg = trackLegs[selectedPointIndex];
 
     const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
-    const selectedLeg = findLegByTime(trackLegs, startTime + selectedTime);
+    const selectedLegIndex = findLegIndexByTime(trackLegs, startTime + selectedTime);
+    const selectedLeg = trackLegs[selectedLegIndex] || trackLegs[0];
 
     const markers = [];
 
@@ -131,18 +113,11 @@ export function TrackDetails ({ track }) {
                     {/* <DebugLayer /> */}
                     <PathLayer paths={[{ points: trackPoints }]} />
                     <MarkerLayer markers={markers} />
-                    <div className="BasicMap-Controls" style={{ position: "absolute", top: 20, right: 20 }} onClick={e => e.stopPropagation()}>
-                        <button onClick={() => moveCentre(-1, 0)}>West</button>
-                        <button onClick={() => moveCentre(0, -1)}>North</button>
-                        <button onClick={() => moveCentre(0, 1.1)}>South</button>
-                        <button onClick={() => moveCentre(1, 0)}>East</button>
-                        <button onClick={() => setZoom(z => z - 1)}>Zoom -</button>
-                        <button onClick={() => setZoom(z => z + 1)}>Zoom +</button>
-                    </div>
+                    <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
                 </StaticMap>
                 <div>
                 <div>
-                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} />
+                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{width:400}} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
                     <label>
                         <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
@@ -155,7 +130,7 @@ export function TrackDetails ({ track }) {
                     <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} />
                     <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} />
                     <PolarPlotSVG
-                        values={instantSpeedHeadingData}// .slice(0, selectedPointIndex+1)}
+                        values={instantSpeedHeadingData.slice(0, selectedLegIndex+1)}
                         marker={selectedLeg?.heading}
                         markerValue={selectedLeg?.distance/selectedLeg?.duration}
                         width={250}
@@ -228,6 +203,6 @@ function interpolatePoint (points, time) {
  * @param {TrackLeg[]} legs
  * @param {number} time
  */
-function findLegByTime (legs, time) {
-    return legs.find(leg => +(leg.from.time||0) <= time && +(leg.to.time||0) > time) || legs[0];
+function findLegIndexByTime (legs, time) {
+    return legs.findIndex(leg => +(leg.from.time||0) <= time && +(leg.to.time||0) > time);
 }

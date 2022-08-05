@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { getBoundingBox } from "../util/geo";
 
 /**
@@ -6,19 +6,20 @@ import { getBoundingBox } from "../util/geo";
  */
 /**
  * @param {import("../util/gpx").Track | null} track
- * @returns {[CentreAndZoom, React.Dispatch<React.SetStateAction<CentreAndZoom>>]}
+ * @returns {CentreAndZoom}
  */
 export function useCentreAndZoom(track) {
-    const [centreAndZoom, setCentreAndZoom] = useState(/** @type {CentreAndZoom} */({ centre: [0, 0], zoom: 6 }));
+    return useMemo(() => {
+        if (!track) {
+            return { centre: [0,0], zoom: 0 };
+        }
 
-    useEffect(() => {
-        const trackPoints = track ? track.segments.flat() : [];
+        const trackPoints = track.segments.flat();
 
-        setCentreAndZoom(getCentreAndZoom(trackPoints));
+        return getCentreAndZoom(trackPoints);
     }, [track]);
-
-    return [centreAndZoom, setCentreAndZoom];
 }
+
 /**
  * @param {import("../util/gpx").Point[]} points
  * @returns {CentreAndZoom}
