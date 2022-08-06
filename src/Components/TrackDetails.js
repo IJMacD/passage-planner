@@ -3,7 +3,7 @@ import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
-import { lat2tile, latlon2bearing, latlon2nm, lon2tile, tile2lat, tile2long } from "../util/geo";
+import { latlon2bearing, latlon2nm } from "../util/geo";
 import { makeCoursePlot } from "../util/makeCoursePlot";
 import { StaticMap } from "./StaticMap";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
@@ -96,6 +96,7 @@ export function TrackDetails ({ track }) {
         faded: (_, i, values) => `rgba(255, 0, 0, ${i/values.length})`,
         heading: (value) => `hsl(${value[0]},100%,50%)`,
         fadedRainbow: (_, i,values) => `hsla(${i % 360},100%,50%,${i/values.length})`,
+        rainbowWithOpacity: opacity => (_, i) => `hsla(${i % 360},100%,50%,${opacity})`,
     };
 
     const labelFns = {
@@ -135,7 +136,9 @@ export function TrackDetails ({ track }) {
                         markerValue={selectedLeg?.distance/selectedLeg?.duration}
                         width={250}
                         height={250}
-                        color={colorFns.faded}
+                        color={colorFns.rainbowWithOpacity(0.3)}
+                        mode="stacked-sectors"
+                        size={10}
                         labelFn={labelFns.speed}
                     />
                 </div>
