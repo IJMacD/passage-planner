@@ -3,9 +3,13 @@ import { StaticMapContext } from "../Components/StaticMap";
 import { lonLat2XY } from "../util/projection";
 
 /**
+ * @typedef {{points: {lon: number;lat: number;}[];color?: ?string;lineDash?: ?number[];}} Path
+ */
+
+/**
  *
  * @param {object} props
- * @param {{ points: { lon: number; lat: number; }[], color?: string?; lineDash?: number[]? }[]} props.paths
+ * @param {Path[]} props.paths
  * @returns
  */
 export function PathLayer ({ paths }) {

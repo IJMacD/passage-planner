@@ -101,7 +101,7 @@ export function PolarPlotSVG ({
             const path = `M ${x0} ${y0} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
 
             const c = typeof color === "function" ? color(value, index, values) : color;
-            paths.push({ path, fill: c });
+            paths.push({ path, fill: c, key: index });
         }
     }
 
@@ -131,7 +131,7 @@ export function PolarPlotSVG ({
                 })
             }
             {
-                paths.map((p, i) => <path key={i} d={p.path} fill={p.fill||"none"} stroke={p.stroke} strokeWidth={2} strokeLinecap="square" strokeLinejoin="bevel" />)
+                paths.map((p, i) => <path key={p.key??i} d={p.path} fill={p.fill||"none"} stroke={p.stroke} strokeWidth={2} strokeLinecap="square" strokeLinejoin="bevel" />)
             }
             {
                 blobs.map((blob, i) => <circle key={i} cx={blob.cx} cy={blob.cy} r={blob.r} fill={blob.color} />)

@@ -35,8 +35,8 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
     function handleClick (e) {
         if(onClick) {
             const rect = e.currentTarget.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
+            const x = (e.clientX - rect.left);
+            const y = (e.clientY - rect.top);
 
             const projection = xy2LonLat({ centre, zoom, width, height });
             const [ lon, lat ] = projection(x, y);

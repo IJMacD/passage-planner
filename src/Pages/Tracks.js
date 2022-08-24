@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TrackDetails } from "../Components/TrackDetails";
+import { TrackEdit } from "../Components/TrackEdit";
 import { useAuthFetch } from "../hooks/useAuthFetch";
 import { useSavedState } from "../hooks/useSavedState";
 import { latlon2bearing, latlon2nm } from "../util/geo";
@@ -15,6 +16,8 @@ function Tracks () {
     const [ savedTracks, setSavedTracks ] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
 
     const [ track, setTrack ] = useState(/** @type {Track?} */(null));
+
+    const [ editMode, setEditMode ] = useState(false);
 
     const authFetch = useAuthFetch({
         exchangeURL: "https://passage.ijmacd.com/logbook/api/v1/auth/exchange",
@@ -78,7 +81,10 @@ function Tracks () {
                 body,
             })
             .then(r => r.json())
-            .then(d => console.log(d));
+            .then(d => {
+                console.log(d);
+                alert("Uploaded");
+            });
         });
     }
 
@@ -110,19 +116,24 @@ function Tracks () {
         <div style={{padding: "1em"}}>
             <h1>Tracks</h1>
 
-            <div style={{display:"flex"}}>
+            <div>
                 <div>
                     <ul>
                         {
-                            savedTracks.map(t => <li key={t.name}>{t.name} <button onClick={() => loadTrack(t)}>Load</button> <button onClick={() => uploadTrack(t)}>Upload</button></li>)
+                            savedTracks.map((t, i) => <li key={i}>{t.name} <button onClick={() => loadTrack(t)}>Load</button> <button onClick={() => uploadTrack(t)}>Upload</button></li>)
                         }
                     </ul>
-                    <button onClick={() => setTrack(null)}>Clear</button><br/>
+                    <button onClick={() => setTrack(null)}>Clear</button>
+                    <button onClick={() => setEditMode(!editMode)}>{editMode?"View":"Edit"}</button>
+                    <br/>
                     <input type="file" onChange={handleFileLoad} />
                     {/* <input value={track.name} onChange={e => setTrack(t => ({ ...t, name: e.target.value }))} /> */}
-
                 </div>
-                <TrackDetails track={track} />
+                {
+                    editMode ?
+                    <TrackEdit track={track} addTrack={track => setSavedTracks(tracks => [...savedTracks, track])} /> :
+                    <TrackDetails track={track} />
+                }
             </div>
 
         </div>
