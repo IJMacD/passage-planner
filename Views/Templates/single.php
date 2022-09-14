@@ -12,6 +12,11 @@
     <dd><?=$entry->total_duration->format("%a:%H:%I:%S")?> <?=getDurationSeconds($entry->total_duration)?></dd>
     <dt>Average Speed</dt>
     <dd><?=round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2)?> knots</dd>
+    <dt>Trophies</dt>
+    <dd><?php
+        $trophies = getTrophies($entry->id);
+        view_trophies($trophies, $entry->id, getRecordSettingTracks());
+    ?></dd>
 </dl>
 <div id="map"></div>
 <div id="polar-plot"></div>

@@ -10,6 +10,7 @@ foreach($entries as $entry) {
 $total_duration = $curr_dt->diff($init_dt);
 $total_duration_seconds = $init_dt->getTimestamp() - $curr_dt->getTimestamp();
 $total_avg_speed = $total_distance / $total_duration_seconds * 3600;
+$records = getRecordSettingTracks();
 ?>
 <p><?=$count?> logbook entries.</p>
 <table>
@@ -21,6 +22,7 @@ $total_avg_speed = $total_distance / $total_duration_seconds * 3600;
             <th>Distance</th>
             <th>Duration</th>
             <th>Average Speed</th>
+            <th>Trophies</th>
         </tr>
     </thead>
     <tbody>
@@ -40,6 +42,10 @@ $total_avg_speed = $total_distance / $total_duration_seconds * 3600;
                 <td rowspan="2"><?=$entry->total_distance?> NM</td>
                 <td rowspan="2"><?=$entry->total_duration->format("%a:%H:%I:%S")?></td>
                 <td rowspan="2"><?=round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2)?> knots</td>
+                <td rowspan="2"><?php
+                    $trophies = getTrophies($entry->id);
+                    view_trophies($trophies, $entry->id, $records);
+                ?></td>
             </tr>
             <tr>
                 <td colspan="2">
@@ -56,11 +62,8 @@ $total_avg_speed = $total_distance / $total_duration_seconds * 3600;
             <th><?=$total_distance?> NM</th>
             <th><?=$total_duration->format("%a:%H:%I:%S")?></th>
             <th><?=round($total_avg_speed, 2)?> knots</th>
+            <th></th>
         </tr>
     </tfoot>
 </table>
-<p>Overall Bounds: <?php
-$bounds = getOverallBounds();
-echo $bounds["minLon"] . "," . $bounds["minLat"] . "," . $bounds["maxLon"] . "," . $bounds["maxLat"];
-?></p>
 <script src="/logbook/static/js/util.js"></script>

@@ -23,6 +23,7 @@ Router::setRoot("/logbook");
 Router::registerWithPrefix("/api/v1", [
     ["get",     "/logs/:hid/track",     fn($hid) => handleAPILogTrackGet(hexdec($hid))],
     ["post",    "/logs/:hid/track",     fn($hid) => handleAPILogTrackPost(hexdec($hid))],
+    ["get",     "/logs/:hid/bounds",    fn($hid) => handleAPILogEntryBounds(hexdec($hid))],
     ["get",     "/logs/:hid",           fn($hid) => handleAPILogEntryGet(hexdec($hid))],
     ["post",    "/logs/:hid",           fn($hid) => handleAPILogEntryPost(hexdec($hid), $_POST)],
     ["delete",  "/logs/:hid",           fn($hid) => handleAPILogEntryDelete(hexdec($hid))],
@@ -35,6 +36,7 @@ Router::registerWithPrefix("/api/v1/auth", [
     ["post",    "/verify",      [ "Auth", "handleVerify" ]],
 ]);
 Router::register([
+    ["get",     "/records",     fn() => handleRecords()],
     ["get",     "/:hid",        fn($hid) => handleLogEntry(hexdec($hid))],
     ["get",     "/",            fn() => handleIndex()],
     ["get",     "",             fn() => handleIndex()],
@@ -57,6 +59,12 @@ try {
 function handleIndex () {
     $entries = getAllEntries();
     include "Views/LogbookIndex.php";
+}
+
+
+function handleRecords () {
+    $records = getRecordSettingTracks();
+    include "Views/LogbookRecords.php";
 }
 
 function handleLogEntry ($id) {
@@ -155,6 +163,19 @@ function handleAPILogEntryPost ($id, $params) {
 
     header("Content-Type: application/json");
     echo json_encode(["result" => "OK"]);
+}
+
+function handleAPILogEntryBounds ($id) {
+    $bounds = getTrackBounds($id);
+
+    if ($bounds) {
+        header("Content-Type: application/json");
+        echo json_encode($bounds, JSON_NUMERIC_CHECK);
+    }
+    else {
+        header("HTTP/1.1 404 Not Found");
+        echo "Track not found";
+    }
 }
 
 function handleAPILogEntryDelete ($id) {
