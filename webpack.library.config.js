@@ -17,6 +17,10 @@ module.exports = {
           filename: 'images/[hash][ext][query]'
         }
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
     ]
   },
   resolve: {

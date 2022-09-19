@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { PolarPlot } from "./Components/PolarPlot";
 import { StaticMap } from "./Components/StaticMap";
 import { TrackDetails } from "./Components/TrackDetails";
+import { getCentreAndZoom } from "./hooks/useCentreAndZoom";
 import { HongKongMarineLayer } from "./Layers/HongKongMarineLayer";
 import { PathLayer } from "./Layers/PathLayer";
 import { WorldLayer } from "./Layers/WorldLayer";
@@ -31,10 +32,7 @@ export function renderTrackMap (domNode, track, { width = 1024, height = 1024 } 
     const trackPoints = track ? track.segments.flat() : [];
     const trackPath = [{ points: trackPoints }];
 
-    const firstPoint = trackPoints[0];
-    /** @type {[number, number]} */
-    const centre = [ firstPoint.lon, firstPoint.lat ];
-    const zoom = 14;
+    const { centre, zoom } = getCentreAndZoom(trackPoints);
 
     ReactDOM.render(
         <StaticMap centre={centre} zoom={zoom} width={width} height={height}>

@@ -8,33 +8,11 @@ const TILE_SIZE = 256;
 const DEBUG = false;
 
 /**
- * @typedef Layer
- * @prop {string} layerType "tiles",
- * @prop {string} baseURL "https://ijmacd.com/tiles/hongkong-marine",
- * @prop {string} name "2021-11",
- * @prop {string} description "",
- * @prop {string} legend "",
- * @prop {string} attribution "Rendered with <a href=\"https://www.maptiler.com/desktop/\">MapTiler Desktop</a>",
- * @prop {string} type "overlay",
- * @prop {string} version "1",
- * @prop {string} format "png",
- * @prop {string} format_arguments "",
- * @prop {string} minzoom "8",
- * @prop {string} maxzoom "16",
- * @prop {string} bounds "113.516359,22.067786,114.502779,22.568333",
- * @prop {string} scale "2.000000",
- * @prop {string} profile "mercator",
- * @prop {string} scheme "tms",
- * @prop {string} generator "MapTiler Desktop Pro 10.3-0934099ad7"
- */
-
-/**
  *
  * @param {object} props
- * @param {Layer} props.layer
+ * @param {import("./TileMapLayer").TileJSON} props.layer
  * @returns
  */
-
 export function CanvasTileLayer ({ layer }) {
     const context = useContext(StaticMapContext);
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));

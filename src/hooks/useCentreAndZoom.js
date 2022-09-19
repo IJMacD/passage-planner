@@ -24,7 +24,7 @@ export function useCentreAndZoom(track) {
  * @param {import("../util/gpx").Point[]} points
  * @returns {CentreAndZoom}
  */
-function getCentreAndZoom(points) {
+export function getCentreAndZoom(points) {
     const bbox = getBoundingBox(points);
 
     /** @type {[number, number]} */

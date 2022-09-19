@@ -22,8 +22,8 @@ export function TrackEdit ({ track, addTrack }) {
     const [ zoom, setZoom ] = useState(initialZoom);
     const [ mode, setMode ] = useState("rest");
     const [ tempPoint, setTempPoint ] = useState(/** @type {import("../util/gpx").Point?} */(null));
-    const [ lines, setLines ]  = useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
-    const [ newTrackPoints, setNewTrackPoints ]  = useSavedState("passage-planner.newTrackPoints", /** @type {import("../util/gpx").Point[]} */([]));
+    const [ lines, setLines ] = useState([]); // useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
+    const [ newTrackPoints, setNewTrackPoints ] = useState([]); // useSavedState("passage-planner.newTrackPoints", /** @type {import("../util/gpx").Point[]} */([]));
 
     const trackPoints = track ? track.segments.flat() : [];
 
@@ -84,6 +84,7 @@ export function TrackEdit ({ track, addTrack }) {
         <div>
             <button onClick={() => setMode("add-construction-line")} disabled={mode==="add-construction-line"}>Add Construction Line</button>
             <button onClick={() => setMode(mode==="draw-track"?"rest":"draw-track")}>{mode==="draw-track"?"Finish":"Draw Track"}</button>
+            {mode==="draw-track"&&<button onClick={() => setNewTrackPoints(tp => tp.slice(0, -1))} disabled={newTrackPoints.length === 0}>Undo Point</button>}
             <button onClick={() => addTrack({ ...track, segments: [ ...track.segments, newTrackPoints ]})}>Save Track</button>
             <div style={{display:"flex"}}>
                 <StaticMap centre={centre} zoom={zoom} width={800} height={800} onClick={handleClick}>
@@ -120,7 +121,7 @@ export function TrackEdit ({ track, addTrack }) {
                     </tr>
                     {
                         newTrackPoints.map((p,i) => {
-                            const leg = getLegByIndex(newTrackPoints, i);
+                            const leg = getLegByIndex([trackPoints[l], ...newTrackPoints], i+1);
                             return (
                                 <tr key={i}>
                                     <td>New</td>
@@ -143,10 +144,12 @@ export function TrackEdit ({ track, addTrack }) {
 
 /**
  *
- * @param {Date?} [value]
+ * @param {string|Date?} [value]
  */
 function inputDateTime (value) {
     if (!value) return undefined;
+
+    if (typeof value === "string") value = new Date(value);
 
     return `${value.getFullYear()}-${pad2(value.getMonth()+1)}-${pad2(value.getDate())}T${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
 }

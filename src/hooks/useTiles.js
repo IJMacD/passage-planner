@@ -8,7 +8,7 @@ const TILE_SIZE = 265;
  * @param {number} zoom
  * @param {number} width
  * @param {number} height
- * @param {Layer} layer
+ * @param {import("../Layers/CanvasTileLayer").TileJSON} layer
  */
 export function useTiles(centre, zoom, width, height, layer) {
     const tiles = [];
@@ -20,11 +20,10 @@ export function useTiles(centre, zoom, width, height, layer) {
         const tileOffsetX = lon2tile(centre[0], zoom) - Math.floor(tileCountX / 2);
         const tileOffsetY = lat2tile(centre[1], zoom) - Math.floor(tileCountY / 2);
 
-        const layerBounds = layer.bounds.split(",");
-        const layerMinX = lon2tile(+layerBounds[0], zoom);
-        const layerMinY = lat2tile(+layerBounds[3], zoom);
-        const layerMaxX = lon2tile(+layerBounds[2], zoom);
-        const layerMaxY = lat2tile(+layerBounds[1], zoom);
+        const layerMinX = lon2tile(layer.bounds[0], zoom);
+        const layerMinY = lat2tile(layer.bounds[3], zoom);
+        const layerMaxX = lon2tile(layer.bounds[2], zoom);
+        const layerMaxY = lat2tile(layer.bounds[1], zoom);
 
         for (let i = 0; i < tileCountX; i++) {
             for (let j = 0; j < tileCountY; j++) {
@@ -32,7 +31,7 @@ export function useTiles(centre, zoom, width, height, layer) {
                 const y = tileOffsetY + j;
 
                 if (x >= layerMinX && x <= layerMaxX && y >= layerMinY && y <= layerMaxY) {
-                    const url = `${layer.baseURL}/${zoom}/${x}/${y}.png`;
+                    const url = formatTileURL(layer, zoom, x, y);
                     tiles.push({ x, y, url });
                 }
             }
@@ -51,6 +50,17 @@ export function useTiles(centre, zoom, width, height, layer) {
     }
 
     return resultRef.current;
+}
+
+/**
+ * @param {import("../Layers/TileMapLayer").TileJSON} layer
+ * @param {number} z
+ * @param {number} x
+ * @param {number} y
+ */
+export function formatTileURL(layer, z, x, y) {
+    const template = layer.tiles[Math.random()*layer.tiles.length|0];
+    return template.replace(/{([xyz])}/g, (_, t) => ({z,x,y}[t]));
 }
 
 /**

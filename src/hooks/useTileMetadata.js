@@ -10,7 +10,7 @@ export function useTileMetadata(baseURL) {
 
   useEffect(() => {
     if (baseURL) {
-      fetch(`${baseURL}/metadata.json`).then(r => r.json()).then(setMetadata);
+      fetch(`${baseURL}/manifest.json`).then(r => r.json()).then(setMetadata);
     } else {
       setMetadata(null);
     }

@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
 import { LightDemo } from "../Components/LightDemo";
 import { StaticMap } from "../Components/StaticMap";
-import { useBasemap } from "../hooks/useBasemap";
 import { useSavedState } from "../hooks/useSavedState";
+import { useTileLayer } from "../hooks/useTileLayer";
 import { CanvasTileLayer } from "../Layers/CanvasTileLayer";
 import { DebugLayer } from "../Layers/DebugLayer";
 
 function Test () {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
     const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
-    const basemapLayer = useBasemap();
+    const basemapLayer = useTileLayer(localStorage.getItem("passagePlanner.backgroundUrl"));
 
     return (
         <div style={{padding: "1em"}}>

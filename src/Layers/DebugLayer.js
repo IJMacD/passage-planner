@@ -6,7 +6,7 @@ import { getBounds } from "../util/projection";
 
 const TILE_SIZE = 256;
 
-export function DebugLayer ({}) {
+export function DebugLayer () {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     const context = useContext(StaticMapContext);
@@ -29,11 +29,11 @@ export function DebugLayer ({}) {
 
         const fontSize = 20;
 
-        const lonLatBounds = getBounds(context);
-        const minTileX = lon2tile(lonLatBounds[0], context.zoom);
-        const minTileY = lat2tile(lonLatBounds[3], context.zoom);
-        const maxTileX = lon2tile(lonLatBounds[2], context.zoom);
-        const maxTileY = lat2tile(lonLatBounds[1], context.zoom);
+        const lonLatBounds = getBounds({ centre, zoom, width, height });
+        const minTileX = lon2tile(lonLatBounds[0], zoom);
+        const minTileY = lat2tile(lonLatBounds[3], zoom);
+        const maxTileX = lon2tile(lonLatBounds[2], zoom);
+        const maxTileY = lat2tile(lonLatBounds[1], zoom);
 
         const tileWidth = TILE_SIZE * devicePixelRatio;
         const tileHeight = TILE_SIZE * devicePixelRatio;
@@ -41,8 +41,13 @@ export function DebugLayer ({}) {
         const tileCountX = maxTileX - minTileX;
         const tileCountY = maxTileY - minTileY;
 
-        const xOffset = (lon2tileFrac(lonLatBounds[0], context.zoom) - minTileX) * tileWidth;
-        const yOffset = (lat2tileFrac(lonLatBounds[3], context.zoom) - minTileY) * tileHeight;
+        const xOffset = (lon2tileFrac(lonLatBounds[0], zoom) - minTileX) * tileWidth;
+        const yOffset = (lat2tileFrac(lonLatBounds[3], zoom) - minTileY) * tileHeight;
+
+        // console.warn("DebugLayer not optimised for non-integer tile offsets");
+        // const projection = tileXY2CanvasXY(context);
+        // const [ left, top ] = projection(minTileX, minTileY);
+        // // ctx.translate(-left, -top);
 
         // Gridlines
         ctx.beginPath();
@@ -101,7 +106,7 @@ export function DebugLayer ({}) {
         ctx.fillText(`${minLat.toFixed(3)}`, pxWidth / 2, pxHeight);
 
 
-    }, [centre, zoom, pxWidth, pxHeight]);
+    }, [centre, zoom, pxWidth, pxHeight, width, height]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0  }} />;
 }

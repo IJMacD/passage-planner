@@ -1,3 +1,13 @@
+import React from "react";
+
+/**
+ *
+ * @param {object} props
+ * @param {string[]} props.values
+ * @param {(values: string[]) => void} props.onChange
+ * @param {{value: string; label: string }[]} props.options
+ * @returns
+ */
 export function ToggleSelect ({ values, onChange, options }) {
     function handleChange (e) {
         if (e.target.checked) {

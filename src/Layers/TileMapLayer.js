@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { lat2tile, lon2tile } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
+import { tileXY2CanvasXY } from "../util/projection";
+import { formatTileURL } from "../hooks/useTiles";
 
 const TILE_SIZE = 256;
 
@@ -26,14 +28,43 @@ const TILE_SIZE = 256;
  */
 
 /**
+ * @typedef TileJSON
+ * @prop {string} attribution "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
+ * @prop {string} tilejson "2.0.0",
+ * @prop {string} name "Pastel",
+ * @prop {number} minzoom 0,
+ * @prop {number} maxzoom 22,
+ * @prop {[number,number,number,number]} bounds [
+        -180,
+        -85.0511,
+        180,
+        85.0511
+    ],
+ * @prop {string} format "png",
+ * @prop {string} type "baselayer",
+ * @prop {[number,number,number]} center [
+        0,
+        0,
+        0
+    ],
+ * @prop {string} color "#F2F2F2",
+ * @prop {string[]} tiles [
+        "https://api.maptiler.com/maps/pastel/{z}/{x}/{y}.png?key=x0dGPmUo4q725h9LSKms"
+    ],
+ * @prop {string} logo "https://api.maptiler.com/resources/logo.svg"
+ */
+
+
+/**
  *
  * @param {object} props
- * @param {Layer} props.layer
+ * @param {TileJSON} props.layer
  * @returns
  */
 
 export function TileMapLayer ({ layer }) {
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+    const context = useContext(StaticMapContext);
+    const { centre, zoom, width, height } = context;
 
     if (zoom < +layer.minzoom || zoom > +layer.maxzoom) {
         return null;
@@ -45,24 +76,28 @@ export function TileMapLayer ({ layer }) {
     const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
     const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
 
+    console.warn("TileMapLayer not optimised for non-integer tile offsets");
+    const projection = tileXY2CanvasXY(context);
+    const [ left, top ] = projection(tileOffsetX, tileOffsetY);
+
     return (
-        <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, lineHeight: 0, }}>
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 0}/${tileOffsetY + 0}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 1}/${tileOffsetY + 0}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 2}/${tileOffsetY + 0}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 3}/${tileOffsetY + 0}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 0}/${tileOffsetY + 1}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 1}/${tileOffsetY + 1}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 2}/${tileOffsetY + 1}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 3}/${tileOffsetY + 1}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 0}/${tileOffsetY + 2}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 1}/${tileOffsetY + 2}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 2}/${tileOffsetY + 2}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 3}/${tileOffsetY + 2}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 0}/${tileOffsetY + 3}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 1}/${tileOffsetY + 3}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 2}/${tileOffsetY + 3}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
-            <img src={`${layer.baseURL}/${zoom}/${tileOffsetX + 3}/${tileOffsetY + 3}.png`} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+        <div style={{ width: "100%", height: "100%", position: "absolute", top, left, lineHeight: 0, }}>
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 0, tileOffsetY + 0)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 1, tileOffsetY + 0)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 2, tileOffsetY + 0)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 3, tileOffsetY + 0)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 0, tileOffsetY + 1)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 1, tileOffsetY + 1)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 2, tileOffsetY + 1)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 3, tileOffsetY + 1)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 0, tileOffsetY + 2)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 1, tileOffsetY + 2)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 2, tileOffsetY + 2)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 3, tileOffsetY + 2)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 0, tileOffsetY + 3)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 1, tileOffsetY + 3)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 2, tileOffsetY + 3)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
+            <img src={formatTileURL(layer, zoom, tileOffsetX + 3, tileOffsetY + 3)} style={{ width: TILE_SIZE, height: TILE_SIZE }} alt="" />
         </div>
     );
 }

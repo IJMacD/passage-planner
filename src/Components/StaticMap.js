@@ -24,7 +24,7 @@ export const StaticMapContext = React.createContext({
  * @param {number} [props.width]
  * @param {number} [props.height]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
- * @param {React.ReactChild[]} [props.children]
+ * @param {React.ReactChildren} [props.children]
  * @returns
  */
 export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, children }) {

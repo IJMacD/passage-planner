@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
@@ -10,6 +10,8 @@ import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
 // import { DebugLayer } from "../Layers/DebugLayer";
 import { PolarPlotSVG } from "./PolarPlotSVG";
 import { ControlsLayer } from "../Layers/ControlsLayer";
+
+import "./TrackDetails.css";
 
 const playSpeed = 60; // 1 minute per second
 
@@ -25,6 +27,8 @@ export function TrackDetails ({ track }) {
     const [ selectedTime, setSelectedTime ] = useState(0);
     const [ isPlaying, setIsPlaying ] = useState(false);
     const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
+    /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
+    const containerRef = useRef(null)
 
     const trackPoints = track ? track.segments.flat() : [];
     const startTime = +(trackPoints[0]?.time || 0);
@@ -105,18 +109,19 @@ export function TrackDetails ({ track }) {
         speed: v => `${(v * 3600000).toFixed(1)} knots`,
     };
 
+    const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800)
+
     return (
-        <div>
-            <div style={{display:"flex"}}>
-                <StaticMap centre={centre} zoom={zoom} width={800} height={800}>
-                    <WorldLayer />
-                    <HongKongMarineLayer />
-                    {/* <DebugLayer /> */}
-                    <PathLayer paths={[{ points: trackPoints }]} />
-                    <MarkerLayer markers={markers} />
-                    <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
-                </StaticMap>
-                <div>
+        <div className="TrackDetails" ref={containerRef}>
+            <StaticMap centre={centre} zoom={zoom} width={size} height={size}>
+                <WorldLayer />
+                <HongKongMarineLayer />
+                {/* <DebugLayer /> */}
+                <PathLayer paths={[{ points: trackPoints }]} />
+                <MarkerLayer markers={markers} />
+                <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
+            </StaticMap>
+            <div>
                 <div>
                     <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{width:400}} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
@@ -126,22 +131,21 @@ export function TrackDetails ({ track }) {
                     </label>
                     <p>{new Date(selectedPoint?.time||0).toLocaleString()}</p>
                 </div>
-                    <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />
-                    <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} />
-                    <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} />
-                    <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} />
-                    <PolarPlotSVG
-                        values={instantSpeedHeadingData.slice(0, selectedLegIndex+1)}
-                        marker={selectedLeg?.heading}
-                        markerValue={selectedLeg?.distance/selectedLeg?.duration}
-                        width={250}
-                        height={250}
-                        color={colorFns.rainbowWithOpacity(0.3)}
-                        mode="stacked-sectors"
-                        size={10}
-                        labelFn={labelFns.speed}
-                    />
-                </div>
+                <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />
+                <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} />
+                <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} />
+                <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} />
+                <PolarPlotSVG
+                    values={selectedLegIndex > 0 ? instantSpeedHeadingData.slice(0, selectedLegIndex+1) : instantSpeedHeadingData}
+                    marker={selectedLeg?.heading}
+                    markerValue={selectedLeg?.distance/selectedLeg?.duration}
+                    width={250}
+                    height={250}
+                    color={colorFns.rainbow}
+                    mode="stacked-sectors"
+                    size={2}
+                    labelFn={labelFns.speed}
+                />
             </div>
         </div>
     );

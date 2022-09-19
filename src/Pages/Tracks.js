@@ -36,6 +36,10 @@ function Tracks () {
         setTrack({ ...trackSerialized, segments });
     }
 
+    function removeTrack (index) {
+        setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index+1) ]);
+    }
+
     /**
      * @param {Track} track
      */
@@ -112,6 +116,27 @@ function Tracks () {
         }
     }
 
+    function handleDownload () {
+        if (!track) return;
+
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.download = `${track.name}.gpx`;
+
+        const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
+        const serializer = new XMLSerializer();
+
+        const blob = new Blob([serializer.serializeToString(gpxDoc)]);
+
+        a.href = URL.createObjectURL(blob);
+
+        a.click();
+
+        URL.revokeObjectURL(a.href);
+
+        document.body.removeChild(a);
+    }
+
     return (
         <div style={{padding: "1em"}}>
             <h1>Tracks</h1>
@@ -120,11 +145,19 @@ function Tracks () {
                 <div>
                     <ul>
                         {
-                            savedTracks.map((t, i) => <li key={i}>{t.name} <button onClick={() => loadTrack(t)}>Load</button> <button onClick={() => uploadTrack(t)}>Upload</button></li>)
+                            savedTracks.map((t, i) => (
+                                <li key={i}>
+                                    {t.name}{' '}
+                                    <button onClick={() => loadTrack(t)}>Load</button>{' '}
+                                    <button onClick={() => uploadTrack(t)}>Upload</button>{' '}
+                                    <button onClick={() => removeTrack(i)}>Remove</button>{' '}
+                                </li>)
+                            )
                         }
                     </ul>
                     <button onClick={() => setTrack(null)}>Clear</button>
                     <button onClick={() => setEditMode(!editMode)}>{editMode?"View":"Edit"}</button>
+                    <button onClick={handleDownload}>Download</button>
                     <br/>
                     <input type="file" onChange={handleFileLoad} />
                     {/* <input value={track.name} onChange={e => setTrack(t => ({ ...t, name: e.target.value }))} /> */}
