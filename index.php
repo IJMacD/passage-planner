@@ -230,6 +230,9 @@ function handleAPILogTrackPost ($id) {
 
     $stmt->execute([ "id" => $id, "gpx" => $gpx ]);
 
+    // Pre-calcualte bounds
+    calculateTrackBounds($id);
+
     header("Content-Type: application/json");
     echo json_encode(["result" => "OK"]);
 }

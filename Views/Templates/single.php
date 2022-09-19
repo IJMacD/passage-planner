@@ -9,7 +9,7 @@
     <dt>Total Distance</dt>
     <dd><?=$entry->total_distance?> NM</dd>
     <dt>Total Duration</dt>
-    <dd><?=$entry->total_duration->format("%a:%H:%I:%S")?> <?=getDurationSeconds($entry->total_duration)?></dd>
+    <dd><?=$entry->total_duration->format("%a:%H:%I:%S")?></dd>
     <dt>Average Speed</dt>
     <dd><?=round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2)?> knots</dd>
     <dt>Trophies</dt>
