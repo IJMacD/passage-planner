@@ -19,8 +19,9 @@ const playSpeed = 60; // 1 minute per second
  *
  * @param {object} props
  * @param {import("../util/gpx").Track?} props.track
+ * @param {import("../util/gpx").Track[]} [props.additionalTracks]
  */
-export function TrackDetails ({ track }) {
+export function TrackDetails ({ track, additionalTracks }) {
     const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
     const [ centre, setCentre ] = useState(initialCentre);
     const [ zoom, setZoom ] = useState(initialZoom);
@@ -109,7 +110,12 @@ export function TrackDetails ({ track }) {
         speed: v => `${(v * 3600000).toFixed(1)} knots`,
     };
 
-    const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800)
+    const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
+
+    /** @type {import("../Layers/PathLayer").Path[]} */
+    const paths = additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || [];
+
+    paths.push({ points: trackPoints });
 
     return (
         <div className="TrackDetails" ref={containerRef}>
@@ -117,7 +123,7 @@ export function TrackDetails ({ track }) {
                 <WorldLayer />
                 <HongKongMarineLayer />
                 {/* <DebugLayer /> */}
-                <PathLayer paths={[{ points: trackPoints }]} />
+                <PathLayer paths={paths} />
                 <MarkerLayer markers={markers} />
                 <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
             </StaticMap>

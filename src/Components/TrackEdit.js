@@ -15,14 +15,15 @@ import { latlon2bearing, latlon2nm } from "../util/geo";
  * @param {object} props
  * @param {import("../util/gpx").Track?} props.track
  * @param {(track: import("../util/gpx").Track) => void} props.addTrack
+ * @param {import("../util/gpx").Track[]} [props.additionalTracks]
  */
-export function TrackEdit ({ track, addTrack }) {
+export function TrackEdit ({ track, addTrack, additionalTracks }) {
     const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
     const [ centre, setCentre ] = useState(initialCentre);
     const [ zoom, setZoom ] = useState(initialZoom);
     const [ mode, setMode ] = useState("rest");
     const [ tempPoint, setTempPoint ] = useState(/** @type {import("../util/gpx").Point?} */(null));
-    const [ lines, setLines ] = useState([]); // useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
+    const [ lines, setLines ] = useState(additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || []); // useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
     const [ newTrackPoints, setNewTrackPoints ] = useState([]); // useSavedState("passage-planner.newTrackPoints", /** @type {import("../util/gpx").Point[]} */([]));
 
     const trackPoints = track ? track.segments.flat() : [];

@@ -15,6 +15,8 @@ const KPH_TO_KNOTS = 0.539957;
 function Tracks () {
     const [ savedTracks, setSavedTracks ] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
 
+    const [ bgCheckboxes, setBgCheckboxes ] = useState(() => savedTracks.map(() => false));
+
     const [ track, setTrack ] = useState(/** @type {Track?} */(null));
 
     const [ editMode, setEditMode ] = useState(false);
@@ -137,6 +139,18 @@ function Tracks () {
         document.body.removeChild(a);
     }
 
+    function toggleBgCheckbox (index, checked) {
+        setBgCheckboxes(checkboxes => {
+            const updated = checkboxes.slice();
+            updated[index] = checked;
+            return updated;
+        });
+    }
+
+    /** @type {Track[]} */
+    // @ts-ignore
+    const bgTracks = bgCheckboxes.map((c,i)=>c?savedTracks[i]:null).filter(x => x);
+
     return (
         <div style={{padding: "1em"}}>
             <h1>Tracks</h1>
@@ -147,6 +161,7 @@ function Tracks () {
                         {
                             savedTracks.map((t, i) => (
                                 <li key={i}>
+                                    <input type="checkbox" checked={bgCheckboxes[i]||false} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
                                     {t.name}{' '}
                                     <button onClick={() => loadTrack(t)}>Load</button>{' '}
                                     <button onClick={() => uploadTrack(t)}>Upload</button>{' '}
@@ -164,8 +179,8 @@ function Tracks () {
                 </div>
                 {
                     editMode ?
-                    <TrackEdit track={track} addTrack={track => setSavedTracks(tracks => [...savedTracks, track])} /> :
-                    <TrackDetails track={track} />
+                    <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} /> :
+                    <TrackDetails track={track} additionalTracks={bgTracks} />
                 }
             </div>
 
