@@ -2,6 +2,7 @@
 
 class LogbookEntry implements JsonSerializable {
     var $id;
+    /** @var number $total_distance Nautical Miles */
     var $total_distance;
     var $start_location;
     var $start_time;

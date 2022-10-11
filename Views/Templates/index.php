@@ -44,7 +44,7 @@ $records = getRecordSettingTracks();
                 <td rowspan="2"><?=round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2)?> knots</td>
                 <td rowspan="2"><?php
                     $trophies = getTrophies($entry->id);
-                    view_trophies($trophies, $entry->id, $records);
+                    if ($trophies) view_trophies($trophies, $entry->id, $records);
                 ?></td>
             </tr>
             <tr>

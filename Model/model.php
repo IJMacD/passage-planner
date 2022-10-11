@@ -29,20 +29,23 @@ function getEntry ($id) {
 function getTrackBounds ($id) {
     global $db;
 
-    $stmt = $db->prepare("SELECT bounds_W AS minLon, bounds_S AS minLat, bounds_E AS maxLon, bounds_N AS maxLat FROM logbook_tracks WHERE `logbook_id` = :id AND bounds_W IS NOT NULL");
+    $stmt = $db->prepare("SELECT bounds_W AS minLon, bounds_S AS minLat, bounds_E AS maxLon, bounds_N AS maxLat FROM logbook_tracks WHERE `logbook_id` = :id ORDER BY uploaded_date DESC LIMIT 1");
 
     $stmt->execute([ "id" => $id ]);
 
-    if ($stmt->rowCount() === 0) {
+    $result = $stmt->fetch();
+
+    if ($stmt->rowCount() === 0 || $result['bounds_w'] == null) {
         if (calculateTrackBounds($id)) {
             $stmt->execute([ "id" => $id ]);
+            return $stmt->fetch();
         }
         else {
             return false;
         }
     }
 
-    return $stmt->fetch();
+    return $result;
 }
 
 function calculateTrackBounds ($id) {
@@ -101,7 +104,7 @@ function getOverallBounds () {
             MAX(bounds_E) AS maxLon,
             MAX(bounds_N) AS maxLat
         FROM
-            logbook_tracks
+            logbook_entry_track
     ");
 
     $stmt->execute();
@@ -116,18 +119,15 @@ function getTrophies ($id) {
         "WITH Records AS (
             SELECT
                 *,
-                MIN(bounds_W) OVER (ORDER BY l.start_time) AS minLon,
-                MIN(bounds_S) OVER (ORDER BY l.start_time) AS minLat,
-                MAX(bounds_E) OVER (ORDER BY l.start_time) AS maxLon,
-                MAX(bounds_N) OVER (ORDER BY l.start_time) AS maxLat,
-                MAX(l.total_distance) OVER (ORDER BY l.start_time) AS maxDistance,
-                MAX(TIMESTAMPDIFF(SECOND, start_time, end_time)) OVER (ORDER BY l.start_time) AS maxDuration,
-                MAX(l.total_distance / TIMESTAMPDIFF(SECOND, start_time, end_time)) OVER (ORDER BY l.start_time) AS maxSpeed
+                MIN(bounds_W) OVER (ORDER BY start_time) AS minLon,
+                MIN(bounds_S) OVER (ORDER BY start_time) AS minLat,
+                MAX(bounds_E) OVER (ORDER BY start_time) AS maxLon,
+                MAX(bounds_N) OVER (ORDER BY start_time) AS maxLat,
+                MAX(total_distance) OVER (ORDER BY start_time) AS maxDistance,
+                MAX(TIMESTAMPDIFF(SECOND, start_time, end_time)) OVER (ORDER BY start_time) AS maxDuration,
+                MAX(total_distance / TIMESTAMPDIFF(SECOND, start_time, end_time)) OVER (ORDER BY start_time) AS maxSpeed
             FROM
-                logbook_tracks AS t
-                INNER JOIN
-                logbook AS l
-                ON t.logbook_id = l.id
+                logbook_entry_track
         )
         SELECT
             bounds_W = minLon AS Westernmost,
@@ -156,47 +156,32 @@ function getRecordSettingTracks () {
                 MIN(bounds_S) AS minLat,
                 MAX(bounds_E) AS maxLon,
                 MAX(bounds_N) AS maxLat,
-                MAX(l.total_distance) AS maxDistance,
+                MAX(total_distance) AS maxDistance,
                 MAX(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS maxDuration,
-                MAX(l.total_distance / TIMESTAMPDIFF(SECOND, start_time, end_time)) AS maxSpeed
-            FROM
-                logbook_tracks AS t
-                INNER JOIN
-                logbook AS l
-                ON l.id = t.logbook_id
+                MAX(total_distance / TIMESTAMPDIFF(SECOND, start_time, end_time)) AS maxSpeed
+            FROM logbook_entry_track
         )
         SELECT
             -- *,
-            (SELECT logbook_id FROM logbook_tracks WHERE bounds_W = minLon) AS Westernmost,
-            (SELECT logbook_id FROM logbook_tracks WHERE bounds_S = minLat) AS Southernmost,
-            (SELECT logbook_id FROM logbook_tracks WHERE bounds_E = maxLon) AS Easternmost,
-            (SELECT logbook_id FROM logbook_tracks WHERE bounds_N = maxLat) AS Northernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_W = minLon) AS Westernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_S = minLat) AS Southernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_E = maxLon) AS Easternmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_N = maxLat) AS Northernmost,
             (
                 SELECT logbook_id
-                FROM
-                    logbook_tracks AS t
-                    INNER JOIN
-                    logbook AS l
-                    ON l.id = t.logbook_id
-                WHERE l.total_distance = maxDistance
+                FROM logbook_entry_track AS t
+                WHERE t.total_distance = maxDistance
             ) AS Farthest,
             (
                 SELECT logbook_id
-                FROM
-                    logbook_tracks AS t
-                    INNER JOIN
-                    logbook AS l
-                    ON l.id = t.logbook_id
-                WHERE TIMESTAMPDIFF(SECOND, l.start_time, l.end_time) = maxDuration
+                FROM logbook_entry_track AS t
+                WHERE TIMESTAMPDIFF(SECOND, t.start_time, t.end_time) = maxDuration
             ) AS Longest,
             (
                 SELECT logbook_id
-                FROM
-                    logbook_tracks AS t
-                    INNER JOIN
-                    logbook AS l
-                    ON l.id = t.logbook_id
-                WHERE (l.total_distance / TIMESTAMPDIFF(SECOND, l.start_time, l.end_time)) = maxSpeed
+                FROM logbook_entry_track AS t
+                WHERE
+                    (total_distance / TIMESTAMPDIFF(SECOND, t.start_time, t.end_time)) = maxSpeed
             ) AS Fastest
         FROM Records
     ");

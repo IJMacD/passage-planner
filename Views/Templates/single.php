@@ -15,7 +15,7 @@
     <dt>Trophies</dt>
     <dd><?php
         $trophies = getTrophies($entry->id);
-        view_trophies($trophies, $entry->id, getRecordSettingTracks());
+        if ($trophies) view_trophies($trophies, $entry->id, getRecordSettingTracks());
     ?></dd>
 </dl>
 <div id="map"></div>
