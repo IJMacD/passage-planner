@@ -20,7 +20,7 @@
     "proxy": "lcp --proxyUrl https://data.aishub.net",
     "deploy": "wsl ./deploy.sh",
     "build:library": "webpack --config webpack.library.config.js",
-    "deploy:libary": "wsl rsync -av dist/ ../logbook/static/"
+    "deploy:library": "wsl rsync -av dist/ ../logbook/static/vendor/"
   },
   "eslintConfig": {
     "extends": [

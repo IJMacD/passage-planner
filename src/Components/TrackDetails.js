@@ -12,6 +12,8 @@ import { PolarPlotSVG } from "./PolarPlotSVG";
 import { ControlsLayer } from "../Layers/ControlsLayer";
 
 import "./TrackDetails.css";
+import { useTides } from "../hooks/useTides";
+import { VectorFieldLayer } from "../Layers/VectorFieldLayer";
 
 const playSpeed = 60; // 1 minute per second
 
@@ -31,9 +33,15 @@ export function TrackDetails ({ track, additionalTracks }) {
     /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
     const containerRef = useRef(null)
 
+    // const [ startPlaceName, setStartPlaceName ] = useState("");
+    // const [ endPlaceName, setEndPlaceName ] = useState("");
+
     const trackPoints = track ? track.segments.flat() : [];
     const startTime = +(trackPoints[0]?.time || 0);
     const trackLength = +(trackPoints[trackPoints.length-1]?.time||0) - startTime;
+
+    const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
+    const selectedDate = new Date(selectedPoint?.time || new Date());
 
     // If track changes then recentre
     useEffect(() => {
@@ -65,6 +73,24 @@ export function TrackDetails ({ track, additionalTracks }) {
         }
     }, [isPlaying, followPlayingCentre, track, setCentre, startTime, trackLength]);
 
+    // useEffect(() => {
+    //     const trackPoints = track ? track.segments.flat() : [];
+
+    //     if (trackPoints.length < 1) {
+    //         return
+    //     }
+
+    //     const startPoint = trackPoints[0];
+    //     const endPoint = trackPoints[trackPoints.length - 1];
+
+    //     getPlaceName(startPoint).then(setStartPlaceName);
+
+    //     getPlaceName(endPoint).then(setEndPlaceName);
+
+    // }, [track]);
+
+    const tideVectors = useTides(selectedDate);
+
     if (!track) {
         return null;
     }
@@ -74,7 +100,6 @@ export function TrackDetails ({ track, additionalTracks }) {
     // const selectedPoint = trackPoints[selectedPointIndex];
     // const selectedLeg = trackLegs[selectedPointIndex];
 
-    const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
     const selectedLegIndex = findLegIndexByTime(trackLegs, startTime + selectedTime);
     const selectedLeg = trackLegs[selectedLegIndex] || trackLegs[0];
 
@@ -117,12 +142,16 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     paths.push({ points: trackPoints });
 
+    // const startPoint = trackPoints[0];
+    // const endPoint = trackPoints[trackPoints.length - 1];
+
     return (
         <div className="TrackDetails" ref={containerRef}>
             <StaticMap centre={centre} zoom={zoom} width={size} height={size}>
                 <WorldLayer />
                 <HongKongMarineLayer />
                 {/* <DebugLayer /> */}
+                { tideVectors && <VectorFieldLayer field={tideVectors} />}
                 <PathLayer paths={paths} />
                 <MarkerLayer markers={markers} />
                 <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
@@ -135,7 +164,7 @@ export function TrackDetails ({ track, additionalTracks }) {
                         <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
                         Follow
                     </label>
-                    <p>{new Date(selectedPoint?.time||0).toLocaleString()}</p>
+                    <p>{selectedDate.toLocaleString()}</p>
                 </div>
                 <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} />
                 <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} />
@@ -152,6 +181,8 @@ export function TrackDetails ({ track, additionalTracks }) {
                     size={2}
                     labelFn={labelFns.speed}
                 />
+                {/* <p>Start: {startPlaceName} ({startPoint.lon},{startPoint.lat})</p>
+                <p>End: {endPlaceName} ({endPoint.lon},{endPoint.lat})</p> */}
             </div>
         </div>
     );

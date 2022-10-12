@@ -1,30 +1,22 @@
 import { useMemo } from "react";
-import { useFetchCSV } from "./useFetchCSV";
+import { formatDateTimeCompact } from "../util/date";
+import { useFetch } from "./useFetch";
 
-const today = formatDate();
-const start_dt = `${today}%2000:00:00`;
-const end_dt = `${today}%2023:45:00`;
-const mode = "Surface";
-const tideCSVURL = `https://passage.ijmacd.com/tides/en/download_csv.php?start_dt=${start_dt}&end_dt=${end_dt}&mode=${mode}`;
+const tidesJsonURL = `https://passage.ijmacd.com/tides/data/static_geojson.php?mode=S&time=`
 
+/**
+ * @param {Date} time
+ */
 export function useTides (time) {
-    const tideCSV = useFetchCSV(tideCSVURL);
+    const fifteenMinOffset = +time % (15 * 60 * 1000);
+    const roundedDate = new Date(+time - fifteenMinOffset);
+
+    const [tideJSON] = useFetch(tidesJsonURL + formatDateTimeCompact(roundedDate, ""));
 
     const tideVectors = useMemo(() => {
-        // const timeCol = tideCSV.headers.indexOf("Time");
-        const timeCol = 1;
-        const latCol = 4;
-        const lonCol = 5;
-        const magCol = 2;
-        const dirCol = 3;
-        const tideRowsAtTime = tideCSV.rows.filter(r => r[timeCol] === time);
-
-        return tideRowsAtTime.map(row => ({ latitude: +row[latCol], longitude: +row[lonCol], magnitude: +row[magCol], direction: +row[dirCol] }));
-    }, [time, tideCSV]);
+        if (!tideJSON) return null;
+        return tideJSON.features.map(feature => ({ latitude: feature.geometry.coordinates[1], longitude: feature.geometry.coordinates[0], magnitude: +feature.properties.knot, direction: +feature.properties.deg }));
+    }, [tideJSON]);
 
     return tideVectors;
-}
-
-function formatDate (date = new Date()) {
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 }

@@ -14,6 +14,7 @@ import { BasicMap } from '../Components/BasicMap';
 import React from 'react';
 import { LightLayer } from '../Layers/LightLayer';
 import { useTileJSONList } from '../hooks/useTileJSONList';
+import { formatDate, makeDateTime } from '../util/date';
 /* @ts-ignore */
 
 const layers = [
@@ -32,8 +33,9 @@ function Live() {
   // const [ bounds, setBounds ] = useSavedState("passagePlanner.bounds", [-180,-85.05,180,85.05]);
   const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0, 0]));
   const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 4);
-  const [time, setTime] = useSavedState("passagePlanner.time", "09:00");
-  const tideVectors = useTides(time);
+  const [date, setDate] = useState(() => formatDate());
+  const [time, setTime] = useState("09:00");
+  const tideVectors = useTides(makeDateTime(date, time));
   const [animateTime, setAnimateTime] = useState(false);
   const vesselsAH = useAHAIS(centre, zoom);
   const vesselsWS = useWSAIS();
@@ -42,7 +44,7 @@ function Live() {
   const [newTileLayerURL, setNewTileLayerURL] = useState("");
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", /** @type {string[]} */([]));
   const tileLayers = useTileJSONList(tileLayerURLs);
-  const [selectedTileLayers, setSelectedTileLayers] = useState(/** @type {string[]} */([]));
+  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
 
   useEffect(() => {
     if (animateTime) {
@@ -94,6 +96,10 @@ function Live() {
           <input type="number" value={zoom} onChange={e => setZoom(+e.target.value)} style={{ width: 80 }} />
         </label>
         <label>
+          Date
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: 120 }} />
+        </label>
+        <label>
           Time
           <input value={time} onChange={e => setTime(e.target.value)} style={{ width: 80 }} />
         </label>
@@ -122,10 +128,10 @@ function Live() {
         }
         {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
         {selectedLayers.includes("debug") && <DebugLayer />}
+        {selectedLayers.includes("lights") && <LightLayer />}
         {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} />}
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
         {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} />}
-        {selectedLayers.includes("lights") && <LightLayer />}
       </BasicMap>
     </div>
   );

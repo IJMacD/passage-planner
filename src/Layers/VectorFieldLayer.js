@@ -1,8 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
 import { StaticMapContext } from "../Components/StaticMap";
-
-const TILE_SIZE = 256;
+import { lonLat2XY } from "../util/projection";
+import React from "react";
 
 /**
  *
@@ -11,10 +10,12 @@ const TILE_SIZE = 256;
  * @returns
  */
 export function VectorFieldLayer ({ field }) {
-    /** @type {import("react").MutableRefObject<HTMLCanvasElement>} */
+    const context = useContext(StaticMapContext);
+
+    /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+    const { width, height } = useContext(StaticMapContext);
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
@@ -24,35 +25,19 @@ export function VectorFieldLayer ({ field }) {
 
         const ctx = canvasRef.current.getContext("2d");
 
-        ctx.canvas.width = pxWidth;
-        ctx.canvas.height = pxHeight;
+        if (ctx) {
+            ctx.canvas.width = pxWidth;
+            ctx.canvas.height = pxHeight;
 
-        const tileWidth = TILE_SIZE * devicePixelRatio;
-        const tileHeight = TILE_SIZE * devicePixelRatio;
+            const projection = lonLat2XY(context);
 
-        const tileCountX = pxWidth / tileWidth;
-        const tileCountY = pxHeight / tileHeight;
+            for (const point of field) {
+                const [ x, y ] = projection(point.longitude, point.latitude);
 
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
-
-        const minLon = tile2long(tileOffsetX, zoom);
-        const minLat = tile2lat(tileOffsetY, zoom);
-        const maxLon = tile2long(tileOffsetX + tileCountX, zoom);
-        const maxLat = tile2lat(tileOffsetY + tileCountY, zoom);
-
-
-        for (const point of field) {
-            const lonFrac = (point.longitude-minLon)/(maxLon-minLon);
-            const latFrac = (point.latitude-minLat)/(maxLat-minLat);
-
-            if (lonFrac >= 0 && lonFrac <= 1 && latFrac >= 0 && latFrac <= 1) {
-                const x = lonFrac * pxWidth;
-                const y = latFrac * pxHeight;
                 const r = 10 * point.magnitude * devicePixelRatio;
                 const t = r / 5;
 
-                ctx.translate(x, y);
+                ctx.translate(x*devicePixelRatio, y*devicePixelRatio);
                 ctx.rotate(point.direction / 180 * Math.PI + Math.PI);
 
                 ctx.beginPath();
@@ -71,7 +56,7 @@ export function VectorFieldLayer ({ field }) {
         }
 
 
-    }, [centre, zoom, pxWidth, pxHeight, field]);
+    }, [context, pxWidth, pxHeight, field]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
 }
