@@ -31,6 +31,8 @@ export function LightFlasher ({ spec, x, y, width, height, fullOpacity = 1 }) {
 
     const fill = COLOUR_MAP[colour] || COLOUR_MAP.W;
 
+    const stroke = fill === COLOUR_MAP.W ? "#000" : (void 0);
+
     // Helper function
     function runCycle (on_period, period, groups, stateA, stateB) {
         const cycle = period / on_period;
@@ -111,7 +113,7 @@ export function LightFlasher ({ spec, x, y, width, height, fullOpacity = 1 }) {
 
     return (
         <svg viewBox="0 0 32 32" style={{width,height,position:"absolute",top,left}}>
-            <ellipse cx={16} cy={16} rx={16} ry={16} style={{fill,opacity,transition:"opacity 0.2s"}} />
+            <ellipse cx={16} cy={16} rx={16} ry={16} style={{fill,opacity,transition:"opacity 0.2s",stroke}} />
         </svg>
     );
 }

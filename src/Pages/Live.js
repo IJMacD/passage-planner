@@ -15,6 +15,9 @@ import React from 'react';
 import { LightLayer } from '../Layers/LightLayer';
 import { useTileJSONList } from '../hooks/useTileJSONList';
 import { formatDate, makeDateTime } from '../util/date';
+import { ParticleLayer } from '../Layers/ParticleLayer';
+import { useWeather } from '../hooks/useWeather';
+import { findForecast } from '../util/weather';
 /* @ts-ignore */
 
 const layers = [
@@ -24,6 +27,7 @@ const layers = [
   { name: "AIS RTLSDR", id: "wsais" },
   { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
+  { name: "Weather", id: "weather" },
 ];
 
 const defaultSelected = ["world", "tiles", "ais", "wsais"];
@@ -34,17 +38,28 @@ function Live() {
   const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0, 0]));
   const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 4);
   const [date, setDate] = useState(() => formatDate());
-  const [time, setTime] = useState("09:00");
-  const tideVectors = useTides(makeDateTime(date, time));
+  const [time, setTime] = useState(() => roundTime());
+  const currentTime = makeDateTime(date, time);
+
+  const tideVectors = useTides(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
   const vesselsAH = useAHAIS(centre, zoom);
   const vesselsWS = useWSAIS();
   const vessels = combineAIS([vesselsAH, vesselsWS]);
 
-  const [newTileLayerURL, setNewTileLayerURL] = useState("");
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", /** @type {string[]} */([]));
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
+
+
+  const weather = useWeather(centre);
+  const weatherForecast = weather && findForecast(weather, currentTime);
+  /** @type {[number,number]?} */
+  const weatherVector = weatherForecast &&
+      [
+          weatherForecast.ForecastWindSpeed * -Math.sin(weatherForecast.ForecastWindDirection/180*Math.PI),
+          weatherForecast.ForecastWindSpeed * Math.cos(weatherForecast.ForecastWindDirection/180*Math.PI)
+      ];
 
   useEffect(() => {
     if (animateTime) {
@@ -74,18 +89,15 @@ function Live() {
   }, [animateTime, setTime]);
 
   function handleAddTileURL() {
-    setTileLayerURLs(urls => [...urls, newTileLayerURL]);
-    setNewTileLayerURL("");
+    const newTileLayerURL = prompt("Enter new TileJSON url", "https://");
+    if (newTileLayerURL) {
+      setTileLayerURLs(urls => [...urls, newTileLayerURL]);
+    }
   }
 
   return (
     <div className="Live">
       <div className="Controls">
-        <label>
-          TileJSON URL
-          <input value={newTileLayerURL} onChange={e => setNewTileLayerURL(e.target.value)} placeholder="https://" />
-        </label>
-        <button onClick={handleAddTileURL}>Add</button>
         <label>
           Centre (
           <input type="number" value={centre[0]} onChange={e => setCentre(c => [+e.target.value, c[1]])} style={{ width: 80 }} />,
@@ -112,13 +124,14 @@ function Live() {
           <ToggleSelect
             values={selectedTileLayers}
             onChange={setSelectedTileLayers}
-            options={tileLayers.filter(m => m).map((layer, i) => ({ value: `${i}`, label: layer.name }))}
+            options={tileLayerURLs.map((url, i) => ({ value: `${i}`, label: tileLayers[i] ? tileLayers[i].name : `Layer ${i}` }))}
           />
           <ToggleSelect
             values={selectedLayers}
             onChange={values => setSelectedLayers(values)}
             options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
           />
+          <button onClick={handleAddTileURL}>Add</button>
         </label>
         <AISKey />
       </div>
@@ -132,6 +145,7 @@ function Live() {
         {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} />}
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
         {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} />}
+        {selectedLayers.includes("weather") &&  weatherVector && <ParticleLayer vector={weatherVector} /> }
       </BasicMap>
     </div>
   );
@@ -139,3 +153,8 @@ function Live() {
 
 export default Live;
 
+function roundTime (time = new Date(), minutes = 15) {
+  const r = +time % (minutes * 60 * 1000);
+  const d2 = new Date(+time - r);
+  return `${d2.getHours().toString().padStart(2, "0")}:${d2.getMinutes().toString().padStart(2, "0")}`;
+}

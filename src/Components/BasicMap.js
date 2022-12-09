@@ -1,7 +1,6 @@
 import React from "react";
 import { useSavedState } from "../hooks/useSavedState";
 import { ControlsLayer } from "../Layers/ControlsLayer";
-import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { WorldLayer } from "../Layers/WorldLayer";
 import { StaticMap } from "./StaticMap";
 
@@ -22,7 +21,6 @@ export function BasicMap ({ onClick, children, width, height }) {
         <StaticMap centre={centre} zoom={zoom} width={width} height={height} onClick={onClick}>
             <WorldLayer />
             {/* { basemapLayer && <TileMapLayer layer={basemapLayer} /> } */}
-            {/* <HongKongMarineLayer /> */}
             { children }
             <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>

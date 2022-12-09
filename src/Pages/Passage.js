@@ -10,6 +10,7 @@ import { findForecast, getPointOfSail } from "../util/weather";
 import { PointOfSail } from "../Components/PointOfSail";
 import { ParticleLayer } from "../Layers/ParticleLayer";
 import { BasicMap } from "../Components/BasicMap";
+import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -255,6 +256,7 @@ function Passage ({ }) {
                     <EditModeButton name="add-waypoint" label="Add" />
                 </div>
                 <BasicMap onClick={handleMapClick}>
+                    <HongKongMarineLayer />
                     <PathLayer paths={legPaths} />
                     { weatherVector && <ParticleLayer vector={weatherVector} /> }
                     <MarkerLayer markers={posMarkers} />

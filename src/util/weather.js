@@ -45,7 +45,7 @@ export function getForecastURL (centre) {
 export function findForecast (weather, time) {
     const d = time.getMinutes() < 30 ? time : new Date(+time + 30 * 60 * 1000);
     const timeString = dateFormat(d, "%Y%M%D%h");
-    return weather.HourlyWeatherForecast.find(f => f.ForecastHour === timeString);
+    return weather.HourlyWeatherForecast.find(f => f.ForecastHour === timeString) || null;
 }
 
 /**

@@ -2,6 +2,13 @@ import { useContext, useEffect, useRef } from "react";
 import { StaticMapContext } from "../Components/StaticMap";
 
 /**
+ * @typedef Particle
+ * @property {number} x
+ * @property {number} y
+ * @property {number} animation
+ */
+
+/**
  *
  * @param {object} props
  * @param {[number,number]} props.vector
@@ -10,6 +17,9 @@ import { StaticMapContext } from "../Components/StaticMap";
 export function ParticleLayer ({ vector }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
+
+    /** @type {import("react").MutableRefObject<Particle[]|undefined>} */
+    const particlesRef = useRef();
 
     const { centre, zoom, width, height } = useContext(StaticMapContext);
 
@@ -21,12 +31,18 @@ export function ParticleLayer ({ vector }) {
     const coef_animation = 5e-4;
     const particle_fill = "#CCC";
 
+    if (!particlesRef.current) {
+        particlesRef.current = makeParticles(400, pxWidth, pxHeight);;
+    }
+
     useEffect(() => {
         const dpr = devicePixelRatio;
 
         let active = true;
         let prevTime = NaN;
-        const particles = makeParticles(400, pxWidth, pxHeight);
+        const particles = particlesRef.current;
+
+        if (!particles) return;
 
         /**
          * @param {number} time
