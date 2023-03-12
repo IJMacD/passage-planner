@@ -1,4 +1,4 @@
-const cache = {};
+const promiseCache = {};
 
 /**
  *
@@ -6,15 +6,25 @@ const cache = {};
  * @returns {Promise<HTMLImageElement>}
  */
 export function loadImage(src) {
-    if (cache[src]) {
-        return Promise.resolve(cache[src]);
+    if (promiseCache[src]) {
+        console.log(`Returning cached promise for ${src}`);
+        return promiseCache[src];
     }
 
-    return new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
         const img = new Image();
         img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(Error(`Unable to load ${src}`));
-        cache[src] = img;
+        img.onload = () => {
+            resolve(img);
+            promiseCache[src] = null;
+        };
+        img.onerror = () => {
+            reject(Error(`Unable to load ${src}`));
+            promiseCache[src] = null;
+        };
     });
+
+    promiseCache[src] = promise;
+
+    return promise;
 }

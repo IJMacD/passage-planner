@@ -43,40 +43,46 @@ export function CanvasTileLayer ({ layer }) {
 
             if (ctx) {
 
-                Promise.all(tiles.map(tile => loadImage(tile.url).catch(()=>null))).then(images => {
+                Promise.all(tiles.map(tile =>
+                        // Failure to load one image won't stop the entire
+                        // canvas from rendering.
+                        loadImage(tile.url).catch(()=>console.log("error loading " + tile.url))
+                    ))
+                    .then(images => {
 
-                    if (current && canvasRef.current) {
-                        canvasRef.current.width = context.width * devicePixelRatio;
-                        canvasRef.current.height = context.height * devicePixelRatio;
+                        if (current && canvasRef.current) {
+                            canvasRef.current.width = context.width * devicePixelRatio;
+                            canvasRef.current.height = context.height * devicePixelRatio;
 
-                        for (let i = 0; i < tiles.length; i++) {
-                            const tile = tiles[i];
-                            const img = images[i];
+                            for (let i = 0; i < tiles.length; i++) {
+                                const tile = tiles[i];
+                                const img = images[i];
 
-                            if (!img) continue;
+                                if (!img) continue;
 
-                            const [x, y] = projection(tile.x * overscale, tile.y * overscale);
+                                const [x, y] = projection(tile.x * overscale, tile.y * overscale);
 
-                            ctx.drawImage(img,
-                                x * devicePixelRatio,
-                                y * devicePixelRatio,
-                                TILE_SIZE * devicePixelRatio * overscale,
-                                TILE_SIZE * devicePixelRatio * overscale
-                            );
-
-                            if (DEBUG) {
-                                ctx.lineWidth = 3;
-                                ctx.strokeStyle = "#F00";
-                                ctx.strokeRect(
+                                ctx.drawImage(img,
                                     x * devicePixelRatio,
                                     y * devicePixelRatio,
                                     TILE_SIZE * devicePixelRatio * overscale,
                                     TILE_SIZE * devicePixelRatio * overscale
                                 );
+
+                                if (DEBUG) {
+                                    ctx.lineWidth = 3;
+                                    ctx.strokeStyle = "#F00";
+                                    ctx.strokeRect(
+                                        x * devicePixelRatio,
+                                        y * devicePixelRatio,
+                                        TILE_SIZE * devicePixelRatio * overscale,
+                                        TILE_SIZE * devicePixelRatio * overscale
+                                    );
+                                }
                             }
                         }
-                    }
-                });
+                    })
+                    .catch(e => console.log(e));
             }
         }
 

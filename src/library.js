@@ -25,20 +25,23 @@ export function renderTrackDetails (domNode, track) {
 }
 
 /**
+ * Renders a single track or an array of tracks
  * @param {ReactDOM.Container} domNode
- * @param {import("./util/gpx").Track} track
+ * @param {import("./util/gpx").Track|import("./util/gpx").Track[]} track
  */
 export function renderTrackMap (domNode, track, { width = 1024, height = 1024 } = {}) {
-    const trackPoints = track ? track.segments.flat() : [];
-    const trackPath = [{ points: trackPoints }];
+    const a = Array.isArray(track) ? track : [track];
+    const paths = a.map(t => ({ ...t, points: t.segments.flat() }));
 
-    const { centre, zoom } = getCentreAndZoom(trackPoints);
+    const allPoints = paths.map(p => p.points).flat();
+
+    const { centre, zoom } = getCentreAndZoom(allPoints);
 
     ReactDOM.render(
         <StaticMap centre={centre} zoom={zoom} width={width} height={height}>
             <WorldLayer />
             <HongKongMarineLayer />
-            <PathLayer paths={trackPath} />
+            <PathLayer paths={paths} />
         </StaticMap>,
         domNode
     );

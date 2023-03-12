@@ -37,7 +37,7 @@ export function getCentreAndZoom(points) {
     const latRange = bbox[3] - bbox[1];
 
     const maxRange = Math.max(lonRange, latRange);
-    const zoom = Math.floor(Math.log2(360 / maxRange)) + 1;
+    const zoom = Math.ceil(Math.log2(360 / maxRange));
 
     return { centre, zoom };
 }
