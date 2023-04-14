@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { xy2LonLat } from "../util/projection";
+import { xy2LonLat } from "../util/projection.js";
 
 /**
  * @typedef StaticMapContextValue

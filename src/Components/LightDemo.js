@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LightFlasher } from "./LightFlasher";
+import { LightFlasher } from "./LightFlasher.js";
 
 export function LightDemo () {
     const [ specText, setSpecText ] = useState("");

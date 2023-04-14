@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { getForecastURL } from "../util/weather";
+import { getForecastURL } from "../util/weather.js";
 
 /**
- * @param {[number, number]} centre
+ * @param {[longitude: number, latitude: number]} centre
  */
 export function useWeather (centre) {
     const [ weather, setWeather ] = useState(/** @type {import("../util/weather").WeatherResponse?} */(null));

@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
-import { lat2tile, lon2tile } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
-import { tileXY2CanvasXY } from "../util/projection";
-import { formatTileURL } from "../hooks/useTiles";
+import { lat2tile, lon2tile } from "../util/geo.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { tileXY2CanvasXY } from "../util/projection.js";
+import { formatTileURL } from "../hooks/useTiles.js";
 
 const TILE_SIZE = 256;
 

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo.js";
 
 export function ControlsLayer ({ setCentre, setZoom }) {
     // Need zoom from context to calculate new centre

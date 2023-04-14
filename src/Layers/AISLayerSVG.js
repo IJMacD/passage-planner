@@ -1,7 +1,8 @@
 import { useContext } from "react";
-import { getVesselColours } from "../util/ais";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
+import { getVesselColours } from "../util/ais.js";
+import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import React from "react";
 
 const TILE_SIZE = 256;
 

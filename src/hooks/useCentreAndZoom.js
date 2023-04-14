@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getBoundingBox } from "../util/geo";
+import { getBoundingBox } from "../util/geo.js";
 
 /**
  * @typedef {{centre: [number, number];zoom: number;}} CentreAndZoom

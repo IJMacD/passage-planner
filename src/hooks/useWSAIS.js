@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { WSAIS } from "../util/ais";
+import { WSAIS } from "../util/ais.js";
 
 export function useWSAIS () {
     /** @type {import("react").MutableRefObject<WSAIS>} */

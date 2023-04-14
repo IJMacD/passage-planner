@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTileMetadata } from "./useTileMetadata";
+import { useTileMetadata } from "./useTileMetadata.js";
 
 export function useTileLayer (baseURL) {
     const backgroundMetadata = useTileMetadata(baseURL);

@@ -1,4 +1,4 @@
-import { getVesselColours } from "../util/ais";
+import { getVesselColours } from "../util/ais.js";
 
 /**
  *

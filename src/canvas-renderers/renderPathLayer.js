@@ -1,4 +1,4 @@
-import { lonLat2XY } from "../util/projection";
+import { lonLat2XY } from "../util/projection.js";
 
 /**
  * @param {HTMLCanvasElement} canvas

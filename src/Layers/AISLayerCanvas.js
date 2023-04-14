@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
-import { getVesselColours } from "../util/ais";
-import { StaticMapContext } from "../Components/StaticMap";
-import { lonLat2XY } from "../util/projection";
+import { getVesselColours } from "../util/ais.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
 /**
@@ -21,8 +21,6 @@ export function AISLayerCanvas ({ vessels }) {
     const pxHeight = height * devicePixelRatio;
 
     useEffect(() => {
-        console.log("AISCanvasLayer: render");
-
         if (!canvasRef.current) return;
 
         const ctx = canvasRef.current.getContext("2d");

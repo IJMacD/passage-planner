@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchAIS } from "../util/ais";
-import { getTileBounds } from "../util/geo";
+import { fetchAIS } from "../util/ais.js";
+import { getTileBounds } from "../util/geo.js";
 
 /**
  * @param {[number, number]} centre

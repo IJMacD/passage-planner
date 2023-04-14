@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { TrackDetails } from "../Components/TrackDetails";
-import { TrackEdit } from "../Components/TrackEdit";
-import { useAuthFetch } from "../hooks/useAuthFetch";
-import { useSavedState } from "../hooks/useSavedState";
-import { latlon2bearing, latlon2nm } from "../util/geo";
-import { parseGPXDocument, toGPXDocument } from "../util/gpx";
+import { TrackDetails } from "../Components/TrackDetails.js";
+import { TrackEdit } from "../Components/TrackEdit.js";
+import { useAuthFetch } from "../hooks/useAuthFetch.js";
+import { useSavedState } from "../hooks/useSavedState.js";
+import { latlon2bearing, latlon2nm } from "../util/geo.js";
+import { parseGPXDocument, toGPXDocument } from "../util/gpx.js";
 
 const KPH_TO_KNOTS = 0.539957;
 

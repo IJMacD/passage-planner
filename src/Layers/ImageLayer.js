@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
+import { lat2tile, lon2tile } from "../util/geo.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
 
 const TILE_SIZE = 256;
 
 export function ImageLayer ({ image, bounds }) {
-    /** @type {import("react").MutableRefObject<HTMLCanvasElement>} */
+    /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
     const { centre, zoom, width, height } = useContext(StaticMapContext);
@@ -17,6 +17,8 @@ export function ImageLayer ({ image, bounds }) {
         if (!canvasRef.current) return;
 
         const ctx = canvasRef.current.getContext("2d");
+
+        if (!ctx) return;
 
         ctx.canvas.width = pxWidth;
         ctx.canvas.height = pxHeight;

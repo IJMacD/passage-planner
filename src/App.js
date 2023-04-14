@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Live from "./Pages/Live";
+import Live from "./Pages/Live.js";
 import './App.css';
-import Passage from "./Pages/Passage";
-import Tracks from "./Pages/Tracks";
-import Test from "./Pages/Test";
+import Passage from "./Pages/Passage.js";
+import Tracks from "./Pages/Tracks.js";
+import Test from "./Pages/Test.js";
 
 
 export default function App () {

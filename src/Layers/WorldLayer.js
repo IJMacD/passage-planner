@@ -1,6 +1,6 @@
 import React from "react";
-import { ImageLayer } from "./ImageLayer";
-import { useImage } from "../hooks/useImage";
+import { ImageLayer } from "./ImageLayer.js";
+import { useImage } from "../hooks/useImage.js";
 import worldImageSrc from "../img/world.png";
 
 export function WorldLayer () {

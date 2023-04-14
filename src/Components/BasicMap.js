@@ -1,22 +1,22 @@
 import React from "react";
-import { useSavedState } from "../hooks/useSavedState";
-import { ControlsLayer } from "../Layers/ControlsLayer";
-import { WorldLayer } from "../Layers/WorldLayer";
-import { StaticMap } from "./StaticMap";
+import { ControlsLayer } from "../Layers/ControlsLayer.js";
+import { WorldLayer } from "../Layers/WorldLayer.js";
+import { StaticMap } from "./StaticMap.js";
 
 /**
  *
  * @param {object} props
+ * @param {[number,number]} props.centre
+ * @param {number} props.zoom
+ * @param {(centre: [number,number]) => void} props.setCentre
+ * @param {(zoom: number) => void} props.setZoom
  * @param {(lon: number, lat: number, e: React.MouseEvent) => void} [props.onClick]
  * @param {React.ReactNode} [props.children]
  * @param {number} [props.width]
  * @param {number} [props.height]
  * @returns
  */
-export function BasicMap ({ onClick, children, width, height }) {
-    const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
-    const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
-
+export function BasicMap ({ centre, zoom, setCentre, setZoom, onClick, children, width, height }) {
     return (
         <StaticMap centre={centre} zoom={zoom} width={width} height={height} onClick={onClick}>
             <WorldLayer />

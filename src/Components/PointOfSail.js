@@ -1,4 +1,5 @@
-import { getPointOfSail } from "../util/weather";
+import React from "react";
+import { getPointOfSail } from "../util/weather.js";
 
 /**
  *

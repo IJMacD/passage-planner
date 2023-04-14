@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { lat2tile, lon2tile } from "../util/geo";
+import { lat2tile, lon2tile } from "../util/geo.js";
 
 const TILE_SIZE = 265;
 

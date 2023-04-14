@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { LightDemo } from "../Components/LightDemo";
-import { StaticMap } from "../Components/StaticMap";
-import { useSavedState } from "../hooks/useSavedState";
-import { useTileLayer } from "../hooks/useTileLayer";
-import { CanvasTileLayer } from "../Layers/CanvasTileLayer";
-import { DebugLayer } from "../Layers/DebugLayer";
+import { LightDemo } from "../Components/LightDemo.js";
+import { StaticMap } from "../Components/StaticMap.js";
+import { useSavedState } from "../hooks/useSavedState.js";
+import { useTileLayer } from "../hooks/useTileLayer.js";
+import { CanvasTileLayer } from "../Layers/CanvasTileLayer.js";
+import { DebugLayer } from "../Layers/DebugLayer.js";
 
 function Test () {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));

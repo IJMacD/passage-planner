@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
-import { renderPathLayer } from "../canvas-renderers/renderPathLayer";
-import { useEffectDebugger } from "../hooks/useEffectDebugger";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { renderPathLayer } from "../canvas-renderers/renderPathLayer.js";
 
 /**
  * @typedef {{points: {lon: number;lat: number;}[];color?: ?string;lineDash?: ?number[];}} Path

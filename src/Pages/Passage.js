@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { HeadingIndicator } from "../Components/HeadingIndicator";
-import { lat2nm, latlon2bearing, latlon2nm, lon2nm } from "../util/geo";
-import { useSavedState } from "../hooks/useSavedState";
-import { useTileMetadata } from "../hooks/useTileMetadata";
-import { useWeather } from "../hooks/useWeather";
-import { MarkerLayer } from "../Layers/MarkerLayer";
-import { PathLayer } from "../Layers/PathLayer";
-import { findForecast, getPointOfSail } from "../util/weather";
-import { PointOfSail } from "../Components/PointOfSail";
-import { ParticleLayer } from "../Layers/ParticleLayer";
-import { BasicMap } from "../Components/BasicMap";
-import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
+import { HeadingIndicator } from "../Components/HeadingIndicator.js";
+import { latlon2bearing, latlon2nm } from "../util/geo.js";
+import { useSavedState } from "../hooks/useSavedState.js";
+import { useWeather } from "../hooks/useWeather.js";
+import { MarkerLayer } from "../Layers/MarkerLayer.js";
+import { PathLayer } from "../Layers/PathLayer.js";
+import { findForecast, getPointOfSail } from "../util/weather.js";
+import { PointOfSail } from "../Components/PointOfSail.js";
+import { ParticleLayer } from "../Layers/ParticleLayer.js";
+import { BasicMap } from "../Components/BasicMap.js";
+import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.js";
+import React from "react";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -48,6 +48,7 @@ const defaultPassage = {
 
 function Passage ({ }) {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
+    const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
     const [ savedPassages, setSavedPassages ] = useSavedState("passagePlanner.passages", /** @type {Passage[]} */([]));
     const [ editMode, setEditMode ] = useState("start");
     const [ selectedWaypoint, setSelectedWayPoint ] = useState(-1);
@@ -255,7 +256,7 @@ function Passage ({ }) {
                     </ul>
                     <EditModeButton name="add-waypoint" label="Add" />
                 </div>
-                <BasicMap onClick={handleMapClick}>
+                <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={handleMapClick}>
                     <HongKongMarineLayer />
                     <PathLayer paths={legPaths} />
                     { weatherVector && <ParticleLayer vector={weatherVector} /> }

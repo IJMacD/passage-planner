@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
+import { StaticMapContext } from "../Components/StaticMap.js";
 
 /**
  * @typedef Particle

@@ -1,9 +1,8 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
-import { useTiles } from "../hooks/useTiles";
-import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer";
-import { loadImage } from "../util/loadImage";
-import { useEffectDebugger } from "../hooks/useEffectDebugger";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { useTiles } from "../hooks/useTiles.js";
+import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
+import { loadImage } from "../util/loadImage.js";
 
 export const TILE_SIZE = 256;
 export const DEBUG = false;

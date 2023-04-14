@@ -1,4 +1,4 @@
-import { lat2tileFrac, lon2tileFrac, tile2lat, tile2long } from "./geo";
+import { lat2tileFrac, lon2tileFrac, tile2lat, tile2long } from "./geo.js";
 
 export const TILE_SIZE = 256;
 

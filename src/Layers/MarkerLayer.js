@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
-import { lonLat2XY } from "../util/projection";
-import { Marker } from "../Components/Marker";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { lonLat2XY } from "../util/projection.js";
+import { Marker } from "../Components/Marker.js";
 
 const TILE_SIZE = 256;
 

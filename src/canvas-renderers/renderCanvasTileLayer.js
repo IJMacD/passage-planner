@@ -1,5 +1,5 @@
-import { tileXY2CanvasXY } from "../util/projection";
-import { TILE_SIZE, DEBUG } from "../Layers/CanvasTileLayer";
+import { tileXY2CanvasXY } from "../util/projection.js";
+import { TILE_SIZE, DEBUG } from "../Layers/CanvasTileLayer.js";
 
 /**
  * @param {HTMLCanvasElement} canvas

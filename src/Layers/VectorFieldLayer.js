@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap";
-import { lonLat2XY } from "../util/projection";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
 /**

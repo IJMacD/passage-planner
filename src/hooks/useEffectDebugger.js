@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { usePrevious } from "./usePrevious";
+import { usePrevious } from "./usePrevious.js";
 
 /**
  * @see https://stackoverflow.com/a/59843241/1228394

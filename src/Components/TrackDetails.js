@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
-import { MarkerLayer } from "../Layers/MarkerLayer";
-import { PathLayer } from "../Layers/PathLayer";
-import { WorldLayer } from "../Layers/WorldLayer";
-import { latlon2bearing, latlon2nm } from "../util/geo";
-import { makeCoursePlot } from "../util/makeCoursePlot";
-import { StaticMap } from "./StaticMap";
-import { useCentreAndZoom } from "../hooks/useCentreAndZoom";
-// import { DebugLayer } from "../Layers/DebugLayer";
-import { PolarPlotSVG } from "./PolarPlotSVG";
-import { ControlsLayer } from "../Layers/ControlsLayer";
+import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.js";
+import { MarkerLayer } from "../Layers/MarkerLayer.js";
+import { PathLayer } from "../Layers/PathLayer.js";
+import { WorldLayer } from "../Layers/WorldLayer.js";
+import { latlon2bearing, latlon2nm } from "../util/geo.js";
+import { makeCoursePlot } from "../util/makeCoursePlot.js";
+import { StaticMap } from "./StaticMap.js";
+import { useCentreAndZoom } from "../hooks/useCentreAndZoom.js";
+// import { DebugLayer } from "../Layers/DebugLayer.js";
+import { PolarPlotSVG } from "./PolarPlotSVG.js";
+import { ControlsLayer } from "../Layers/ControlsLayer.js";
 
 import "./TrackDetails.css";
-import { useTides } from "../hooks/useTides";
-import { VectorFieldLayer } from "../Layers/VectorFieldLayer";
+import { useTides } from "../hooks/useTides.js";
+import { VectorFieldLayer } from "../Layers/VectorFieldLayer.js";
 
 const playSpeed = 60; // 1 minute per second
 

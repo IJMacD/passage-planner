@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from "react";
-import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo";
-import { StaticMapContext } from "../Components/StaticMap";
+import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
 import React from "react";
-import { getBounds } from "../util/projection";
+import { getBounds } from "../util/projection.js";
 
 const TILE_SIZE = 256;
 

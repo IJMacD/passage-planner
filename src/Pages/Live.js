@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
-import { useSavedState } from '../hooks/useSavedState';
-import { CanvasTileLayer } from '../Layers/CanvasTileLayer';
-import { DebugLayer } from '../Layers/DebugLayer';
-import { VectorFieldLayer } from '../Layers/VectorFieldLayer';
-import { useAHAIS } from '../hooks/useAHAIS';
-import { AISLayerSVG } from '../Layers/AISLayerSVG';
-import { ToggleSelect } from '../Components/ToggleSelect';
-import { AISKey } from '../Components/AISKey';
-import { useWSAIS } from '../hooks/useWSAIS';
-import { useTides } from '../hooks/useTides';
-import { combineAIS } from '../util/ais';
-import { BasicMap } from '../Components/BasicMap';
+import { useSavedState } from '../hooks/useSavedState.js';
+import { CanvasTileLayer } from '../Layers/CanvasTileLayer.js';
+import { DebugLayer } from '../Layers/DebugLayer.js';
+import { VectorFieldLayer } from '../Layers/VectorFieldLayer.js';
+import { useAHAIS } from '../hooks/useAHAIS.js';
+import { AISLayerSVG } from '../Layers/AISLayerSVG.js';
+import { ToggleSelect } from '../Components/ToggleSelect.js';
+import { AISKey } from '../Components/AISKey.js';
+import { useWSAIS } from '../hooks/useWSAIS.js';
+import { useTides } from '../hooks/useTides.js';
+import { combineAIS } from '../util/ais.js';
+import { BasicMap } from '../Components/BasicMap.js';
 import React from 'react';
-import { LightLayer } from '../Layers/LightLayer';
-import { useTileJSONList } from '../hooks/useTileJSONList';
-import { formatDate, makeDateTime } from '../util/date';
-import { ParticleLayer } from '../Layers/ParticleLayer';
-import { useWeather } from '../hooks/useWeather';
-import { findForecast } from '../util/weather';
-import { AISLayerCanvas } from '../Layers/AISLayerCanvas';
+import { LightLayer } from '../Layers/LightLayer.js';
+import { useTileJSONList } from '../hooks/useTileJSONList.js';
+import { formatDate, makeDateTime } from '../util/date.js';
+import { ParticleLayer } from '../Layers/ParticleLayer.js';
+import { useWeather } from '../hooks/useWeather.js';
+import { findForecast } from '../util/weather.js';
+import { AISLayerCanvas } from '../Layers/AISLayerCanvas.js';
 /* @ts-ignore */
 
 const layers = [
@@ -36,7 +36,7 @@ const defaultSelected = ["world", "tiles", "ais", "wsais"];
 function Live() {
   const [selectedLayers, setSelectedLayers] = useSavedState("passagePlanner.selectedLayers", defaultSelected);
   // const [ bounds, setBounds ] = useSavedState("passagePlanner.bounds", [-180,-85.05,180,85.05]);
-  const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0, 0]));
+  const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[longitude: number, latitude: number]} */([0, 0]));
   const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 4);
   const [date, setDate] = useState(() => formatDate());
   const [time, setTime] = useState(() => roundTime());
@@ -136,7 +136,7 @@ function Live() {
         </label>
         <AISKey />
       </div>
-      <BasicMap onClick={(lon, lat) => setCentre([lon, lat])} width={1024} height={768}>
+      <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={(lon, lat) => setCentre([lon, lat])} width={1024} height={768}>
         {
           tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
         }

@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import React from "react";
-import { LightFlasher } from "../Components/LightFlasher";
-import { useLights } from "../hooks/useLights";
-import { StaticMapContext } from "../Components/StaticMap";
-import { getBounds, lonLat2XY } from "../util/projection";
+import { LightFlasher } from "../Components/LightFlasher.js";
+import { useLights } from "../hooks/useLights.js";
+import { StaticMapContext } from "../Components/StaticMap.js";
+import { getBounds, lonLat2XY } from "../util/projection.js";
 
 const TILE_SIZE = 256;
 
