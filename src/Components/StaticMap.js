@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { xy2LonLat } from "../util/projection";
 
 /**
@@ -45,9 +45,17 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
         }
     }
 
+    const [ cx, cy ] = centre;
+
+    const context = useMemo(() => {
+        /** @type {[number, number]} */
+        const centre = [ cx, cy ];
+        return { centre, zoom, width, height };
+    }, [ cx, cy, zoom, width, height ]);
+
     return (
         <div style={{ position: "relative", width, height, minWidth: width }} onClick={handleClick}>
-            <StaticMapContext.Provider value={{ centre, zoom, width, height }}>
+            <StaticMapContext.Provider value={context}>
                 { children }
             </StaticMapContext.Provider>
         </div>

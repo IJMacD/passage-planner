@@ -8,7 +8,7 @@ const TILE_SIZE = 265;
  * @param {number} zoom
  * @param {number} width
  * @param {number} height
- * @param {import("../Layers/CanvasTileLayer").TileJSON} layer
+ * @param {import("../Layers/TileMapLayer").TileJSON} layer
  */
 export function useTiles(centre, zoom, width, height, layer) {
     const tiles = [];

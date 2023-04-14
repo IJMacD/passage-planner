@@ -7,7 +7,7 @@ const promiseCache = {};
  */
 export function loadImage(src) {
     if (promiseCache[src]) {
-        console.log(`Returning cached promise for ${src}`);
+        // console.log(`Returning cached promise for ${src}`);
         return promiseCache[src];
     }
 

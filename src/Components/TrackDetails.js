@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { MarkerLayer } from "../Layers/MarkerLayer";
 import { PathLayer } from "../Layers/PathLayer";
@@ -91,6 +91,16 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     const tideVectors = useTides(selectedDate);
 
+    const paths = useMemo(() => {
+        /** @type {import("../Layers/PathLayer").Path[]} */
+        const paths = additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || [];
+
+        const trackPoints = track ? track.segments.flat() : [];
+        paths.push({ points: trackPoints });
+
+        return paths;
+    }, [ track, additionalTracks ]);
+
     if (!track) {
         return null;
     }
@@ -136,11 +146,6 @@ export function TrackDetails ({ track, additionalTracks }) {
     };
 
     const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
-
-    /** @type {import("../Layers/PathLayer").Path[]} */
-    const paths = additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || [];
-
-    paths.push({ points: trackPoints });
 
     // const startPoint = trackPoints[0];
     // const endPoint = trackPoints[trackPoints.length - 1];

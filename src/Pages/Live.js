@@ -18,6 +18,7 @@ import { formatDate, makeDateTime } from '../util/date';
 import { ParticleLayer } from '../Layers/ParticleLayer';
 import { useWeather } from '../hooks/useWeather';
 import { findForecast } from '../util/weather';
+import { AISLayerCanvas } from '../Layers/AISLayerCanvas';
 /* @ts-ignore */
 
 const layers = [
@@ -135,7 +136,7 @@ function Live() {
         </label>
         <AISKey />
       </div>
-      <BasicMap onClick={(lon, lat) => setCentre([lon, lat])}>
+      <BasicMap onClick={(lon, lat) => setCentre([lon, lat])} width={1024} height={768}>
         {
           tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
         }
@@ -144,7 +145,7 @@ function Live() {
         {selectedLayers.includes("lights") && <LightLayer />}
         {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} />}
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
-        {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} />}
+        {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
         {selectedLayers.includes("weather") &&  weatherVector && <ParticleLayer vector={weatherVector} /> }
       </BasicMap>
     </div>
