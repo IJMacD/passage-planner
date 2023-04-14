@@ -3,13 +3,11 @@ import { StaticMapContext } from "../Components/StaticMap.js";
 import { lonLat2XY } from "../util/projection.js";
 import { Marker } from "../Components/Marker.js";
 
-const TILE_SIZE = 256;
-
 /**
  * @typedef Marker
  * @prop {number} lon
  * @prop {number} lat
- * @prop {string} name
+ * @prop {string} [name]
  * @prop {number} [rotation]
  */
 
@@ -46,7 +44,7 @@ export function MarkerLayer ({ markers, onClick = null }) {
                         }
                     }
 
-                    return <Marker key={i} name={marker.name??"green"} x={x} y={y} rotation={marker.rotation} onClick={handleClick} />;
+                    return <Marker key={i} name={marker.name??"red-dot"} x={x} y={y} rotation={marker.rotation} onClick={handleClick} />;
                 })
             }
         </div>

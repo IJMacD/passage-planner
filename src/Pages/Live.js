@@ -19,7 +19,8 @@ import { ParticleLayer } from '../Layers/ParticleLayer.js';
 import { useWeather } from '../hooks/useWeather.js';
 import { findForecast } from '../util/weather.js';
 import { AISLayerCanvas } from '../Layers/AISLayerCanvas.js';
-/* @ts-ignore */
+import { MarkerLayer } from '../Layers/MarkerLayer.js';
+import { ALL_STATION_LOCATIONS } from "../util/weather.js";
 
 const layers = [
   { name: "Tides", id: "tides" },
@@ -29,6 +30,7 @@ const layers = [
   { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
   { name: "Weather", id: "weather" },
+  { name: "Weather Stations", id: "weather-stations" },
 ];
 
 const defaultSelected = ["world", "tiles", "ais", "wsais"];
@@ -52,6 +54,7 @@ function Live() {
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
 
+  const weatherMarkers = ALL_STATION_LOCATIONS;
 
   const weather = useWeather(centre);
   const weatherForecast = weather && findForecast(weather, currentTime);
@@ -147,6 +150,7 @@ function Live() {
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
         {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
         {selectedLayers.includes("weather") &&  weatherVector && <ParticleLayer vector={weatherVector} /> }
+        {selectedLayers.includes("weather-stations") &&  weatherMarkers && <MarkerLayer markers={weatherMarkers} /> }
       </BasicMap>
     </div>
   );

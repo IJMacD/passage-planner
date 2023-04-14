@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const CUSTOM_SIZES = {
     "no-go": [14,32],
@@ -39,29 +39,47 @@ const CUSTOM_OFFSETS = {
  */
 
 export function Marker ({ name, x, y, rotation, onClick }) {
+    const [ src, setSrc ] = useState(null);
+
     const scale = devicePixelRatio >= 2 ? "2x" : "1x";
-    let src;
 
-    try {
-        src = require(`../img/markers/${scale}/${name}.png`);
-    }
-    catch (e) {
-        if (scale === "2x") {
-            console.warn(`Marker 2x '${name}' not found`);
+    useEffect(() => {
+        let current = true;
 
+        (async function() {
             try {
-                src = require(`../img/markers/1x/${name}.png`);
+                const module = await import(`../img/markers/${scale}/${name}.png`)
+
+                if (current) {
+                    setSrc(module.default);
+                }
             }
             catch (e) {
-                console.warn(`Marker 1x '${name}' not found either`);
-                return null;
+                if (scale === "2x") {
+                    console.warn(`Marker 2x '${name}' not found`);
+
+                    try {
+                        const module = await import(`../img/markers/1x/${name}.png`)
+                        if (current) {
+                            setSrc(module.default);
+                        }
+                    }
+                    catch (e) {
+                        console.warn(`Marker 1x '${name}' not found either`);
+
+                        if (current) {
+                            setSrc(null);
+                        }
+                    }
+                }
             }
-        }
+        }());
 
-        console.warn(`Marker '${name}' not found`);
+        return () => { current = false; };
 
-        return null;
-    }
+    }, [name]);
+
+    if (!src) return null;
 
     const imageSize = CUSTOM_SIZES[name] ?? [32, 32];
     const imageOffset = CUSTOM_OFFSETS[name] ?? [imageSize[0]/2, imageSize[1]/2];

@@ -6,7 +6,7 @@ if (isset($_GET['location'])) {
     if ($data) {
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json");
-        header("Cache-Control: public, max-age=60");
+        header("Cache-Control: public, max-age=1800");
         echo $data;
         exit;
     }

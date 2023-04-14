@@ -1,5 +1,10 @@
+import { latlon2nm } from "./geo.js";
 
-// ALL_STATIONS: ["CCH", "HKA", "HKO", "HKS", "JKB", "LFS", "PEN", "SEK", "SHA", "SKG", "TKL", "TPO", "TUN", "TY1", "WGL", "SSH" ]
+export const ALL_STATIONS = ["CCH", "HKA", "HKO", "HKS", "JKB", "LFS", "PEN", "SEK", "SHA", "SKG", "TKL", "TPO", "TUN", "TY1", "WGL", "SSH" ];
+// ALL STATIONS: ['CCH', 'HKA', 'HKO', 'HKS', 'JKB', 'LFS', 'PEN', 'SEK', 'SHA', 'SKG', 'TKL', 'TPO', 'TUN', 'TY1', 'WGL', 'SSH', 'DF3647', 'GF3640', 'ARWF_MKA', 'ARWF_SFY', 'ARWF_TWS', 'ARWF_TIT', 'ARWF_CCC', 'ARWF_CYS']
+
+// Updated by /scripts/getWeatherStationLocations.js
+export const ALL_STATION_LOCATIONS = [{loc:"CCH",lat:22.201,lon:114.027},{loc:"HKA",lat:22.309,lon:113.922},{loc:"HKO",lat:22.302,lon:114.174},{loc:"HKS",lat:22.245,lon:114.174},{loc:"JKB",lat:22.316,lon:114.256},{loc:"LFS",lat:22.469,lon:113.984},{loc:"PEN",lat:22.291,lon:114.043},{loc:"SEK",lat:22.436,lon:114.085},{loc:"SHA",lat:22.403,lon:114.21},{loc:"SKG",lat:22.376,lon:114.274},{loc:"TKL",lat:22.529,lon:114.157},{loc:"TPO",lat:22.4482,lon:114.177},{loc:"TUN",lat:22.386,lon:113.964},{loc:"TY1",lat:22.3443,lon:114.11},{loc:"WGL",lat:22.182,lon:114.303},{loc:"SSH",lat:22.502,lon:114.111}]
 
 /**
  * @typedef DailyForecast
@@ -30,9 +35,26 @@
  * @prop {HourlyForecast[]} HourlyWeatherForecast
  */
 
-
+/**
+ * @param {[ longitude: number, latitude: number ]} centre
+ */
 export function getForecastURL (centre) {
-    const loc = "PEN"; // Peng Chau
+    const allStations = ALL_STATION_LOCATIONS.map(station => {
+        const distance = latlon2nm({lon:centre[0],lat:centre[1]}, station);
+        return { ...station, distance };
+    });
+
+    allStations.sort((a, b) => a.distance - b.distance);
+
+    const nearest = allStations[0];
+
+    return getForecastURLByStation(nearest.loc);
+}
+
+/**
+ * @param {string} loc
+ */
+export function getForecastURLByStation (loc) {
     // return `https://passage.ijmacd.com/weather/ocf/dat/${loc}.xml`;
     return `https://passage.ijmacd.com/weather_forecast.php?location=${loc}`;
 }
