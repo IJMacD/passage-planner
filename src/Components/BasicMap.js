@@ -8,7 +8,7 @@ import { StaticMap } from "./StaticMap";
  *
  * @param {object} props
  * @param {(lon: number, lat: number, e: React.MouseEvent) => void} [props.onClick]
- * @param {React.ReactChildren} [props.children]
+ * @param {React.ReactNode} [props.children]
  * @param {number} [props.width]
  * @param {number} [props.height]
  * @returns
