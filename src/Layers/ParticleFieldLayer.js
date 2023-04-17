@@ -14,7 +14,7 @@ import { latlon2nm } from "../util/geo.js";
 /**
  *
  * @param {object} props
- * @param {{lon: number, lat: number, vector: [number,number]}[]} props.field
+ * @param {import("./VectorFieldLayer.js").Field} props.field
  * @returns
  */
 export function ParticleFieldLayer ({ field }) {
@@ -119,10 +119,19 @@ export function ParticleFieldLayer ({ field }) {
                     // 2/4 / 3/4 = 0.666
                     // 1/4 / 3/4 = 0.333
                     const vector = fieldPoints.reduce((vector, p) => {
+                        let x;
+                        let y;
+                        if ("vector" in p) {
+                            [ x, y ] = p.vector;
+                        }
+                        else {
+                            x = p.magnitude * Math.sin(p.direction * Math.PI / 180);
+                            y = p.magnitude * Math.cos(p.direction * Math.PI / 180);
+                        }
                         const t = p.weight / sum;
                         return [
-                            vector[0] + t * p.vector[0],
-                            vector[1] + t * p.vector[1],
+                            vector[0] + t * x,
+                            vector[1] + t * y,
                         ];
                     }, [0,0]);
 

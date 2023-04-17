@@ -54,13 +54,21 @@ function Live() {
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
 
-  const weatherMarkers = ALL_STATION_LOCATIONS;
-
   const weather = useWeatherField(centre);
+
   const weatherForecast = weather && findFieldForecast(weather, currentTime);
 
+  // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
+  /** @type {import('../Layers/VectorFieldLayer.js').Field} */
+  const weatherMarkers = weatherForecast.map(f => ({
+    lat: f.lat,
+    lon: f.lon,
+    direction: ((f.forecast?.ForecastWindDirection || 0) + 180) % 360,
+    magnitude: (f.forecast?.ForecastWindSpeed || 0) * 0.2,
+  }));
+
   /**
-   * @type {{lon: number, lat: number, vector: [number, number] }[]}
+   * @type {import('../Layers/VectorFieldLayer.js').VectorFieldPoint[]}
    */
   const weatherFieldVector = weatherForecast &&
     weatherForecast.map(weather => ({
@@ -157,7 +165,7 @@ function Live() {
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
         {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
         {selectedLayers.includes("weather") &&  weatherFieldVector && <ParticleFieldLayer field={weatherFieldVector} /> }
-        {selectedLayers.includes("weather-stations") &&  weatherMarkers && <MarkerLayer markers={weatherMarkers} /> }
+        {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> }
       </BasicMap>
     </div>
   );

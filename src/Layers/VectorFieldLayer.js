@@ -4,9 +4,21 @@ import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
 /**
+ * @typedef {{ lat: number; lon: number; magnitude: number; direction: number; }} PolarFieldPoint
+ */
+
+/**
+ * @typedef {{ lat: number; lon: number; vector: [number, number] }} VectorFieldPoint
+ */
+
+/**
+ * @typedef {(PolarFieldPoint|VectorFieldPoint)[]} Field
+ */
+
+/**
  *
  * @param {object} props
- * @param {{ latitude: number, longitude: number, magnitude: number, direction: number }[]} props.field
+ * @param {Field} props.field
  * @returns
  */
 export function VectorFieldLayer ({ field }) {
@@ -32,13 +44,27 @@ export function VectorFieldLayer ({ field }) {
             const projection = lonLat2XY(context);
 
             for (const point of field) {
-                const [ x, y ] = projection(point.longitude, point.latitude);
+                const [ x, y ] = projection(point.lon, point.lat);
 
-                const r = 10 * point.magnitude * devicePixelRatio;
+                let magnitude;
+                // in Rads
+                let direction;
+
+                if ("magnitude" in point) {
+                    magnitude = point.magnitude;
+                    direction = point.direction * Math.PI / 180;
+                }
+                else {
+                    const [ x, y ] = point.vector;
+                    direction = Math.atan2(y, x);
+                    magnitude = Math.sqrt(x * x + y * y);
+                }
+
+                const r = 10 * magnitude * devicePixelRatio;
                 const t = r / 5;
 
                 ctx.translate(x*devicePixelRatio, y*devicePixelRatio);
-                ctx.rotate(point.direction / 180 * Math.PI + Math.PI);
+                ctx.rotate(direction + Math.PI);
 
                 ctx.beginPath();
                 ctx.moveTo(0, -2*r);
@@ -46,7 +72,7 @@ export function VectorFieldLayer ({ field }) {
                 ctx.moveTo(r, 0);
                 ctx.lineTo(0, r);
                 ctx.lineTo(-r, 0);
-                ctx.strokeStyle = getColour(point.magnitude);
+                ctx.strokeStyle = getColour(magnitude);
                 ctx.lineCap = "round";
                 ctx.lineWidth = t;
                 ctx.stroke();

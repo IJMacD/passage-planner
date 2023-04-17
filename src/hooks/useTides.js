@@ -13,9 +13,10 @@ export function useTides (time) {
 
     const [tideJSON] = useFetch(tidesJsonURL + formatDateTimeCompact(roundedDate, ""));
 
+    /** @type {import("../Layers/VectorFieldLayer.js").PolarFieldPoint[]} */
     const tideVectors = useMemo(() => {
         if (!tideJSON) return null;
-        return tideJSON.features.map(feature => ({ latitude: feature.geometry.coordinates[1], longitude: feature.geometry.coordinates[0], magnitude: +feature.properties.knot, direction: +feature.properties.deg }));
+        return tideJSON.features.map(feature => ({ lat: feature.geometry.coordinates[1], lon: feature.geometry.coordinates[0], magnitude: +feature.properties.knot, direction: +feature.properties.deg }));
     }, [tideJSON]);
 
     return tideVectors;
