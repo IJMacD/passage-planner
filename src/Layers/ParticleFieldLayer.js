@@ -51,6 +51,11 @@ export function ParticleFieldLayer ({ field }) {
 
         if (particles.length === 0) return;
 
+        // No need to render an empty field
+        if (field.length === 0) {
+            return;
+        }
+
         const bounds = getBounds(context);
 
         const { zoom } = context;
@@ -110,7 +115,6 @@ export function ParticleFieldLayer ({ field }) {
 
                     const sum = fieldPoints.reduce((sum, p) => sum + p.weight, 0);
 
-
                     // 2 ---> x  <--------- 4
                     // sum = 6
                     // A: 0.66666
@@ -135,6 +139,11 @@ export function ParticleFieldLayer ({ field }) {
                             vector[1] + t * y,
                         ];
                     }, [0,0]);
+
+                    // Don't render static dots
+                    if (vector[0] === 0 && vector[1] === 0) {
+                        continue;
+                    }
 
                     const f = delta * coef_speed * Math.pow(zoom, -2);
 
