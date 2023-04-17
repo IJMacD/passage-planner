@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
-import { getForecastURLByStation, getNearestStations } from "../util/weather.js";
+import { ALL_STATION_LOCATIONS, getForecastURLByStation } from "../util/weather.js";
+import { filterByBounds, getBounds } from "../util/projection.js";
+import { latlon2nm } from "../util/geo.js";
 
 /**
- * @param {[longitude: number, latitude: number]} centre
+ * @param {import("../Components/StaticMap.js").StaticMapContextValue} context
  */
-export function useWeatherField (centre) {
+export function useWeatherField (context) {
     const [ weatherField, setWeatherField ] = useState(/** @type {{ weather: import("../util/weather.js").WeatherResponse; distance: number; loc: string; lat: number; lon: number; }[]} */([]));
 
     useEffect(() => {
         let current = true;
 
-        const stations = getNearestStations(centre, 3);
+        const bounds = getBounds(context);
+
+        const centre = { lon: context.centre[0], lat: context.centre[1] };
+
+        const stations = ALL_STATION_LOCATIONS
+            .filter(filterByBounds(bounds))
+            .map(s => ({
+                ...s,
+                distance: latlon2nm(s, centre),
+            }));
 
         const promises = stations.map(station =>
             fetch(getForecastURLByStation(station.loc))
@@ -26,7 +37,7 @@ export function useWeatherField (centre) {
             });
 
         return () => { current = false; };
-    }, [centre]);
+    }, [context]);
 
     return weatherField;
 }

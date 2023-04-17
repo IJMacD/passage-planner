@@ -104,3 +104,12 @@ export function getBounds(context) {
 
     return [bottomLeft[0], bottomLeft[1], topRight[0], topRight[1]];
 }
+
+/**
+ * @param {[minLon: number, minLat: number, maxLon: number, maxLat: number]} bounds
+ */
+export function filterByBounds (bounds) {
+    return (/** @type {{ lon: Number, lat: number}} */ item) => {
+        return item.lon >= bounds[0] && item.lat >= bounds[1] && item.lon <= bounds[2] && item.lat <= bounds[3];
+    };
+}

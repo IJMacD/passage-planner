@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSavedState } from '../hooks/useSavedState.js';
 import { CanvasTileLayer } from '../Layers/CanvasTileLayer.js';
 import { DebugLayer } from '../Layers/DebugLayer.js';
@@ -18,8 +18,6 @@ import { formatDate, makeDateTime } from '../util/date.js';
 import { ParticleFieldLayer } from '../Layers/ParticleFieldLayer.js'
 import { findFieldForecast } from '../util/weather.js';
 import { AISLayerCanvas } from '../Layers/AISLayerCanvas.js';
-import { MarkerLayer } from '../Layers/MarkerLayer.js';
-import { ALL_STATION_LOCATIONS } from "../util/weather.js";
 import { useWeatherField } from '../hooks/useWeatherField.js';
 
 const layers = [
@@ -54,7 +52,11 @@ function Live() {
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
 
-  const weather = useWeatherField(centre);
+  const width = 1024;
+  const height = 768;
+
+  const context = useMemo(() => ({ centre, zoom, width, height }), [centre, zoom, width, height]);
+  const weather = useWeatherField(context);
 
   const weatherForecast = weather && findFieldForecast(weather, currentTime);
 
@@ -154,7 +156,7 @@ function Live() {
         </label>
         <AISKey />
       </div>
-      <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={(lon, lat) => setCentre([lon, lat])} width={1024} height={768}>
+      <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={(lon, lat) => setCentre([lon, lat])} width={width} height={height}>
         {
           tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
         }
