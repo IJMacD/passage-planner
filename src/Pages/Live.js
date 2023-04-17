@@ -15,12 +15,12 @@ import React from 'react';
 import { LightLayer } from '../Layers/LightLayer.js';
 import { useTileJSONList } from '../hooks/useTileJSONList.js';
 import { formatDate, makeDateTime } from '../util/date.js';
-import { ParticleLayer } from '../Layers/ParticleLayer.js';
-import { useWeather } from '../hooks/useWeather.js';
-import { findForecast } from '../util/weather.js';
+import { ParticleFieldLayer } from '../Layers/ParticleFieldLayer.js'
+import { findFieldForecast } from '../util/weather.js';
 import { AISLayerCanvas } from '../Layers/AISLayerCanvas.js';
 import { MarkerLayer } from '../Layers/MarkerLayer.js';
 import { ALL_STATION_LOCATIONS } from "../util/weather.js";
+import { useWeatherField } from '../hooks/useWeatherField.js';
 
 const layers = [
   { name: "Tides", id: "tides" },
@@ -56,14 +56,21 @@ function Live() {
 
   const weatherMarkers = ALL_STATION_LOCATIONS;
 
-  const weather = useWeather(centre);
-  const weatherForecast = weather && findForecast(weather, currentTime);
-  /** @type {[number,number]?} */
-  const weatherVector = weatherForecast &&
-      [
-          weatherForecast.ForecastWindSpeed * -Math.sin(weatherForecast.ForecastWindDirection/180*Math.PI),
-          weatherForecast.ForecastWindSpeed * Math.cos(weatherForecast.ForecastWindDirection/180*Math.PI)
-      ];
+  const weather = useWeatherField(centre);
+  const weatherForecast = weather && findFieldForecast(weather, currentTime);
+
+  /**
+   * @type {{lon: number, lat: number, vector: [number, number] }[]}
+   */
+  const weatherFieldVector = weatherForecast &&
+    weatherForecast.map(weather => ({
+      lon: weather.lon,
+      lat: weather.lat,
+      vector: [
+          weather.forecast?.ForecastWindSpeed * -Math.sin(weather.forecast?.ForecastWindDirection/180*Math.PI),
+          weather.forecast?.ForecastWindSpeed * Math.cos(weather.forecast?.ForecastWindDirection/180*Math.PI)
+      ]
+    }));
 
   useEffect(() => {
     if (animateTime) {
@@ -149,7 +156,7 @@ function Live() {
         {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} />}
         {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
         {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
-        {selectedLayers.includes("weather") &&  weatherVector && <ParticleLayer vector={weatherVector} /> }
+        {selectedLayers.includes("weather") &&  weatherFieldVector && <ParticleFieldLayer field={weatherFieldVector} /> }
         {selectedLayers.includes("weather-stations") &&  weatherMarkers && <MarkerLayer markers={weatherMarkers} /> }
       </BasicMap>
     </div>

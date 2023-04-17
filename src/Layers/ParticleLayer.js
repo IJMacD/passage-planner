@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { StaticMapContext } from "../Components/StaticMap.js";
+import React from "react";
 
 /**
  * @typedef Particle
@@ -18,8 +19,8 @@ export function ParticleLayer ({ vector }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
-    /** @type {import("react").MutableRefObject<Particle[]|undefined>} */
-    const particlesRef = useRef();
+    /** @type {import("react").MutableRefObject<Particle[]>} */
+    const particlesRef = useRef([]);
 
     const { centre, zoom, width, height } = useContext(StaticMapContext);
 

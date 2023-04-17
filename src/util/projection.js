@@ -95,7 +95,7 @@ export function lonLat2TileXY({ zoom }) {
 
 /**
  * @param {StaticMapContextValue} context
- * @returns {[number, number, number, number]} [minLon, minLat, maxLon, maxLat]
+ * @returns {[minLon: number, minLat: number, maxLon: number, maxLat: number]} [minLon, minLat, maxLon, maxLat]
  */
 export function getBounds(context) {
     const projection = xy2LonLat(context);

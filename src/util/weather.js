@@ -39,6 +39,21 @@ export const ALL_STATION_LOCATIONS = [{loc:"CCH",lat:22.201,lon:114.027},{loc:"H
  * @param {[ longitude: number, latitude: number ]} centre
  */
 export function getForecastURL (centre) {
+    return getForecastURLs(centre)[0];
+}
+
+/**
+ * @param {[ longitude: number, latitude: number ]} centre
+ */
+export function getForecastURLs (centre, count = 1) {
+
+    return getNearestStations(centre, count).map(s => getForecastURLByStation(s.loc));
+}
+
+/**
+ * @param {[ longitude: number, latitude: number ]} centre
+ */
+export function getNearestStations (centre, count = 1) {
     const allStations = ALL_STATION_LOCATIONS.map(station => {
         const distance = latlon2nm({lon:centre[0],lat:centre[1]}, station);
         return { ...station, distance };
@@ -46,9 +61,7 @@ export function getForecastURL (centre) {
 
     allStations.sort((a, b) => a.distance - b.distance);
 
-    const nearest = allStations[0];
-
-    return getForecastURLByStation(nearest.loc);
+    return allStations.slice(0, count);
 }
 
 /**
@@ -68,6 +81,21 @@ export function findForecast (weather, time) {
     const d = time.getMinutes() < 30 ? time : new Date(+time + 30 * 60 * 1000);
     const timeString = dateFormat(d, "%Y%M%D%h");
     return weather.HourlyWeatherForecast.find(f => f.ForecastHour === timeString) || null;
+}
+
+/**
+ * Find the closest hourly forecast
+ * @param {{ lon: number, lat: number, weather: WeatherResponse }[]} weather
+ * @param {Date} time
+ */
+export function findFieldForecast (weather, time) {
+    const d = time.getMinutes() < 30 ? time : new Date(+time + 30 * 60 * 1000);
+    const timeString = dateFormat(d, "%Y%M%D%h");
+    return weather.map(field => {
+        const { weather, ...rest } = field;
+        const forecast = weather.HourlyWeatherForecast.find(f => f.ForecastHour === timeString) || null;
+        return { ...rest, forecast };
+    });
 }
 
 /**
