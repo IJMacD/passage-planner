@@ -34,8 +34,9 @@ export function ParticleFieldLayer ({ field }) {
 
     const particle_size = 3;
     const coef_speed = 3e-5;
-    const coef_animation = 5e-4;
-    const particle_fill = "#999";
+    const coef_animation = 5e-5;
+    const coef_fade = 0.9;
+    const particle_fill = "#CCC";
 
     if (particlesRef.current.length === 0) {
         particlesRef.current = makeParticles(400, bounds);
@@ -77,7 +78,7 @@ export function ParticleFieldLayer ({ field }) {
             // Fade previous frames
             ctx.globalCompositeOperation = "destination-in";
             ctx.globalAlpha = 1;
-            ctx.fillStyle = "rgba(0,0,0,0.9)";
+            ctx.fillStyle = `rgba(0,0,0,${coef_fade})`;
             ctx.fillRect(0, 0, pxWidth, pxHeight);
 
             ctx.globalCompositeOperation = "source-over";
@@ -172,7 +173,10 @@ export function ParticleFieldLayer ({ field }) {
 
                     // Draw
 
+                    // https://www.geogebra.org/m/zt77cdbb
                     const opacity = Math.sin(particle.animation * Math.PI);
+                    // const opacity = 1 - Math.pow(2 * particle.animation - 1, 2);
+                    // const opacity = 1 - Math.abs(2 * particle.animation - 1);
 
                     const projection = lonLat2XY(context);
 

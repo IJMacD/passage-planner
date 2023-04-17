@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ALL_STATION_LOCATIONS, getForecastURLByStation } from "../util/weather.js";
+import { ALL_STATION_LOCATIONS, getForecastURLByStation, getNearestStations } from "../util/weather.js";
 import { filterByBounds, getBounds } from "../util/projection.js";
 import { latlon2nm } from "../util/geo.js";
 
@@ -16,12 +16,16 @@ export function useWeatherField (context) {
 
         const centre = { lon: context.centre[0], lat: context.centre[1] };
 
-        const stations = ALL_STATION_LOCATIONS
+        let stations = ALL_STATION_LOCATIONS
             .filter(filterByBounds(bounds))
             .map(s => ({
                 ...s,
                 distance: latlon2nm(s, centre),
             }));
+
+        if (stations.length === 0) {
+            stations = getNearestStations(context.centre, 3);
+        }
 
         const promises = stations.map(station =>
             fetch(getForecastURLByStation(station.loc))
