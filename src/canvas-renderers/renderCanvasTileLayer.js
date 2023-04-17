@@ -3,9 +3,10 @@ import { TILE_SIZE, DEBUG } from "../Layers/CanvasTileLayer.js";
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @param {{ centre: [number, number]; zoom: number; width: any; height: any; }} context
- * @param {{url: string, x: number, y: number}[]} tiles
+ * @param {{centre: [number, number]; zoom: number; width: number; height: number; }} context
+ * @param {{url: string; x: number; y: number;}[]} tiles
  * @param {number} overscale
+ * @param {HTMLImageElement[]} images
  */
 export function renderCanvasTileLayer(canvas, context, tiles, images, overscale) {
     const ctx = canvas.getContext("2d");

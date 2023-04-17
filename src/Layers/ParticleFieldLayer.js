@@ -34,9 +34,9 @@ export function ParticleFieldLayer ({ field }) {
 
     const particle_size = 3;
     const coef_speed = 3e-5;
-    const coef_animation = 5e-5;
+    const coef_animation = 1e-4;
     const coef_fade = 0.9;
-    const particle_fill = "#CCC";
+    const particle_fill = "#DDD";
 
     if (particlesRef.current.length === 0) {
         particlesRef.current = makeParticles(400, bounds);
@@ -195,24 +195,36 @@ export function ParticleFieldLayer ({ field }) {
                     // ctx.lineTo(dpr * x, dpr * y);
                     // ctx.stroke();
 
-                    ctx.globalAlpha = opacity;
-                    ctx.beginPath();
-                    ctx.moveTo(dpr * x - vector[0], dpr * y - vector[1]);
-                    ctx.lineTo(dpr * x, dpr * y);
-                    ctx.stroke();
-
                     // ctx.globalAlpha = opacity;
+                    // ctx.lineWidth = 1.5 * dpr * particle_size;
+                    // ctx.strokeStyle = "white";
                     // ctx.beginPath();
-                    // ctx.moveTo(dpr * x - vector[0]/2, dpr * y - vector[1]/2);
+                    // ctx.moveTo(dpr * x - vector[0], dpr * y - vector[1]);
                     // ctx.lineTo(dpr * x, dpr * y);
                     // ctx.stroke();
 
                     // ctx.globalAlpha = opacity;
-
+                    // ctx.lineWidth = dpr * particle_size;
+                    // ctx.strokeStyle = particle_fill;
                     // ctx.beginPath();
-                    // ctx.arc(particle.x, particle.y, particle_size * dpr, 0, Math.PI * 2);
+                    // ctx.moveTo(dpr * x - vector[0], dpr * y - vector[1]);
+                    // ctx.lineTo(dpr * x, dpr * y);
+                    // ctx.stroke();
 
+                    ctx.globalAlpha = opacity;
+
+                    // ctx.lineWidth = 1.5 * dpr * particle_size;
+                    // ctx.fillStyle = "white";
+                    // ctx.beginPath();
+                    // ctx.arc(dpr * x, dpr * y, 1.5 * particle_size * dpr, 0, Math.PI * 2);
                     // ctx.fill();
+
+                    ctx.lineWidth = dpr * particle_size;
+                    ctx.fillStyle = particle_fill;
+                    ctx.beginPath();
+                    ctx.arc(dpr * x, dpr * y, particle_size * dpr, 0, Math.PI * 2);
+                    ctx.fill();
+
                 }
             }
         }
