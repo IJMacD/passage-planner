@@ -169,7 +169,7 @@ function Live() {
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
           {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} fade />}
-          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade projectedTrack />}
+          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade projectedTrack animation />}
           {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
           {selectedLayers.includes("weather") &&  weatherFieldVector && <ParticleFieldLayer field={weatherFieldVector} /> }
           {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> }
