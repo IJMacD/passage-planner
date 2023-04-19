@@ -32,6 +32,10 @@ export function CanvasTileLayer ({ layer }) {
         overscale = Math.pow(2, zoom - +layer.maxzoom);
         zoom = +layer.maxzoom;
     }
+    else if (zoom != Math.ceil(zoom)) {
+        overscale = Math.pow(2, zoom - Math.ceil(zoom));
+        zoom = Math.ceil(zoom);
+    }
 
     const tiles = useTiles(centre, zoom, width / overscale, height / overscale, layer);
 
