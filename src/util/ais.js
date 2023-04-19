@@ -379,17 +379,17 @@ export function getVesselColours (vessel) {
         case 0: // Underway using engine
             return [ "#080", "#8f8" ];
         case 1: // At anchor
-            return [ "#840", "#fC8" ];
+            return [ "#080", "#fC8" ];
         case 2: // Not under command
             return [ "#808", "#f8f" ];
         case 3: // Restricted maneuverability
-            return [ "#F00", "#fF4" ];
+            return [ "#F00", "#FCC" ];
         case 4: // Constraigned by draught
             return [ "#848", "#fcf" ];
         case 5: // Moored
-            return [ "#840", "#f80" ];
+            return [ "#840", "#fC8" ];
         case 6: // Aground
-            return [ "#FF0", "#F80" ];
+            return [ "#F00", "#fF4" ];
         case 7: // Fishing
             return [ "#00F", "#4FF" ];
         case 8: // Sailing
