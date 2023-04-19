@@ -24,7 +24,7 @@ export function ControlsLayer ({ setCentre, setZoom }) {
     }
 
     return (
-        <div className="BasicMap-Controls" style={{ position: "absolute", top: 20, right: 20, textAlign: "center" }} onClick={e => e.stopPropagation()}>
+        <div className="BasicMap-Controls" style={{ position: "absolute", top: 20, right: 20, textAlign: "center" }} onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
             { setCentre &&
                 <>
                     <button onClick={() => moveCentre(0, -1)}>North</button><br/>

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { renderPathLayer } from "../canvas-renderers/renderPathLayer.js";
 
 /**
@@ -17,6 +17,8 @@ export function PathLayer ({ paths }) {
 
     const context = useContext(StaticMapContext);
 
+    const [left,top] = useContext(DragContext);
+
     const pxWidth = context.width * devicePixelRatio;
     const pxHeight = context.height * devicePixelRatio;
 
@@ -33,5 +35,5 @@ export function PathLayer ({ paths }) {
 
     }, [context.centre[0], context.centre[1], context.zoom, pxWidth, pxHeight, paths]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

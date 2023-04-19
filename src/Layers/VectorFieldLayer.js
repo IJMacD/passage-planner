@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
@@ -23,6 +23,8 @@ import React from "react";
  */
 export function VectorFieldLayer ({ field }) {
     const context = useContext(StaticMapContext);
+
+    const [left,top] = useContext(DragContext);
 
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
@@ -84,7 +86,7 @@ export function VectorFieldLayer ({ field }) {
 
     }, [context, pxWidth, pxHeight, field]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
 
 function getColour (value) {

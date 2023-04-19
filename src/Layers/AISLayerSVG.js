@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { getVesselColours } from "../util/ais.js";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import React from "react";
 import { lonLat2XY } from "../util/projection.js";
 
@@ -21,8 +21,10 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
 
     const now = Date.now();
 
+    const [left,top] = useContext(DragContext);
+
     return (
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top, left }}>
         {
             vessels.map(vessel => {
 

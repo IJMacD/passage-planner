@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { useTiles } from "../hooks/useTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";
@@ -15,6 +15,9 @@ export const DEBUG = false;
  */
 export function CanvasTileLayer ({ layer }) {
     const context = useContext(StaticMapContext);
+
+    const [left,top] = useContext(DragContext);
+
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     let { centre, zoom, width, height } = context;
@@ -68,5 +71,5 @@ export function CanvasTileLayer ({ layer }) {
         }
     }, [tiles, overscale, context]);
 
-    return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
+    return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

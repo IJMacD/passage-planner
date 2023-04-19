@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { lat2tile, lon2tile } from "../util/geo.js";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 
 const TILE_SIZE = 256;
 
@@ -9,6 +9,8 @@ export function ImageLayer ({ image, bounds }) {
     const canvasRef = useRef(null);
 
     const { centre, zoom, width, height } = useContext(StaticMapContext);
+
+    const [left,top] = useContext(DragContext);
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
@@ -44,5 +46,5 @@ export function ImageLayer ({ image, bounds }) {
 
     }, [centre, zoom, pxWidth, pxHeight, image]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

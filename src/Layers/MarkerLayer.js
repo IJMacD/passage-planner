@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { lonLat2XY } from "../util/projection.js";
 import { Marker } from "../Components/Marker.js";
 
@@ -22,8 +22,10 @@ export function MarkerLayer ({ markers, onClick = null }) {
     const context = useContext(StaticMapContext);
     const projection = lonLat2XY(context);
 
+    const [left,top] = useContext(DragContext);
+
     return (
-        <div style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, lineHeight: 0, }}>
+        <div style={{ width: "100%", height: "100%", position: "absolute", top, left, lineHeight: 0, }}>
             {
                 markers.map((marker, i) => {
                     if (!marker) return null;

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { getVesselColours } from "../util/ais.js";
-import { StaticMapContext } from "../Components/StaticMap.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
@@ -13,9 +13,11 @@ import React from "react";
 export function AISLayerCanvas ({ vessels }) {
     const context = useContext(StaticMapContext);
 
+    const [left,top] = useContext(DragContext);
+
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const { width, height } = useContext(StaticMapContext);
+    const { width, height } = context;
 
     const dpr = devicePixelRatio;
 
@@ -82,5 +84,5 @@ export function AISLayerCanvas ({ vessels }) {
 
     }, [context, pxWidth, pxHeight, vessels, dpr]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
