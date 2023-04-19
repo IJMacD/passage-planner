@@ -5,8 +5,6 @@ import { useLights } from "../hooks/useLights.js";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 
-const TILE_SIZE = 256;
-
 /**
  * @typedef Light
  * @prop {number} lon
@@ -36,7 +34,7 @@ export function LightLayer () {
 
                     const [x, y] = projection(light.lon, light.lat);
 
-                    if (0 < 0 || x > context.width || y < 0 || y > context.height) {
+                    if (x < 0 || x > context.width || y < 0 || y > context.height) {
                         return null;
                     }
 

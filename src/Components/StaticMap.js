@@ -31,41 +31,44 @@ export const DragContext = React.createContext(/** @type {DragContextValue} */([
  * @param {number} [props.height]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
  * @param {React.ReactNode} [props.children]
+ * @param {boolean} [props.draggable]
  * @returns
  */
-export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, children }) {
+export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, draggable=false, children }) {
     const [ dragOffset, setDragOffset ] = useState(/** @type {DragContextValue} */([0,0]));
 
     const mouseDragStartRef = useRef(/** @type {[x: number, y: number]?} */(null))
 
-    // /**
-    //  * @param {import("react").MouseEvent<HTMLDivElement>} e
-    //  */
-    // function handleClick (e) {
-    //     if(onClick) {
-    //         const rect = e.currentTarget.getBoundingClientRect();
-    //         const x = (e.clientX - rect.left);
-    //         const y = (e.clientY - rect.top);
+    /**
+     * @param {import("react").MouseEvent<HTMLDivElement>} e
+     */
+    function handleClick (e) {
+        if(onClick && !draggable) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left);
+            const y = (e.clientY - rect.top);
 
-    //         const projection = xy2LonLat({ centre, zoom, width, height });
-    //         const [ lon, lat ] = projection(x, y);
+            const projection = xy2LonLat({ centre, zoom, width, height });
+            const [ lon, lat ] = projection(x, y);
 
-    //         onClick(lon, lat, e);
-    //     }
-    // }
+            onClick(lon, lat, e);
+        }
+    }
 
     /**
      * @param {import("react").MouseEvent} e
      */
     function handleMouseDown (e) {
-        mouseDragStartRef.current = [e.screenX,e.screenY];
+        if (draggable) {
+            mouseDragStartRef.current = [e.screenX,e.screenY];
+        }
     }
 
     /**
      * @param {import("react").MouseEvent} e
      */
     function handleMouseUp (e) {
-        if(onClick && dragOffset) {
+        if(onClick && draggable && dragOffset) {
             const context = { centre, zoom, width, height };
 
             const projection = lonLat2XY(context);
@@ -106,7 +109,7 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
     return (
         <div
             style={{ position: "relative", width, height, minWidth: width, overflow: "hidden" }}
-            // onClick={handleClick}
+            onClick={handleClick}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}

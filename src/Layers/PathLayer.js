@@ -33,7 +33,7 @@ export function PathLayer ({ paths }) {
 
         renderPathLayer(canvasRef.current, context, paths);
 
-    }, [context.centre[0], context.centre[1], context.zoom, pxWidth, pxHeight, paths]);
+    }, [context, pxWidth, pxHeight, paths]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

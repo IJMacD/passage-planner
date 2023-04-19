@@ -14,11 +14,12 @@ import { StaticMap } from "./StaticMap.js";
  * @param {React.ReactNode} [props.children]
  * @param {number} [props.width]
  * @param {number} [props.height]
+ * @param {boolean} [props.draggable]
  * @returns
  */
-export function BasicMap ({ centre, zoom, setCentre, setZoom, onClick, children, width, height }) {
+export function BasicMap ({ centre, zoom, setCentre, setZoom, onClick, draggable = false, children, width, height }) {
     return (
-        <StaticMap centre={centre} zoom={zoom} width={width} height={height} onClick={onClick}>
+        <StaticMap centre={centre} zoom={zoom} width={width} height={height} onClick={onClick} draggable={draggable}>
             <WorldLayer />
             {/* { basemapLayer && <TileMapLayer layer={basemapLayer} /> } */}
             { children }

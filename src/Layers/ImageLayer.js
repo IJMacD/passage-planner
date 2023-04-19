@@ -22,6 +22,9 @@ export function ImageLayer ({ image, bounds }) {
 
         if (!ctx) return;
 
+        const pxWidth = width * devicePixelRatio;
+        const pxHeight = height * devicePixelRatio;
+
         ctx.canvas.width = pxWidth;
         ctx.canvas.height = pxHeight;
 
@@ -44,7 +47,7 @@ export function ImageLayer ({ image, bounds }) {
 
         ctx.drawImage(image, -tileOffsetX * tileWidth, -tileOffsetY * tileHeight, blownUpImageWidth, blownUpImageHeight);
 
-    }, [centre, zoom, pxWidth, pxHeight, image]);
+    }, [centre, zoom, width, height, image]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
