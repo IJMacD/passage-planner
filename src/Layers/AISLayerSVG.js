@@ -15,13 +15,25 @@ import { lonLat2XY } from "../util/projection.js";
  */
 export function AISLayerSVG ({ vessels, showNames = false, fade = false, projectedTrack = false }) {
     const context = useContext(StaticMapContext);
-    const { width, height } = context;
+    const { centre: [ lon, lat ], zoom, width, height } = context;
 
     const projection = lonLat2XY(context);
 
     const now = Date.now();
 
     const [left,top] = useContext(DragContext);
+
+    const worldWidthInTiles = Math.pow(2, zoom);
+    const worldRadiusInMetres = 6_372_798.2;
+    const worldCircumferenceInMetres = worldRadiusInMetres * Math.PI * 2;
+    const latitudeCircumference = Math.cos(lat / 180 * Math.PI) * worldCircumferenceInMetres;
+    const metresPerTile = latitudeCircumference / worldWidthInTiles;
+    const metresPerPixel = metresPerTile / 256;
+    const pixelsPerNauticalMile = 1852 / metresPerPixel;
+
+    const durationInMinutes = 1;
+
+    const speedScale = pixelsPerNauticalMile * (durationInMinutes / 60);
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top, left }}>
@@ -58,7 +70,7 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
                     return (
                         <g key={vessel.mmsi} transform={`translate(${x}, ${y})`} opacity={opacity}>
                             <title>{vessel.name}</title>
-                            { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-vessel.speedOverGround * 5}`} transform={`rotate(${vessel.courseOverGround})`} stroke="red" strokeWidth={1.5} />}
+                            { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-vessel.speedOverGround * speedScale}`} transform={`rotate(${vessel.courseOverGround})`} stroke="red" strokeWidth={1.5} />}
                             { isMoving(vessel) ?
                                 <g transform={`rotate(${vessel.trueHeading||vessel.courseOverGround})`}>
                                     <path d={`M 0 ${-2*s} L ${s} ${s} L 0 ${s/2} L ${-s} ${s} Z`} fill={light} stroke={dark} strokeWidth={2} strokeLinejoin="round" />
