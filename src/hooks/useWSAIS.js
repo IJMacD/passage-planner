@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { WSAIS } from "../util/ais.js";
 
-const NAME_CACHE_KEY = "passagePlanner.names";
+const VESSEL_CACHE_KEY = "passagePlanner.vessels";
 
 /**
  * @typedef {import("../util/ais.js").VesselReport} VesselReport
@@ -43,19 +43,17 @@ export function useWSAIS (active) {
                         vesselMapRef.current.set(vessel.mmsi, updatedVessel);
                         setVessels([...vesselMapRef.current.values()]);
 
-                        if (vessel.name) {
-                            saveVesselName(vessel.mmsi, vessel.name);
+                        if (type === 5) {
+                            saveVessel(vessel.mmsi, vessel);
                         }
                     }
+                    // We have position info for a new vessel
                     else if (type !== 5) {
-                        // New vessel
+                        // Try to retrieve saved info
+                        const savedVessel = getSavedVessel(vessel.mmsi) || {};
 
-                        const name = getSavedName(vessel.mmsi);
-                        if (name) {
-                            vessel.name = name;
-                        }
+                        vesselMapRef.current.set(vessel.mmsi, { ...savedVessel, ...vessel, lastUpdate });
 
-                        vesselMapRef.current.set(vessel.mmsi, { ...vessel, lastUpdate });
                         setVessels([...vesselMapRef.current.values()]);
                     }
                 }
@@ -75,10 +73,10 @@ export function useWSAIS (active) {
 
 /**
  * @param {number} mmsi
- * @returns {string|undefined}
+ * @returns {import("../util/ais.js").Vessel|undefined}
  */
-function getSavedName (mmsi) {
-    const savedNames = localStorage.getItem(NAME_CACHE_KEY);
+function getSavedVessel (mmsi) {
+    const savedNames = localStorage.getItem(VESSEL_CACHE_KEY);
     if (savedNames) {
         try {
             const names = JSON.parse(savedNames);
@@ -88,15 +86,21 @@ function getSavedName (mmsi) {
     }
 }
 
-function saveVesselName (mmsi, name) {
-    let names = {};
-    const savedNames = localStorage.getItem(NAME_CACHE_KEY);
-    if (savedNames) {
+/**
+ *
+ * @param {number} mmsi
+ * @param {import("../util/ais.js").Vessel} vessel
+ */
+function saveVessel (mmsi, vessel) {
+    let vessels = {};
+    const savedVessels = localStorage.getItem(VESSEL_CACHE_KEY);
+    if (savedVessels) {
         try {
-            names = JSON.parse(savedNames);
+            vessels = JSON.parse(savedVessels);
         }
         catch (e) {}
     }
-    names[mmsi] = name;
-    localStorage.setItem(NAME_CACHE_KEY, JSON.stringify(names));
+    const savedVessel = vessels[mmsi] || {};
+    vessels[mmsi] = { ...savedVessel, ...vessel };
+    localStorage.setItem(VESSEL_CACHE_KEY, JSON.stringify(vessels));
 }
