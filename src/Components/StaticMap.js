@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { lonLat2XY, xy2LonLat } from "../util/projection.js";
+import { useFullscreen } from "../hooks/useFullscreen.js";
 
 /**
  * @typedef StaticMapContextValue
@@ -37,7 +38,7 @@ export const DragContext = React.createContext(/** @type {DragContextValue} */([
 export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, draggable=false, children }) {
     const [ dragOffset, setDragOffset ] = useState(/** @type {DragContextValue} */([0,0]));
 
-    const mouseDragStartRef = useRef(/** @type {[x: number, y: number]?} */(null))
+    const mouseDragStartRef = useRef(/** @type {[x: number, y: number]?} */(null));
 
     /**
      * @param {import("react").MouseEvent<HTMLDivElement>} e
@@ -98,13 +99,32 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
         }
     }
 
+    const [ actualWidth, setActualWidth ] = useState(width);
+    const [ actualHeight, setActualHeight ] = useState(height);
+
     const [ cx, cy ] = centre;
 
     const context = useMemo(() => {
-        /** @type {[number, number]} */
+        /** @type {[lon: number, lat: number]} */
         const centre = [ cx, cy ];
-        return { centre, zoom, width, height };
-    }, [ cx, cy, zoom, width, height ]);
+        return { centre, zoom, width:actualWidth, height:actualHeight };
+    }, [ cx, cy, zoom, actualWidth, actualHeight ]);
+
+    /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
+    const mapRef = useRef(null);
+
+    const updateSize = useCallback(() => {
+        if (mapRef.current) {
+            setActualWidth(mapRef.current.clientWidth);
+            setActualHeight(mapRef.current.clientHeight);
+        }
+    }, []);
+
+    const [ isFullscreen, setIsFullscreen ] = useFullscreen(mapRef.current, updateSize);
+
+    function toggleFullscreen () {
+        setIsFullscreen(!isFullscreen);
+    }
 
     return (
         <div
@@ -113,15 +133,15 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
+            ref={mapRef}
         >
             <DragContext.Provider value={dragOffset}>
                 <StaticMapContext.Provider value={context}>
                     { children }
                 </StaticMapContext.Provider>
             </DragContext.Provider>
-            {/* {
-                dragOffset && <p style={{position:"absolute"}}>dx: {dragOffset[0]} dy: {dragOffset[1]}</p>
-            } */}
+            {/* dragOffset && <p style={{position:"absolute"}}>dx: {dragOffset[0]} dy: {dragOffset[1]}</p> */}
+            <button style={{position:"absolute", right: 10, bottom: 10 }} onClick={toggleFullscreen}>{isFullscreen?"Exit Fullscreen":"Fullscreen"}</button>
         </div>
     );
 }
