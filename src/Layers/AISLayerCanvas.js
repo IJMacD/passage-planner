@@ -15,10 +15,12 @@ export function AISLayerCanvas ({ vessels }) {
 
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+    const { width, height } = useContext(StaticMapContext);
 
-    const pxWidth = width * devicePixelRatio;
-    const pxHeight = height * devicePixelRatio;
+    const dpr = devicePixelRatio;
+
+    const pxWidth = width * dpr;
+    const pxHeight = height * dpr;
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -35,46 +37,50 @@ export function AISLayerCanvas ({ vessels }) {
         for (const vessel of vessels) {
             const [x, y] = projection(vessel.longitude, vessel.latitude);
 
-            ctx.translate(x, y);
+            ctx.save();
+
+            ctx.translate(x * dpr, y * dpr);
 
             const [ dark, light ] = getVesselColours(vessel);
 
             if (vessel.name) {
                 ctx.fillStyle = dark;
-                ctx.font = `${10 * devicePixelRatio}px sans-serif`;
-                ctx.fillText(vessel.name, 10 * devicePixelRatio, 0);
+                ctx.font = `${10 * dpr}px sans-serif`;
+                ctx.fillText(vessel.name, 10 * dpr, 0);
             }
 
             ctx.strokeStyle = dark;
             ctx.fillStyle = light;
 
-            ctx.lineWidth = 2 * devicePixelRatio;
+            ctx.lineWidth = 2 * dpr;
             ctx.beginPath();
 
             if (vessel.speedOverGround === 0) {
-                ctx.arc(0, 0, 5 * devicePixelRatio, 0, Math.PI * 2);
+                ctx.arc(0, 0, 5 * dpr, 0, Math.PI * 2);
             }
             else {
-                ctx.rotate(vessel.courseOverGround / 180 * Math.PI + Math.PI);
+                ctx.rotate(vessel.courseOverGround / 180 * Math.PI);
 
-                const r = 5 * devicePixelRatio;
+                const r = 5 * dpr;
 
                 ctx.moveTo(0, -r * 2);
                 ctx.lineTo(r, r);
-                ctx.lineTo(0, 0);
+                ctx.lineTo(0, r / 2);
                 ctx.lineTo(-r, r);
                 ctx.closePath()
                 ctx.lineCap = "round";
 
-                ctx.resetTransform();
+                // ctx.resetTransform();
             }
 
             ctx.fill();
             ctx.stroke();
+
+            ctx.restore();
         }
 
 
-    }, [context, pxWidth, pxHeight, vessels]);
+    }, [context, pxWidth, pxHeight, vessels, dpr]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
 }

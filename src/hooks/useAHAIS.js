@@ -7,29 +7,32 @@ import { getTileBounds } from "../util/geo.js";
  * @param {number} zoom
  */
 export function useAHAIS (centre, zoom) {
-    const [ vessels, setVessels ] = useState(/** @type {import("../util/ais").Vessel[]} */([]));
+    const [ vessels, setVessels ] = useState(/** @type {import("../util/ais").VesselReport[]} */([]));
 
     useEffect(() => {
-        async function run () {
-            const bounds = getTileBounds(centre, zoom);
-            try {
-                const [status,vessels]  = await fetchAIS(bounds);
+        // In order to disable fetching when not-selected
+        if (zoom > 0) {
+            async function run () {
+                const bounds = getTileBounds(centre, zoom);
+                try {
+                    const [status,vessels]  = await fetchAIS(bounds);
 
-                if (status.ERROR) {
-                    console.error(status);
+                    if (status.ERROR) {
+                        console.error(status);
+                    }
+                    else {
+                        setVessels(vessels);
+                    }
                 }
-                else {
-                    setVessels(vessels);
-                }
+                catch (e) {}
             }
-            catch (e) {}
+
+            run();
+
+            const id = setInterval(run, 60 * 1000);
+
+            return () => clearInterval(id);
         }
-
-        run();
-
-        const id = setInterval(run, 60 * 1000);
-
-        return () => clearInterval(id);
     }, [centre, zoom]);
 
     return vessels;

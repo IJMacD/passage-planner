@@ -1,70 +1,98 @@
 import { useContext } from "react";
 import { getVesselColours } from "../util/ais.js";
-import { lat2tile, lon2tile, tile2lat, tile2long } from "../util/geo.js";
 import { StaticMapContext } from "../Components/StaticMap.js";
 import React from "react";
-
-const TILE_SIZE = 256;
+import { lonLat2XY } from "../util/projection.js";
 
 /**
  *
  * @param {object} props
- * @param {import("../util/ais").Vessel[]} props.vessels
+ * @param {import("../hooks/useWSAIS.js").VesselReport[]} props.vessels
+ * @param {boolean} [props.showNames]
+ * @param {boolean} [props.fade]
+ * @param {boolean} [props.projectedTrack]
  * @returns
  */
-export function AISLayerSVG ({ vessels }) {
-    const { centre, zoom, width, height } = useContext(StaticMapContext);
+export function AISLayerSVG ({ vessels, showNames = false, fade = false, projectedTrack = false }) {
+    const context = useContext(StaticMapContext);
+    const { width, height } = context;
 
-    const pxWidth = width * devicePixelRatio;
-    const pxHeight = height * devicePixelRatio;
+    const projection = lonLat2XY(context);
 
-    const tileWidth = TILE_SIZE * devicePixelRatio;
-    const tileHeight = TILE_SIZE * devicePixelRatio;
-
-    const tileCountX = pxWidth / tileWidth;
-    const tileCountY = pxHeight / tileHeight;
-
-    const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-    const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
-
-    const minLon = tile2long(tileOffsetX, zoom);
-    const minLat = tile2lat(tileOffsetY, zoom);
-    const maxLon = tile2long(tileOffsetX + tileCountX, zoom);
-    const maxLat = tile2lat(tileOffsetY + tileCountY, zoom);
+    const now = Date.now();
 
     return (
-        <svg viewBox={`0 0 ${pxWidth} ${pxHeight}`} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
         {
             vessels.map(vessel => {
-                const lonFrac = (vessel.longitude-minLon)/(maxLon-minLon);
-                const latFrac = (vessel.latitude-minLat)/(maxLat-minLat);
 
-                if (lonFrac >= 0 && lonFrac <= 1 && latFrac >= 0 && latFrac <= 1) {
-                    const x = lonFrac * pxWidth;
-                    const y = latFrac * pxHeight;
+                    const [ x, y ] = projection(vessel.longitude, vessel.latitude);
 
                     const [ dark, light ] = getVesselColours(vessel);
 
-                    if (vessel.speedOverGround === 0) {
-                        return (
-                            <ellipse key={vessel.mmsi} cx={x} cy={y} rx={10} ry={10} fill={light} stroke={dark} strokeWidth={2}>
-                                <title>{vessel.name}</title>
-                            </ellipse>
-                        );
+                    const s = 5;
+
+                    if (fade && typeof vessel.lastUpdate === "undefined") {
+                        return null;
                     }
 
-                    const s = 15;
+                    let opacity = 1;
+
+                    if (fade) {
+                        const delta = now - vessel.lastUpdate;
+
+                        if (delta > 600_000) {
+                            return null;
+                        }
+
+                        if (delta > 300_000) {
+                            opacity = 0.5;
+                        }
+                    }
+
+                    const type = typeof vessel.shipType === "number" ? vessel.shipType : 0;
+                    const type10 = Math.floor(type / 10) * 10;
 
                     return (
-                        <path key={vessel.mmsi} d={`M 0 ${-2*s} L ${s} ${s} L 0 0 L ${-s} ${s} Z`} transform={`translate(${x}, ${y}) rotate(${vessel.courseOverGround + 180})`} fill={light} stroke={dark} strokeWidth={2} strokeLinejoin="round">
+                        <g key={vessel.mmsi} transform={`translate(${x}, ${y})`} opacity={opacity}>
                             <title>{vessel.name}</title>
-                        </path>
-                    );
-                }
+                            { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-vessel.speedOverGround * 5}`} transform={`rotate(${vessel.courseOverGround})`} stroke="red" strokeWidth={1.5} />}
+                            { isMoving(vessel) ?
+                                <g transform={`rotate(${vessel.trueHeading||vessel.courseOverGround})`}>
+                                    <path d={`M 0 ${-2*s} L ${s} ${s} L 0 ${s/2} L ${-s} ${s} Z`} fill={light} stroke={dark} strokeWidth={2} strokeLinejoin="round" />
+                                    { /* Wing Craft */ }
+                                    { type10 === 20 && <path d={`M 0 ${s} L ${s} ${2*s} H ${-s} Z`} fill={dark} /> }
+                                    { /* Towing */ }
+                                    { type === 31 && <path d={`M 0 ${-4*s} V ${-2*s} M ${-s} ${-3*s} H ${s}`} stroke={dark} strokeWidth={2} /> }
+                                    { /* Sailboat */ }
+                                    { type === 36 && <path d={`M 0 ${-3*s} A 1 1 0 0 1 0 ${-2*s}`} fill={dark} /> }
+                                    { /* High Speed Craft */ }
+                                    { type10 === 40 && <path d={`M 0 ${-3*s} L ${s} ${-2*s} H ${-s} Z`} fill={dark} /> }
+                                    { /* Pilot */ }
+                                    { type === 50 && <path d={`M 0 ${-2*s} V ${-4*s} A 1 1 0 0 1 0 ${-3*s}`} stroke={dark} fill="none" /> }
+                                    { /* Tug */ }
+                                    { type === 52 && <path d={`M 0 ${-3*s} V ${-2*s} M ${-s} ${-2*s} H ${s}`} stroke={dark} strokeWidth={2} /> }
+                                    { /* Passenger */ }
+                                    { type10 === 60 && <ellipse cx={0} cy={-2.5*s} rx={s/2} ry={s/2} fill={dark} /> }
+                                    { /* Cargo */ }
+                                    { type10 === 70 && <rect x={-s/2} y={-3*s} width={s} height={s} fill={dark} /> }
+                                    { /* Tanker */ }
+                                    { type10 === 80 && <rect x={-s/2} y={-4*s} width={s} height={s*2} fill={dark} /> }
 
-                return null;
+
+                                    { type10 === 99 && <ellipse cx={0} cy={-2.5*s} r={s/2} stroke={dark} /> }
+                                </g> :
+                                <ellipse cx={0} cy={0} rx={s} ry={s} fill={light} stroke={dark} strokeWidth={2} />
+                            }
+                            { showNames && <text x={s*2} y={s*2}>{vessel.name}</text> }
+                        </g>
+                    );
             })
         }
         </svg>
     );
 }
+function isMoving (vessel) {
+    return vessel.speedOverGround >= 1;
+}
+

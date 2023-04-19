@@ -19,6 +19,7 @@ import { ParticleFieldLayer } from '../Layers/ParticleFieldLayer.js'
 import { findFieldForecast } from '../util/weather.js';
 import { AISLayerCanvas } from '../Layers/AISLayerCanvas.js';
 import { useWeatherField } from '../hooks/useWeatherField.js';
+import { VesselTable } from '../Components/VesselTable.js';
 
 const layers = [
   { name: "Tides", id: "tides" },
@@ -44,8 +45,11 @@ function Live() {
 
   const tideVectors = useTides(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
-  const vesselsAH = useAHAIS(centre, zoom);
-  const vesselsWS = useWSAIS();
+
+  const isAHAISActive = selectedLayers.includes("ahais") || selectedLayers.includes("ais");
+  const isWSAISActive = selectedLayers.includes("wsais") || selectedLayers.includes("ais");
+  const vesselsAH = useAHAIS(centre, isAHAISActive ? zoom : 0);
+  const vesselsWS = useWSAIS(isWSAISActive);
   const vessels = combineAIS([vesselsAH, vesselsWS]);
 
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", /** @type {string[]} */([]));
@@ -156,19 +160,22 @@ function Live() {
         </label>
         <AISKey />
       </div>
-      <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={(lon, lat) => setCentre([lon, lat])} width={width} height={height}>
-        {
-          tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
-        }
-        {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
-        {selectedLayers.includes("debug") && <DebugLayer />}
-        {selectedLayers.includes("lights") && <LightLayer />}
-        {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} />}
-        {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} />}
-        {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
-        {selectedLayers.includes("weather") &&  weatherFieldVector && <ParticleFieldLayer field={weatherFieldVector} /> }
-        {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> }
-      </BasicMap>
+      <div>
+        <BasicMap centre={centre} zoom={zoom} setCentre={setCentre} setZoom={setZoom} onClick={(lon, lat) => setCentre([lon, lat])} width={width} height={height}>
+          {
+            tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
+          }
+          {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
+          {selectedLayers.includes("debug") && <DebugLayer />}
+          {selectedLayers.includes("lights") && <LightLayer />}
+          {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} fade />}
+          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade projectedTrack />}
+          {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
+          {selectedLayers.includes("weather") &&  weatherFieldVector && <ParticleFieldLayer field={weatherFieldVector} /> }
+          {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> }
+        </BasicMap>
+        {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} />}
+      </div>
     </div>
   );
 }

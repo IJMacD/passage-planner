@@ -1,18 +1,14 @@
+import React from "react";
 import { getVesselColours } from "../util/ais.js";
 
-/**
- *
- * @param {object} props
- * @returns
- */
-export function AISKey ({  }) {
+export function AISKey () {
 
     const navstat = [
         { value: 0, label: "Underway" },
         { value: 1, label: "At Anchor" },
         { value: 2, label: "Not Under Command" },
-        { value: 3, label: "Restricted Maneuverability" },
-        { value: 4, label: "Contraigned by Draught" },
+        { value: 3, label: "Restricted Manoeuvrability" },
+        { value: 4, label: "Constrained by Draught" },
         { value: 5, label: "Moored" },
         { value: 6, label: "Aground" },
         { value: 7, label: "Fishing" },
@@ -33,7 +29,7 @@ export function AISKey ({  }) {
                 const [ dark, light ] = getVesselColours({ navigationStatus: stat.value });
                 return (
                     <g key={stat.value} transform={`translate(10, ${i * 20 + 10})`}>
-                        <path d="M 0 -10 L 5 5 L 0 0 L -5 5 Z"  fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
+                        <path d="M 0 -10 L 5 5 L 0 2.5 L -5 5 Z"  fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
                         <text x={10} y={5}>{stat.label}</text>
                     </g>
                 );

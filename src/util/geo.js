@@ -48,11 +48,11 @@ export function getTileBounds (centre, zoom) {
 
 // Ref : https://www.movable-type.co.uk/scripts/latlong.html
 
-export function lat2nm (lat1, lat2) {
+function lat2nm (lat1, lat2) {
     return Math.abs(lat1 - lat2) * 60;
 }
 
-export function lon2nm (point1, point2) {
+function lon2nm (point1, point2) {
     const avgLat = (point1.lat + point2.lat) / 2;
     const latRad = avgLat / 180 * Math.PI;
     const distAtEquator = 60.1088246;
