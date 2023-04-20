@@ -5,10 +5,10 @@
  * @property {number} navigationStatus
  * @property {number} longitude
  * @property {number} latitude
- * @property {number} speedOverGround Knots
- * @property {number} courseOverGround Degrees
+ * @property {number} [speedOverGround] Knots
+ * @property {number} [courseOverGround] Degrees
  * @property {number} rateOfTurn Degrees per minute
- * @property {number} trueHeading Degrees
+ * @property {number} [trueHeading] Degrees
  * @property {number} timestamp clock seconds of report
  * @property {number} manoeuvreIndicator
  * @property {number} [aisVersion]
@@ -370,37 +370,6 @@ function getChars(dd, firstBit, lastBit) {
     return chars.join("");
 }
 
-/**
- * @param {Vessel} vessel
- * @returns {[ stroke: string, fill: string ]}
- */
-export function getVesselColours (vessel) {
-    switch (vessel.navigationStatus) {
-        case 0: // Underway using engine
-            return [ "#080", "#8f8" ];
-        case 1: // At anchor
-            return [ "#080", "#fC8" ];
-        case 2: // Not under command
-            return [ "#808", "#f8f" ];
-        case 3: // Restricted maneuverability
-            return [ "#F00", "#FCC" ];
-        case 4: // Constraigned by draught
-            return [ "#848", "#fcf" ];
-        case 5: // Moored
-            return [ "#840", "#fC8" ];
-        case 6: // Aground
-            return [ "#F00", "#fF4" ];
-        case 7: // Fishing
-            return [ "#00F", "#4FF" ];
-        case 8: // Sailing
-            return [ "#00f", "#88f" ];
-        case 15: // Undefined/Default
-            return [ "#333", "#FFF" ];
-        default:
-            return [ "#000", "#888" ];
-    }
-}
-
 export class WSAIS {
     /** @type {((message: Vessel) => void)[]} */
     #listeners = [];
@@ -489,3 +458,18 @@ export function combineAIS (sets) {
 
     return [...map.values()];
 }
+
+export const NavigationStatus = {
+    UNDERWAY_USING_ENGINE: 0,
+    AT_ANCHOR: 1,
+    NOT_UNDER_COMMAND: 2,
+    RESTRICTED_MANOEUVRABILITY: 3,
+    CONSTRAINED_BY_DRAUGHT: 4,
+    MOORED: 5,
+    AGROUND: 6,
+    ENGAGED_IN_FISHING: 7,
+    UNDERWAY_SAILING: 8,
+    RESERVED_HSC: 9,
+    SART: 14,
+    NOT_DEFINED: 15,
+};

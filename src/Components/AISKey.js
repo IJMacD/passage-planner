@@ -1,5 +1,5 @@
 import React from "react";
-import { getVesselColours } from "../util/ais.js";
+import { getVesselColours } from "./VesselShapeByNavigation.js";
 
 export function AISKey () {
 
