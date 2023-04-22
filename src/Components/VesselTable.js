@@ -10,9 +10,10 @@ const SortableContext = createContext({ sortField: "", setSortField: /** @type {
  *
  * @param {object} props
  * @param {import('../hooks/useWSAIS').VesselReport[]} props.vessels
+ * @param {(lon: number, lat: number) => void} [props.onClickLonLat]
  * @returns
  */
-export function VesselTable({ vessels }) {
+export function VesselTable({ vessels, onClickLonLat }) {
   const [ sortField, setSortField ] = useState("-lastUpdate");
 
   useAnimation(true, 1000);
@@ -62,8 +63,22 @@ export function VesselTable({ vessels }) {
             <tr key={vessel.mmsi}>
               <td><a href={`https://www.marinetraffic.com/en/ais/details/ships/mmsi:${vessel.mmsi}`} target="_blank" rel="noreferrer">{vessel.mmsi}</a></td>
               <td>{vessel.name}</td>
-              <td>{vessel.latitude.toFixed(5)}</td>
-              <td>{vessel.longitude.toFixed(5)}</td>
+              <td>
+                { onClickLonLat ?
+                  <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
+                    {vessel.latitude.toFixed(5)}
+                  </button> :
+                  vessel.latitude.toFixed(5)
+                }
+              </td>
+              <td>
+                { onClickLonLat ?
+                  <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
+                    {vessel.longitude.toFixed(5)}
+                  </button> :
+                  vessel.longitude.toFixed(5)
+                }
+              </td>
               <td>{vessel.speedOverGround} {typeof vessel.speedOverGround === "number" && "kn"}</td>
               <td>{vessel.courseOverGround}{typeof vessel.courseOverGround === "number" && "°"}</td>
               <td>{vessel.trueHeading}{typeof vessel.trueHeading === "number" && "°"}</td>

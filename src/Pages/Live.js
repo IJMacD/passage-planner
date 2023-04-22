@@ -161,7 +161,7 @@ function Live() {
           {/* {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> } */}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>
-        {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} />}
+        {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} />}
       </div>
     </div>
   );
