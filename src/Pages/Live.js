@@ -26,6 +26,7 @@ const layers = [
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
   { name: "AIS RTLSDR", id: "wsais" },
+  { name: "AIS RTLSDR (Canvas)", id: "wsais-canvas" },
   { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
   { name: "Weather", id: "weather" },
@@ -153,8 +154,9 @@ function Live() {
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
           {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} fade />}
-          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade  animation />}
-          {selectedLayers.includes("ais") && <AISLayerCanvas vessels={vessels} />}
+          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames animation projectedTrack />}
+          {selectedLayers.includes("wsais-canvas") && <AISLayerCanvas vessels={vesselsWS} />}
+          {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {/* {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> } */}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />

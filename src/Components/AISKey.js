@@ -1,5 +1,5 @@
 import React from "react";
-import { getVesselColours } from "./VesselShapeByNavigation.js";
+import { getVesselColours } from "./VesselShapeByType.js";
 
 export function AISKey () {
 
@@ -13,8 +13,8 @@ export function AISKey () {
         { value: 6, label: "Aground" },
         { value: 7, label: "Fishing" },
         { value: 8, label: "Sailing" },
-        { value: 9, label: "Reserved" },
-        { value: 10, label: "Reserved" },
+        { value: 9, label: "Reserved (High Speed Craft)" },
+        { value: 10, label: "Reserved (Wing Craft)" },
         { value: 11, label: "Reserved" },
         { value: 12, label: "Reserved" },
         { value: 13, label: "Reserved" },
@@ -23,18 +23,26 @@ export function AISKey () {
     ];
 
     return (
-        <svg viewBox={`0 0 200 400`} style={{ }}>
-        {
-            navstat.map((stat, i) => {
-                const [ dark, light ] = getVesselColours({ navigationStatus: stat.value });
-                return (
-                    <g key={stat.value} transform={`translate(10, ${i * 20 + 10})`}>
-                        <path d="M 0 -10 L 5 5 L 0 2.5 L -5 5 Z"  fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
-                        <text x={10} y={5}>{stat.label}</text>
-                    </g>
-                );
-            })
-        }
-        </svg>
+        <table>
+            <tbody>
+            {
+                navstat.map((stat, i) => {
+                    const [ dark, light ] = getVesselColours({ navigationStatus: stat.value });
+                    return (
+                        <tr key={stat.value}>
+                            <td>
+                                <svg viewBox="-5 -10 10 15" width={16} height={16}>
+                                    <path d="M 0 -10 L 5 5 L 0 2.5 L -5 5 Z"  fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
+                                </svg>
+                            </td>
+                            <td>
+                                {stat.label}
+                            </td>
+                        </tr>
+                    );
+                })
+            }
+            </tbody>
+        </table>
     );
 }

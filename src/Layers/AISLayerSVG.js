@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { VesselShape, getVesselColours } from "../Components/VesselShapeByType.js";
+import { getVesselColours, getVesselShape } from "../Components/VesselShapeByType.js";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import React from "react";
 import { lonLat2XY } from "../util/projection.js";
@@ -72,17 +72,24 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
 
                 const [ stroke, fill ] = getVesselColours(vessel);
 
+                const strokeDash = isMoving(vessel) ? void 0 : "1 1";
+
+                const strokeWidth = isMoving(vessel) ? 2 : 1;
+
+                const speedOverGround = typeof vessel.speedOverGround === "number" ? vessel.speedOverGround : 0;
+
+                const courseOverGround = typeof vessel.courseOverGround === "number" ? vessel.courseOverGround : 0;
+
+                const headingDelta = typeof vessel.trueHeading === "number" ? vessel.trueHeading - courseOverGround : 0;
+
                 return (
                     <g key={vessel.mmsi} transform={`translate(${x}, ${y})`} opacity={opacity}>
                         <title>{vessel.name}</title>
-                        { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-vessel.speedOverGround * speedScalePerMinute}`} transform={`rotate(${vessel.courseOverGround})`} stroke="red" strokeWidth={1.5} />}
-                        { isMoving(vessel) ?
-                            <g transform={`rotate(${vessel.trueHeading||vessel.courseOverGround}) translate(0 ${-vessel.speedOverGround * speedScalePerMinute * animationFraction})`}>
-                                <VesselShape vessel={vessel} size={s} />
-                                { showNames && <text x={s*2} y={s*2} transform={`rotate(-${vessel.trueHeading||vessel.courseOverGround})`}>{vessel.name}</text> }
-                            </g> :
-                            <ellipse cx={0} cy={0} rx={s} ry={s} fill={fill} stroke={stroke} strokeWidth={2} />
-                        }
+                        { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-speedOverGround * speedScalePerMinute}`} transform={`rotate(${courseOverGround})`} stroke="red" strokeWidth={1.5} />}
+                        <g transform={`rotate(${courseOverGround}) translate(0 ${-speedOverGround * speedScalePerMinute * animationFraction})`}>
+                            <path d={getVesselShape(vessel, s)} transform={`rotate(${headingDelta})`} stroke={stroke} fill={fill} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
+                            { showNames && <text x={s*2} y={s*2} transform={`rotate(-${courseOverGround})`} fontSize="0.6em" fontWeight="bold">{vessel.name}</text> }
+                        </g>
                     </g>
                 );
             })
