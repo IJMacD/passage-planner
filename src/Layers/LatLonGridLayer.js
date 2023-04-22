@@ -29,18 +29,40 @@ export function LatLonGridLayer () {
 
         const context = { centre, zoom, width, height };
 
-        if (zoom > 14) {
-            drawGrid(ctx, context, 1, 2);
-            drawGrid(ctx, context, 0.1, 1);
-            drawGrid(ctx, context, 0.01, 0.5, true);
+        /** @type {"decimal"|"minutes"} */
+        const mode = "minutes";
 
-        }
-        else if (zoom > 10) {
-            drawGrid(ctx, context, 1, 2);
-            drawGrid(ctx, context, 0.1, 1, true);
+        // @ts-ignore
+        if (mode === "decimal") {
+
+            if (zoom > 14) {
+                drawGrid(ctx, context, 1, 2);
+                drawGrid(ctx, context, 0.1, 1);
+                drawGrid(ctx, context, 0.01, 0.5, true);
+
+            }
+            else if (zoom > 10) {
+                drawGrid(ctx, context, 1, 2);
+                drawGrid(ctx, context, 0.1, 1, true);
+            }
+            else {
+                drawGrid(ctx, context, 1, 2, true);
+            }
         }
         else {
-            drawGrid(ctx, context, 1, 2, true);
+            if (zoom > 12) {
+                drawGrid(ctx, context, 1, 2);
+                drawGrid(ctx, context, 10 / 60, 1);
+                drawGrid(ctx, context, 1 / 60, 0.5, true);
+
+            }
+            else if (zoom > 8) {
+                drawGrid(ctx, context, 1, 2);
+                drawGrid(ctx, context, 10 / 60, 1, true);
+            }
+            else {
+                drawGrid(ctx, context, 1, 2, true);
+            }
         }
 
     }, [centre, zoom, pxWidth, pxHeight, width, height]);
@@ -94,13 +116,29 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
         ctx.textAlign = "left";
         for (let i = minLon; i <= maxLon; i += gridSize) {
             const [x] = projection(i, minLat);
-            ctx.fillText(`${i.toFixed(precision)}°`, x, context.height);
+
+            if (gridSize === 10/60 || gridSize === 1/60) {
+                const degrees = Math.floor(i);
+                const minutes = ((i % 1) * 60).toFixed(0).padStart(2, "0");
+                ctx.fillText(`${degrees}°${minutes}′`, x, context.height);
+            }
+            else {
+                ctx.fillText(`${i.toFixed(precision)}°`, x, context.height);
+            }
         }
 
         ctx.textAlign = "right";
         for (let j = minLat; j <= maxLat; j += gridSize) {
             const [, y] = projection(maxLon, j);
-            ctx.fillText(`${j.toFixed(precision)}°`, context.width, y - fontSize / 10);
+
+            if (gridSize === 10/60 || gridSize === 1/60) {
+                const degrees = Math.floor(j);
+                const minutes = ((j % 1) * 60).toFixed(0).padStart(2, "0");
+                ctx.fillText(`${degrees}°${minutes}′`, context.width, y - fontSize / 10);
+            }
+            else {
+                ctx.fillText(`${j.toFixed(precision)}°`, context.width, y - fontSize / 10);
+            }
         }
     }
 }
