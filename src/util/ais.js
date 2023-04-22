@@ -52,7 +52,7 @@ export async function fetchAIS (bounds) {
     const r = await fetch(`${AIS_API_ROOT}/ws.php?username=${USERNAME}&format=1&output=json&latmin=${minLat}&latmax=${maxLat}&lonmin=${minLon}&lonmax=${maxLon}`);
     const d = await r.json();
     if (d[0].ERROR) return d;
-    return [ d[0], d[1].map(v => ({ mmsi: v.MMSI, name: v.NAME, navigationStatus: v.NAVSTAT, longitude: v.LONGITUDE, latitude: v.LATITUDE, speedOverGround: v.SOG, courseOverGround: v.COG, trueHeading: v.HEADING === 511 ? undefined : v.HEADING, lastUpdate: +new Date(v.TIME), shipType: v.TYPE })) ];
+    return [ d[0], d[1].map(v => ({ mmsi: v.MMSI, name: v.NAME, navigationStatus: v.NAVSTAT, longitude: v.LONGITUDE, latitude: v.LATITUDE, speedOverGround: v.SOG === 102.3 ? undefined : v.SOG, courseOverGround: v.COG, trueHeading: v.HEADING === 511 ? undefined : v.HEADING, lastUpdate: +new Date(v.TIME), shipType: v.TYPE })) ];
 }
 
 /**
@@ -155,11 +155,11 @@ export function decodeRawMessage (input) {
             return null;
         }
 
-        if (speedOverGround === 1023) {
+        if (speedOverGround === 102.3) {
             speedOverGround = undefined;
         }
 
-        if (courseOverGround === 3600) {
+        if (courseOverGround === 360.0) {
             courseOverGround = undefined;
         }
 
@@ -352,7 +352,7 @@ function getChars(dd, firstBit, lastBit) {
             index = dd[i];
         }
         else if (mod === 2) {
-            index = ((dd[i] & 0x1F) << 2) | (dd[i + 1] >> 4);
+            index = ((dd[i] & 0x0F) << 2) | (dd[i + 1] >> 4);
         }
         else if (mod === 4) {
             index = ((dd[i] & 0x03) << 4) | (dd[i + 1] >> 2);
@@ -424,6 +424,13 @@ export class WSAIS {
                 });
             }
         });
+
+        this.#socket.addEventListener("error", e => {
+            console.log("Caught WebSocket error. Reconnecting");
+            console.log(e);
+            this.#socket = null;
+            this.#start();
+        });
     }
 
     #stop () {
@@ -438,21 +445,25 @@ export class WSAIS {
 
 /**
  *
- * @param {Vessel[][]} sets
+ * @param {VesselReport[][]} sets
  */
 export function combineAIS (sets) {
-    /** @type {Map<number, Vessel>} */
+    /** @type {Map<number, VesselReport>} */
     const map = new Map();
 
     for (const set of sets) {
         for (const v of set) {
-            // Copy name if we can find it already set
-            if (map.has(v.mmsi) && !v.name) {
-                const { name } = map.get(v.mmsi);
-                if (name) v.name = name;
-            }
+            // Update vessel if it is in the map and we have a newer update
+            if (map.has(v.mmsi)) {
+                const vessel = map.get(v.mmsi);
 
-            map.set(v.mmsi, v);
+                if (!vessel || v.lastUpdate > vessel.lastUpdate) {
+                    map.set(v.mmsi, { ...vessel, ...v });
+                }
+            }
+            else {
+                map.set(v.mmsi, v);
+            }
         }
     }
 
