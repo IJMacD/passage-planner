@@ -39,9 +39,8 @@ const defaultSelected = ["world", "tiles", "ais", "wsais"];
 
 function Live() {
   const [selectedLayers, setSelectedLayers] = useSavedState("passagePlanner.selectedLayers", defaultSelected);
-  // const [ bounds, setBounds ] = useSavedState("passagePlanner.bounds", [-180,-85.05,180,85.05]);
-  const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[longitude: number, latitude: number]} */([0, 0]));
-  const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 4);
+  const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[longitude: number, latitude: number]} */([114.2, 22.2]));
+  const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 10);
   const [date, setDate] = useState(() => formatDate());
   const [time, setTime] = useState(() => roundTime());
   const currentTime = makeDateTime(date, time);
@@ -58,9 +57,6 @@ function Live() {
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", /** @type {string[]} */([]));
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
-
-  const width = 1024;
-  const height = 768;
 
   // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
   // /** @type {import('../Layers/VectorFieldLayer.js').Field} */
@@ -146,8 +142,8 @@ function Live() {
         </label>
         <AISKey />
       </div>
-      <div>
-        <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])} draggable width={width} height={height}>
+      <div style={{flex: 1}}>
+        <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])} draggable width="100%" height={768}>
           <WorldLayer />
           {
             tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)

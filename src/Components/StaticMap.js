@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { lonLat2XY, xy2LonLat } from "../util/projection.js";
 import { useFullscreen } from "../hooks/useFullscreen.js";
 
@@ -28,7 +28,7 @@ export const DragContext = React.createContext(/** @type {DragContextValue} */([
  * @param {object} props
  * @param {[number,number]} props.centre
  * @param {number} props.zoom
- * @param {number} [props.width]
+ * @param {number|string} [props.width]
  * @param {number} [props.height]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
  * @param {React.ReactNode} [props.children]
@@ -36,6 +36,10 @@ export const DragContext = React.createContext(/** @type {DragContextValue} */([
  * @returns
  */
 export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick, draggable=false, children }) {
+
+    const [ actualWidth, setActualWidth ] = useState( typeof width === "number" ? width : 1024);
+    const [ actualHeight, setActualHeight ] = useState(height);
+
     const [ dragOffset, setDragOffset ] = useState(/** @type {DragContextValue} */([0,0]));
 
     const mouseDragStartRef = useRef(/** @type {[x: number, y: number]?} */(null));
@@ -49,7 +53,7 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
             const x = (e.clientX - rect.left);
             const y = (e.clientY - rect.top);
 
-            const projection = xy2LonLat({ centre, zoom, width, height });
+            const projection = xy2LonLat({ centre, zoom, width: actualWidth, height: actualHeight });
             const [ lon, lat ] = projection(x, y);
 
             onClick(lon, lat, e);
@@ -70,7 +74,7 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
      */
     function handleMouseUp (e) {
         if(onClick && draggable && dragOffset) {
-            const context = { centre, zoom, width, height };
+            const context = { centre, zoom, width: actualWidth, height: actualHeight };
 
             const projection = lonLat2XY(context);
             const [ cx, cy ] = projection(centre[0], centre[1]);
@@ -99,9 +103,6 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
         }
     }
 
-    const [ actualWidth, setActualWidth ] = useState(width);
-    const [ actualHeight, setActualHeight ] = useState(height);
-
     const [ cx, cy ] = centre;
 
     const context = useMemo(() => {
@@ -120,6 +121,16 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
         }
     }, []);
 
+    useEffect(() => {
+        const tid = setTimeout(updateSize, 100);
+        const iid = setInterval(updateSize, 1000);
+
+        return () => {
+            clearTimeout(tid);
+            clearInterval(iid);
+        };
+    }, [updateSize]);
+
     const [ isFullscreen, setIsFullscreen ] = useFullscreen(mapRef.current, updateSize);
 
     function toggleFullscreen () {
@@ -128,7 +139,7 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
 
     return (
         <div
-            style={{ position: "relative", width, height, minWidth: width, overflow: "hidden" }}
+            style={{ position: "relative", width, height, overflow: "hidden" }}
             onClick={handleClick}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
