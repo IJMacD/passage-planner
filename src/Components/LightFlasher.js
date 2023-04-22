@@ -9,7 +9,7 @@ const COLOUR_MAP = {
     Or: "#F80",
 };
 
-const OFF_LIGHT = "transparent";
+// const OFF_LIGHT = "transparent";
 
 /**
  *
@@ -27,7 +27,7 @@ export function LightFlasher ({ spec, x, y, width, height, fullOpacity = 1 }) {
 
     const match = /^(F|Oc|Iso|Fl|Q|VQ|UQ)(?:\(([^)]+)\))?\.?(\s|W|R|G|Bu|Y|Or)\.?(?:(\d+)s)?\s?(?:(\d+)m)?\s?(?:(\d+)M)?/.exec(spec);
 
-    const [ _, mode, groupSpec, colour, seconds, elevation, range = 1 ] = match || [];
+    const [ , mode, groupSpec, colour, seconds, , range = 1 ] = match || [];
 
     const fill = COLOUR_MAP[colour] || COLOUR_MAP.W;
 
@@ -94,7 +94,7 @@ export function LightFlasher ({ spec, x, y, width, height, fullOpacity = 1 }) {
 
         setLightStatus(false);
 
-    }, [spec]);
+    }, [groupSpec, match, mode, seconds]);
 
     const size = (Math.log2(+range * 10) * 5) || 32;
 

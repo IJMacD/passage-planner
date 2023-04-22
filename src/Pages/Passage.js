@@ -46,7 +46,7 @@ const defaultPassage = {
     waypoints: [],
 }
 
-function Passage ({ }) {
+function Passage () {
     const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
     const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
     const [ savedPassages, setSavedPassages ] = useSavedState("passagePlanner.passages", /** @type {Passage[]} */([]));
@@ -162,7 +162,7 @@ function Passage ({ }) {
 
     const totalTime = passage.averageSpeed > 0 ? totalDistance / passage.averageSpeed : 0;
 
-    const legWeathers = legs.map(leg => weather && leg.eta && findForecast(weather, leg.eta) || null);
+    const legWeathers = legs.map(leg => (weather && leg.eta && findForecast(weather, leg.eta)) || null);
 
     const legPaths = legs.map((leg, i) => {
         const forecast = legWeathers[i];
@@ -354,7 +354,7 @@ function Time ({ hours }) {
 function makeLegs (passage) {
     const legs = [{ from: passage.start, to: passage.waypoints[0]??passage.end }, ...passage.waypoints.map((wp, i) => ({ from: wp, to: passage.waypoints[i+1]??passage.end })) ];
 
-    let cumlDist = 0;
+    // let cumlDist = 0;
     let cumlTime = 0;
 
     for (const leg of legs) {
@@ -362,7 +362,7 @@ function makeLegs (passage) {
         leg.duration = passage.averageSpeed > 0 ? leg.distance / passage.averageSpeed : 0;
         leg.bearing = latlon2bearing(leg.from, leg.to);
 
-        cumlDist += leg.distance;
+        // cumlDist += leg.distance;
         cumlTime += leg.duration;
 
         leg.eta = (passage.averageSpeed > 0 && passage.start.time) ? new Date(+passage.start.time + cumlTime * 60 * 60 * 1000) : null;

@@ -9,7 +9,7 @@ import { getPointOfSail } from "../util/weather.js";
  * @returns
  */
 export function PointOfSail({ heading, windDirection }) {
-    const { theta, tack, label } = getPointOfSail(heading, windDirection);
+    const { tack, label } = getPointOfSail(heading, windDirection);
 
     return <span>{tack} {label}</span>;
 }

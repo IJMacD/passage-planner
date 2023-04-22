@@ -77,7 +77,7 @@ export function Marker ({ name, x, y, rotation, onClick }) {
 
         return () => { current = false; };
 
-    }, [name]);
+    }, [name, scale]);
 
     if (!src) return null;
 

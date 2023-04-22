@@ -6,7 +6,7 @@ import { useSavedState } from "../hooks/useSavedState.js";
 import { latlon2bearing, latlon2nm } from "../util/geo.js";
 import { parseGPXDocument, toGPXDocument } from "../util/gpx.js";
 
-const KPH_TO_KNOTS = 0.539957;
+// const KPH_TO_KNOTS = 0.539957;
 
 /**
  * @typedef {import("../util/gpx").Track} Track

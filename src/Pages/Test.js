@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { LightDemo } from "../Components/LightDemo.js";
 import { StaticMap } from "../Components/StaticMap.js";
 import { useSavedState } from "../hooks/useSavedState.js";
@@ -7,8 +7,8 @@ import { CanvasTileLayer } from "../Layers/CanvasTileLayer.js";
 import { DebugLayer } from "../Layers/DebugLayer.js";
 
 function Test () {
-    const [ centre, setCentre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
-    const [ zoom, setZoom ] = useSavedState("passagePlanner.zoom", 4);
+    const [ centre ] = useSavedState("passagePlanner.centre", /** @type {[number,number]} */([0,0]));
+    const [ zoom ] = useSavedState("passagePlanner.zoom", 4);
     const basemapLayer = useTileLayer(localStorage.getItem("passagePlanner.backgroundUrl"));
 
     return (
