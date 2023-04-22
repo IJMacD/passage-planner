@@ -20,9 +20,11 @@ import { WeatherLayer } from '../Layers/WeatherLayer.js';
 import { StaticMap } from '../Components/StaticMap.js';
 import { WorldLayer } from '../Layers/WorldLayer.js';
 import { ControlsLayer } from '../Layers/ControlsLayer.js';
+import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
 
 const layers = [
   { name: "Tides", id: "tides" },
+  { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
   { name: "AIS RTLSDR", id: "wsais" },
@@ -151,6 +153,7 @@ function Live() {
             tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
           }
           {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
+          {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
           {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} fade />}
