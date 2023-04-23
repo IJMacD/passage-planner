@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { latlon2nm as latLon2nm } from '../util/geo.js';
 import { useAnimation } from '../hooks/useAnimation.js';
+import { getVesselColours, getVesselShape } from './VesselShapeByType.js';
+import { isMoving } from '../util/isMoving.js';
 
 const baseStation = { lon: 114.173162, lat: 22.303057 };
 
@@ -20,11 +22,14 @@ export function VesselTable({ vessels, onClickLonLat }) {
 
   const sorted = vessels.slice().sort(sortVessels(sortField));
 
+  const now = Date.now();
+
   return (
     <table style={{width:"100%"}}>
       <SortableContext.Provider value={{ sortField, setSortField }}>
         <thead>
           <tr>
+            <td></td>
             <SortableHeading field="mmsi">MMSI</SortableHeading>
             <SortableHeading field="name">Name</SortableHeading>
             <th>Latitude</th>
@@ -59,8 +64,30 @@ export function VesselTable({ vessels, onClickLonLat }) {
               vessel.dimensionToPort + vessel.dimensionToStarboard :
               undefined;
 
+          let opacity = 1;
+
+          const delta = now - vessel.lastUpdate;
+
+          if (delta > 600_000) {
+            opacity = 0;
+          }
+          else if (delta > 300_000) {
+            opacity = 0.5;
+          }
+
+          const [ stroke, fill ] = getVesselColours(vessel);
+          const strokeDash = isMoving(vessel) ? void 0 : "1 1";
+          const strokeWidth = isMoving(vessel) ? 2 : 1;
+          const courseOverGround = typeof vessel.courseOverGround === "number" ? vessel.courseOverGround : 0;
+          const rotation = typeof vessel.trueHeading === "number" ? vessel.trueHeading : courseOverGround;
+
           return (
             <tr key={vessel.mmsi}>
+              <td>
+                <svg viewBox="-10 -10 20 20" style={{ width: 20, height: 20 }}>
+                  <path d={getVesselShape(vessel, 5)} transform={`rotate(${rotation})`} stroke={stroke} fill={fill} opacity={opacity} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </td>
               <td><a href={`https://www.marinetraffic.com/en/ais/details/ships/mmsi:${vessel.mmsi}`} target="_blank" rel="noreferrer">{vessel.mmsi}</a></td>
               <td>{vessel.name}</td>
               <td>

@@ -4,6 +4,7 @@ import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
 import React from "react";
 import { lonLat2XY } from "../util/projection.js";
 import { useAnimation } from "../hooks/useAnimation.js";
+import { isMoving } from "../util/isMoving.js";
 
 /**
  *
@@ -42,7 +43,7 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
 
 
     return (
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top, left }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top, left, userSelect: "none" }}>
         {
             vessels.map(vessel => {
 
@@ -84,7 +85,7 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
 
                 return (
                     <g key={vessel.mmsi} transform={`translate(${x}, ${y})`} opacity={opacity}>
-                        <title>{vessel.name}</title>
+                        <title>{vessel.name||vessel.mmsi}</title>
                         { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-speedOverGround * speedScalePerMinute}`} transform={`rotate(${courseOverGround})`} stroke="red" strokeWidth={1.5} />}
                         <g transform={`rotate(${courseOverGround}) translate(0 ${-speedOverGround * speedScalePerMinute * animationFraction})`}>
                             <path d={getVesselShape(vessel, s)} transform={`rotate(${headingDelta})`} stroke={stroke} fill={fill} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
@@ -98,10 +99,3 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
     );
 }
 
-/**
- * @param {import("../util/ais.js").Vessel} vessel
- */
-function isMoving (vessel) {
-    return typeof vessel.speedOverGround === "number" ?
-        vessel.speedOverGround >= 1 : false;
-}
