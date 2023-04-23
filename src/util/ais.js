@@ -56,9 +56,13 @@ export async function fetchAIS (bounds) {
 }
 
 /**
+ * @typedef {{type: number;repeatIndicator: number;mmsi: number;}} AISReport
+ */
+
+/**
  * @see https://gpsd.gitlab.io/gpsd/AIVDM.html
  * @param {string} input
- * @returns {{ type: number, repeatIndicator: number, mmsi: number }?}
+ * @returns {AISReport?}
  */
 export function decodeRawMessage (input) {
     if (!input.startsWith("!AIVDM")) {
@@ -321,11 +325,120 @@ export function decodeRawMessage (input) {
         return message;
     }
 
+    const binary = dd.map(n => n.toString(2).padStart(6,"0")).join("");
+
+    if (messageType === 18) {
+
+        const speedOverGroundRaw = parseInt(binary.substring(46, 56), 2);
+        /** @type {number|undefined} */
+        let speedOverGround = speedOverGroundRaw / 10;
+        if (speedOverGround === 102.3) {
+            speedOverGround = undefined;
+        }
+
+        const accuracy = parseInt(binary.substring(56, 57), 2);
+
+        const longitude = parseInt(binary.substring(57, 85), 2) / 600_000;
+        const latitude = parseInt(binary.substring(85, 112), 2) / 600_000;
+
+        const courseOverGroundRaw = parseInt(binary.substring(112, 124), 2);
+        /** @type {number|undefined} */
+        let courseOverGround = courseOverGroundRaw / 10;
+        if (courseOverGround === 360) {
+            courseOverGround = undefined;
+        }
+
+        const trueHeadingRaw = parseInt(binary.substring(124, 133), 2);
+        /** @type {number|undefined} */
+        let trueHeading = trueHeadingRaw;
+        if (trueHeading === 511) {
+            trueHeading = undefined;
+        }
+
+        const timestamp = parseInt(binary.substring(133, 139), 2);
+
+        return {
+            type: messageType,
+            repeatIndicator,
+            mmsi,
+            speedOverGround,
+            accuracy,
+            longitude,
+            latitude,
+            courseOverGround,
+            trueHeading,
+            timestamp,
+        }
+    }
+
+    if (messageType === 19) {
+
+        const speedOverGroundRaw = parseInt(binary.substring(46, 56), 2);
+        /** @type {number|undefined} */
+        let speedOverGround = speedOverGroundRaw / 10;
+        if (speedOverGround === 102.3) {
+            speedOverGround = undefined;
+        }
+
+        const accuracy = parseInt(binary.substring(56, 57), 2);
+
+        const longitude = parseInt(binary.substring(57, 85), 2) / 600_000;
+        const latitude = parseInt(binary.substring(85, 112), 2) / 600_000;
+
+        const courseOverGroundRaw = parseInt(binary.substring(112, 124), 2);
+        /** @type {number|undefined} */
+        let courseOverGround = courseOverGroundRaw / 10;
+        if (courseOverGround === 360) {
+            courseOverGround = undefined;
+        }
+
+        const trueHeadingRaw = parseInt(binary.substring(124, 133), 2);
+        /** @type {number|undefined} */
+        let trueHeading = trueHeadingRaw;
+        if (trueHeading === 511) {
+            trueHeading = undefined;
+        }
+
+        const timestamp = parseInt(binary.substring(133, 139), 2);
+
+        const name = [...binary.substring(143, 263).matchAll(/\d{6}/g)].map(m => CHAR_MAP[parseInt(m[0], 2)]).join("").trim();
+
+        const shipType = parseInt(binary.substring(263, 271), 2);
+
+        const dimensionToBow = parseInt(binary.substring(271, 280), 2);
+        const dimensionToStern = parseInt(binary.substring(280, 289), 2);
+        const dimensionToPort = parseInt(binary.substring(289, 295), 2);
+        const dimensionToStarboard = parseInt(binary.substring(295, 301), 2);
+
+        const fixType = parseInt(binary.substring(301, 305), 2);
+
+        return {
+            type: messageType,
+            repeatIndicator,
+            mmsi,
+            speedOverGround,
+            accuracy,
+            longitude,
+            latitude,
+            courseOverGround,
+            trueHeading,
+            timestamp,
+            name,
+            shipType,
+            dimensionToBow,
+            dimensionToStern,
+            dimensionToPort,
+            dimensionToStarboard,
+            fixType,
+        }
+    }
+
 
     return {
         type: messageType,
         repeatIndicator,
         mmsi,
+        data: dd,
     };
 }
 
@@ -371,13 +484,17 @@ function getChars(dd, firstBit, lastBit) {
 }
 
 export class WSAIS {
-    /** @type {((message: Vessel) => void)[]} */
+    /** @type {((message: AISReport?) => void)[]} */
     #listeners = [];
     /** @type {WebSocket?} */
     #socket = null;
 
+    #totalMessages = 0;
+
+    #messageTypeStats = {};
+
     /**
-     * @param {(message: Vessel) => void} listener
+     * @param {(message: AISReport?) => void} listener
      */
     addListener (listener) {
         this.#listeners.push(listener);
@@ -388,7 +505,7 @@ export class WSAIS {
     }
 
     /**
-     * @param {(message: Vessel) => void} listener
+     * @param {(message: AISReport?) => void} listener
      */
     removeListener (listener) {
         this.#listeners = this.#listeners.filter(l => l !== listener);
@@ -417,6 +534,20 @@ export class WSAIS {
                     const result = decodeRawMessage(t);
 
                     if (result) {
+                        // Stats
+                        this.#totalMessages++;
+
+                        if (typeof this.#messageTypeStats[result.type] === "undefined") {
+                            this.#messageTypeStats[result.type] = 1;
+                        }
+                        else {
+                            this.#messageTypeStats[result.type]++;
+                        }
+
+                        if (this.#totalMessages % 100 === 0) {
+                            console.log(`AIS Messages Total Received: ${this.#totalMessages}`, this.#messageTypeStats);
+                        }
+
                         for (const listener of this.#listeners) {
                             listener(result);
                         }
@@ -428,14 +559,17 @@ export class WSAIS {
         this.#socket.addEventListener("error", e => {
             console.log("Caught WebSocket error. Reconnecting");
             console.log(e);
-            this.#socket = null;
-            this.#start();
+            this.#stop();
+            if (this.#listeners.length > 0) {
+                this.#start();
+            }
         });
     }
 
     #stop () {
         if (this.#socket) {
-            if (this.#socket.readyState === this.#socket.OPEN) {
+            if (this.#socket.readyState === this.#socket.OPEN
+                || this.#socket.readyState === this.#socket.CONNECTING) {
                 this.#socket.close();
             }
             this.#socket = null;

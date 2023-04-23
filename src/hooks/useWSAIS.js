@@ -8,9 +8,9 @@ const VESSEL_CACHE_KEY = "passagePlanner.vessels";
  */
 
 /**
- * @param {boolean} active
+ * @param {boolean} [active]
  */
-export function useWSAIS (active) {
+export function useWSAIS (active = true) {
     /** @type {import("react").MutableRefObject<WSAIS?>} */
     const aisRef = useRef(null);
 
@@ -36,7 +36,7 @@ export function useWSAIS (active) {
 
                 const lastUpdate = Date.now();
 
-                if (type === 1 || type === 2 || type === 3 || type === 5) {
+                if (type === 1 || type === 2 || type === 3 || type === 5 || type === 18 || type === 19) {
                     const oldVessel = vesselMapRef.current.get(vessel.mmsi);
                     if (oldVessel) {
                         const updatedVessel = { ...oldVessel, ...vessel, lastUpdate };
