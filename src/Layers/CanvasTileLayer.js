@@ -43,35 +43,20 @@ export function CanvasTileLayer ({ layer }) {
     // useEffectDebugger(() => {
     //     console.log("CanvasTileLayer: render");
         if (canvasRef.current) {
-            let isCurrent = true;
-            let hasLoaded = false;
+            let isCurrent = { value: true };
 
-            Promise.all(tiles.map(tile =>
-                // Failure to load one image won't stop the entire
-                // canvas from rendering.
-                loadImage(tile.url).catch(() => console.log("error loading " + tile.url))
-            )).then(images => {
-                hasLoaded = true;
+            canvasRef.current.width = context.width * devicePixelRatio;
+            canvasRef.current.height = context.height * devicePixelRatio;
 
-                if (canvasRef.current && isCurrent) {
-                    canvasRef.current.width = context.width * devicePixelRatio;
-                    canvasRef.current.height = context.height * devicePixelRatio;
+            for (const tile of tiles) {
+                loadImage(tile.url).then(image => {
+                    if (canvasRef.current && isCurrent.value) {
+                        renderCanvasTileLayer(canvasRef.current, context, [tile], [image], overscale);
+                    }
+                });
+            }
 
-                    renderCanvasTileLayer(canvasRef.current, context, tiles, images, overscale);
-                }
-            });
-
-            // Clear canvas if image loading is taking too long
-            setTimeout(() => {
-                if (isCurrent && !hasLoaded && canvasRef.current) {
-                    const ctx = canvasRef.current.getContext("2d");
-                    const w = canvasRef.current.width;
-                    const h = canvasRef.current.height;
-                    ctx?.clearRect(0, 0, w, h);
-                }
-            }, 1500);
-
-            return () => { isCurrent = false };
+            return () => { isCurrent.value = false };
         }
     }, [tiles, overscale, context]);
 
