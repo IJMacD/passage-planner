@@ -1,70 +1,16 @@
-/**
- * @typedef Vessel
- * @property {number} mmsi
- * @property {string} [name]
- * @property {number} navigationStatus
- * @property {number} longitude
- * @property {number} latitude
- * @property {number} [speedOverGround] Knots
- * @property {number} [courseOverGround] Degrees
- * @property {number} rateOfTurn Degrees per minute
- * @property {number} [trueHeading] Degrees
- * @property {number} timestamp clock seconds of report
- * @property {number} manoeuvreIndicator
- * @property {number} [aisVersion]
- * @property {number} [imoNumber]
- * @property {string} [callSign]
- * @property {number} [shipType]
- * @property {number} [dimensionToBow] in Metres
- * @property {number} [dimensionToStern] in Metres
- * @property {number} [dimensionToPort] in Metres
- * @property {number} [dimensionToStarboard] in Metres
- * @property {number} [fixType]
- * @property {number} [etaMonth]
- * @property {number} [etaDay]
- * @property {number} [etaHour]
- * @property {number} [etaMinute]
- * @property {number} [draught]
- * @property {string} [destination]
- */
-
-// const AIS_API_ROOT = "https://data.aishub.net";
-// const AIS_API_ROOT = "http://localhost:8010/proxy";
-const AIS_API_ROOT = "https://passage.ijmacd.com/ais";
-const USERNAME = "AH_2974_8FB18DDD";
 
 const CHAR_MAP = `@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !"#$%&'()*+,-./0123456789:;<=>?`;
 
 /**
- * @typedef {(import("../util/ais").Vessel & {lastUpdate: number;})} VesselReport
- */
-
-/**
- * @param {[minLon: number, minLat: number, maxLon: number, maxLat: number]} bounds
- * @returns {Promise<[status: any, vessels: VesselReport[]]>}
- */
-export async function fetchAIS (bounds) {
-    let [ minLon, minLat, maxLon, maxLat ] = bounds;
-    minLon = Math.floor(minLon * 10) / 10;
-    minLat = Math.floor(minLat * 10) / 10;
-    maxLon = Math.ceil(maxLon * 10) / 10;
-    maxLat = Math.ceil(maxLat * 10) / 10;
-    const r = await fetch(`${AIS_API_ROOT}/ws.php?username=${USERNAME}&format=1&output=json&latmin=${minLat}&latmax=${maxLat}&lonmin=${minLon}&lonmax=${maxLon}`);
-    const d = await r.json();
-    if (d[0].ERROR) return d;
-    return [ d[0], d[1].map(v => ({ mmsi: v.MMSI, name: v.NAME, navigationStatus: v.NAVSTAT, longitude: v.LONGITUDE, latitude: v.LATITUDE, speedOverGround: v.SOG === 102.3 ? undefined : v.SOG, courseOverGround: v.COG, trueHeading: v.HEADING === 511 ? undefined : v.HEADING, lastUpdate: +new Date(v.TIME), shipType: v.TYPE })) ];
-}
-
-/**
  * @typedef {{type: number;repeatIndicator: number;mmsi: number;}} AISReport
  */
-
 /**
  * @see https://gpsd.gitlab.io/gpsd/AIVDM.html
  * @param {string} input
  * @returns {AISReport?}
  */
-export function decodeRawMessage (input) {
+
+export function decodeRawMessage(input) {
     if (!input.startsWith("!AIVDM")) {
         console.error("Unrecognised AIS message: ", input);
         return null;
@@ -79,12 +25,11 @@ export function decodeRawMessage (input) {
     //  !AIVDM,2,2,...
     const data = lines.map(line => {
         // eslint-disable-next-line
-        const [ type, totalFragments, fragmentNo, sequentialID, channel, data, check ] = line.split(",");
+        const [type, totalFragments, fragmentNo, sequentialID, channel, data, check] = line.split(",");
         return data;
     }).join("");
 
     // console.log(data);
-
     const dd = [...data].map(c => {
         let v = c.charCodeAt(0);
         v -= 48;
@@ -95,10 +40,8 @@ export function decodeRawMessage (input) {
     });
 
     // console.log(dd);
-
     // dd is groups of 6 bit values
     // 4x 6 bit values = 3x 8 bit values
-
     // [0]: 0 1 2 3 4 5  00..05   0 . . . . .
     // [1]: 6 7 0 1 2 3  06..11   . . 0 . . .
     // [2]: 4 5 6 7 0 1  12..17   . . . . 0 .
@@ -107,7 +50,6 @@ export function decodeRawMessage (input) {
     // [5]: 6 7 0 1 2 3  30..35
     // [6]: 4 5 6 7 0 1  36..41
     // [7]: 2 3 4 4 5 6  42..47
-
     // bits 0 - 5
     const messageType = dd[0];
 
@@ -115,20 +57,19 @@ export function decodeRawMessage (input) {
     const repeatIndicator = dd[1] >> 4;
 
     // bits 8 - 37
-    const mmsi = ((dd[1] & 0x0F) << 26) |   // 4
-                (dd[2] << 20) |             // 10
-                (dd[3] << 14) |             // 16
-                (dd[4] << 8) |              // 22
-                (dd[5] << 2) |              // 28
-                (dd[6] >> 4);               // 30
+    const mmsi = ((dd[1] & 0x0F) << 26) | // 4
+        (dd[2] << 20) | // 10
+        (dd[3] << 14) | // 16
+        (dd[4] << 8) | // 22
+        (dd[5] << 2) | // 28
+        (dd[6] >> 4); // 30
 
     if (messageType === 1 || messageType === 2 || messageType === 3) {
         // Spec: https://gpsd.gitlab.io/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a
-
         const navigationStatus = dd[6] & 0x0F;
         const rateOfTurnSign = (dd[7] >> 5);
         const rateOfTurnRaw = ((dd[7] & 0x1F) << 2) | (dd[8] >> 4);
-        const rateOfTurn = rateOfTurnRaw === 0x80 ? 0 : (rateOfTurnSign ? -1 : 1) * Math.pow(rateOfTurnRaw / 4.733, 2)
+        const rateOfTurn = rateOfTurnRaw === 0x80 ? 0 : (rateOfTurnSign ? -1 : 1) * Math.pow(rateOfTurnRaw / 4.733, 2);
         const speedOverGroundRaw = ((dd[8] & 0x0F) << 6) | dd[9];
         /** @type {number|undefined} */
         let speedOverGround = speedOverGroundRaw / 10;
@@ -146,7 +87,6 @@ export function decodeRawMessage (input) {
         const manoeuvreIndicator = ((dd[23] & 0x01) << 1) | (dd[24] >> 5);
 
         // console.log({ messageType, rateOfTurnSign, rateOfTurnRaw, speedOverGroundRaw, longitudeRaw, latitudeRaw, courseOverGroundRaw });
-
         if (longitude === 181 || latitude === 91) {
             // Station doesn't know its own location
             // There might still be some useful information but there's not much
@@ -191,20 +131,18 @@ export function decodeRawMessage (input) {
     }
 
     // console.log({ type: messageType, });
-
     if (messageType === 4) {
         // Spec: https://gpsd.gitlab.io/gpsd/AIVDM.html#_type_4_base_station_report
         // console.log(dd);
-
         const year = (dd[7] << 8) | (dd[8] << 2) | (dd[9] >> 4);
         const month = dd[9] & 0x0F;
         const day = dd[10] >> 1;
         const hour = ((dd[10] & 0x01) << 4) | (dd[11] >> 2);
         const minute = ((dd[11] & 0x0F) << 4) | (dd[12] >> 2);
         const second = ((dd[12] & 0x0F) << 4) | (dd[13] >> 2);
-        const p2 = n => n.toString().padStart(2,"0");
+        const p2 = n => n.toString().padStart(2, "0");
         const reportDate = `${year}-${p2(month)}-${p2(day)}T${p2(hour)}:${p2(minute)}:${p2(second)}`;
-        const accuracy = dd[14]
+        const accuracy = dd[14];
 
         const message = {
             type: messageType,
@@ -229,7 +167,6 @@ export function decodeRawMessage (input) {
         // Spec: https://gpsd.gitlab.io/gpsd/AIVDM.html#_type_5_static_and_voyage_related_data
         // console.log(input);
         // console.log(dd);
-
         // bits 38 - 39
         const aisVersion = (dd[6] >> 2) & 0x03;
         // bits 40 - 69
@@ -239,12 +176,12 @@ export function decodeRawMessage (input) {
         //  9: 54 55 56 57 58 59
         // 10: 60 61 62 63 64 65
         // 11: 66 67 68 69
-        const imoNumber =   ((dd[6] & 0x03) << 28) |
-                            (dd[7] << 22) |
-                            (dd[8] << 16) |
-                            (dd[9] << 10) |
-                            (dd[10] << 4) |
-                            (dd[11] >> 2);
+        const imoNumber = ((dd[6] & 0x03) << 28) |
+            (dd[7] << 22) |
+            (dd[8] << 16) |
+            (dd[9] << 10) |
+            (dd[10] << 4) |
+            (dd[11] >> 2);
 
         // bits 70 - 111
         const callSign = getChars(dd, 70, 111);
@@ -291,13 +228,12 @@ export function decodeRawMessage (input) {
         const etaMinute = dd[48];
 
         // bits 294 - 301
-        const draught = ((dd[49] << 2) | (dd[50] >> 4))/10;
+        const draught = ((dd[49] << 2) | (dd[50] >> 4)) / 10;
 
         // bits 302 - 421
         const destination = getChars(dd, 302, 421).trim();
 
         // console.log(getChars(dd, 302, 421));
-
         const message = {
             type: messageType,
             repeatIndicator,
@@ -321,11 +257,10 @@ export function decodeRawMessage (input) {
         };
 
         // console.log(message);
-
         return message;
     }
 
-    const binary = dd.map(n => n.toString(2).padStart(6,"0")).join("");
+    const binary = dd.map(n => n.toString(2).padStart(6, "0")).join("");
 
     if (messageType === 18) {
 
@@ -338,8 +273,8 @@ export function decodeRawMessage (input) {
 
         const accuracy = parseInt(binary.substring(56, 57), 2);
 
-        const longitude = parseInt(binary.substring(57, 85), 2) / 600_000;
-        const latitude = parseInt(binary.substring(85, 112), 2) / 600_000;
+        const longitude = parseInt(binary.substring(57, 85), 2) / 600000;
+        const latitude = parseInt(binary.substring(85, 112), 2) / 600000;
 
         const courseOverGroundRaw = parseInt(binary.substring(112, 124), 2);
         /** @type {number|undefined} */
@@ -368,7 +303,7 @@ export function decodeRawMessage (input) {
             courseOverGround,
             trueHeading,
             timestamp,
-        }
+        };
     }
 
     if (messageType === 19) {
@@ -382,8 +317,8 @@ export function decodeRawMessage (input) {
 
         const accuracy = parseInt(binary.substring(56, 57), 2);
 
-        const longitude = parseInt(binary.substring(57, 85), 2) / 600_000;
-        const latitude = parseInt(binary.substring(85, 112), 2) / 600_000;
+        const longitude = parseInt(binary.substring(57, 85), 2) / 600000;
+        const latitude = parseInt(binary.substring(85, 112), 2) / 600000;
 
         const courseOverGroundRaw = parseInt(binary.substring(112, 124), 2);
         /** @type {number|undefined} */
@@ -430,7 +365,7 @@ export function decodeRawMessage (input) {
             dimensionToPort,
             dimensionToStarboard,
             fixType,
-        }
+        };
     }
 
 
@@ -441,7 +376,6 @@ export function decodeRawMessage (input) {
         data: dd,
     };
 }
-
 /**
  * @param {number[]} dd nibbles
  * @param {number} firstBit
@@ -482,139 +416,3 @@ function getChars(dd, firstBit, lastBit) {
     }
     return chars.join("");
 }
-
-export class WSAIS {
-    /** @type {((message: AISReport?) => void)[]} */
-    #listeners = [];
-    /** @type {WebSocket?} */
-    #socket = null;
-
-    #totalMessages = 0;
-
-    #messageTypeStats = {};
-
-    /**
-     * @param {(message: AISReport?) => void} listener
-     */
-    addListener (listener) {
-        this.#listeners.push(listener);
-
-        if (!this.#socket) {
-            this.#start();
-        }
-    }
-
-    /**
-     * @param {(message: AISReport?) => void} listener
-     */
-    removeListener (listener) {
-        this.#listeners = this.#listeners.filter(l => l !== listener);
-
-        if (this.#listeners.length === 0) {
-            this.#stop();
-        }
-    }
-
-    #start () {
-        if (this.#socket) {
-            return;
-        }
-
-        // Create WebSocket connection.
-        this.#socket = new WebSocket('wss://passage.ijmacd.com/wsais');
-
-        // Listen for messages
-        this.#socket.addEventListener('message', (event) => {
-            /** @type {Blob} */
-            const data = event.data;
-
-            if (data.size > 2) {
-                data.text().then(t => {
-                    // console.log(t);
-                    const result = decodeRawMessage(t);
-
-                    if (result) {
-                        // Stats
-                        this.#totalMessages++;
-
-                        if (typeof this.#messageTypeStats[result.type] === "undefined") {
-                            this.#messageTypeStats[result.type] = 1;
-                        }
-                        else {
-                            this.#messageTypeStats[result.type]++;
-                        }
-
-                        if (this.#totalMessages % 100 === 0) {
-                            console.log(`AIS Messages Total Received: ${this.#totalMessages}`, this.#messageTypeStats);
-                        }
-
-                        for (const listener of this.#listeners) {
-                            listener(result);
-                        }
-                    }
-                });
-            }
-        });
-
-        this.#socket.addEventListener("error", e => {
-            console.log("Caught WebSocket error. Reconnecting");
-            console.log(e);
-            this.#stop();
-            if (this.#listeners.length > 0) {
-                this.#start();
-            }
-        });
-    }
-
-    #stop () {
-        if (this.#socket) {
-            if (this.#socket.readyState === this.#socket.OPEN
-                || this.#socket.readyState === this.#socket.CONNECTING) {
-                this.#socket.close();
-            }
-            this.#socket = null;
-        }
-    }
-}
-
-/**
- *
- * @param {VesselReport[][]} sets
- */
-export function combineAIS (sets) {
-    /** @type {Map<number, VesselReport>} */
-    const map = new Map();
-
-    for (const set of sets) {
-        for (const v of set) {
-            // Update vessel if it is in the map and we have a newer update
-            if (map.has(v.mmsi)) {
-                const vessel = map.get(v.mmsi);
-
-                if (!vessel || v.lastUpdate > vessel.lastUpdate) {
-                    map.set(v.mmsi, { ...vessel, ...v });
-                }
-            }
-            else {
-                map.set(v.mmsi, v);
-            }
-        }
-    }
-
-    return [...map.values()];
-}
-
-export const NavigationStatus = {
-    UNDERWAY_USING_ENGINE: 0,
-    AT_ANCHOR: 1,
-    NOT_UNDER_COMMAND: 2,
-    RESTRICTED_MANOEUVRABILITY: 3,
-    CONSTRAINED_BY_DRAUGHT: 4,
-    MOORED: 5,
-    AGROUND: 6,
-    ENGAGED_IN_FISHING: 7,
-    UNDERWAY_SAILING: 8,
-    RESERVED_HSC: 9,
-    SART: 14,
-    NOT_DEFINED: 15,
-};

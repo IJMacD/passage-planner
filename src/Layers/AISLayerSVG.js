@@ -1,7 +1,7 @@
+import React from "react";
 import { useContext } from "react";
 import { getVesselColours, getVesselShape } from "../Components/VesselShapeByType.js";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
-import React from "react";
 import { lonLat2XY } from "../util/projection.js";
 import { useAnimation } from "../hooks/useAnimation.js";
 import { isMoving } from "../util/isMoving.js";
@@ -9,18 +9,18 @@ import { isMoving } from "../util/isMoving.js";
 /**
  *
  * @param {object} props
- * @param {import("../hooks/useWSAIS.js").VesselReport[]} props.vessels
+ * @param {import("../hooks/useWebsocketVessels.js").VesselReport[]} props.vessels
  * @param {boolean} [props.showNames]
  * @param {boolean} [props.fade]
- * @param {boolean} [props.projectedTrack]
- * @param {boolean} [props.animation]
+ * @param {boolean} [props.projectTrack]
+ * @param {boolean} [props.animate]
  * @returns
  */
-export function AISLayerSVG ({ vessels, showNames = false, fade = false, projectedTrack = false, animation = false }) {
+export function AISLayerSVG ({ vessels, showNames = false, fade = false, projectTrack = false, animate = false }) {
     const context = useContext(StaticMapContext);
     const { centre: [ , lat ], zoom, width, height } = context;
 
-    useAnimation(animation);
+    useAnimation(animate);
 
     const projection = lonLat2XY(context);
 
@@ -40,7 +40,6 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
     //
     // units: pixel_hours_per_nm_minute
     const speedScalePerMinute = pixelsPerNauticalMile / 60;
-
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "100%", position: "absolute", top, left, userSelect: "none" }}>
@@ -69,7 +68,7 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
                     }
                 }
 
-                const animationFraction = animation ? Math.min(delta / 60000, 1) : 0;
+                const animationFraction = animate ? Math.min(delta / 60000, 1) : 0;
 
                 const [ stroke, fill ] = getVesselColours(vessel);
 
@@ -86,10 +85,15 @@ export function AISLayerSVG ({ vessels, showNames = false, fade = false, project
                 return (
                     <g key={vessel.mmsi} transform={`translate(${x}, ${y})`} opacity={opacity}>
                         <title>{vessel.name||vessel.mmsi}</title>
-                        { projectedTrack && isMoving(vessel) && <path d={`M 0 0 V ${-speedOverGround * speedScalePerMinute}`} transform={`rotate(${courseOverGround})`} stroke="red" strokeWidth={1.5} />}
+                        { projectTrack && isMoving(vessel) && <path d={`M 0 0 V ${-speedOverGround * speedScalePerMinute}`} transform={`rotate(${courseOverGround})`} stroke="red" strokeWidth={1.5} />}
                         <g transform={`rotate(${courseOverGround}) translate(0 ${-speedOverGround * speedScalePerMinute * animationFraction})`}>
                             <path d={getVesselShape(vessel, s)} transform={`rotate(${headingDelta})`} stroke={stroke} fill={fill} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
-                            { showNames && <text x={s*2} y={s*2} transform={`rotate(-${courseOverGround})`} fontSize="0.6em" fontWeight="bold">{vessel.name}</text> }
+                            { showNames &&
+                                <>
+                                    <text x={s*2} y={s*2} transform={`rotate(-${courseOverGround})`} stroke="white" fontSize="0.6em" fontWeight="bold">{vessel.name}</text>
+                                    <text x={s*2} y={s*2} transform={`rotate(-${courseOverGround})`} fontSize="0.6em" fontWeight="bold">{vessel.name}</text>
+                                </>
+                            }
                         </g>
                     </g>
                 );

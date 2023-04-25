@@ -3,13 +3,12 @@ import { useSavedState } from '../hooks/useSavedState.js';
 import { CanvasTileLayer } from '../Layers/CanvasTileLayer.js';
 import { DebugLayer } from '../Layers/DebugLayer.js';
 import { VectorFieldLayer } from '../Layers/VectorFieldLayer.js';
-import { useAHAIS } from '../hooks/useAHAIS.js';
 import { AISLayerSVG } from '../Layers/AISLayerSVG.js';
 import { ToggleSelect } from '../Components/ToggleSelect.js';
 import { AISKey } from '../Components/AISKey.js';
-import { useWSAIS } from '../hooks/useWSAIS.js';
+import { useWebsocketVessels } from '../hooks/useWebsocketVessels.js';
 import { useTides } from '../hooks/useTides.js';
-import { combineAIS } from '../util/ais.js';
+// import { combineAIS } from '../util/ais/ais.js';
 import React from 'react';
 import { LightLayer } from '../Layers/LightLayer.js';
 import { useTileJSONList } from '../hooks/useTileJSONList.js';
@@ -21,6 +20,7 @@ import { StaticMap } from '../Components/StaticMap.js';
 import { WorldLayer } from '../Layers/WorldLayer.js';
 import { ControlsLayer } from '../Layers/ControlsLayer.js';
 import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
+import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
 
 const layers = [
   { name: "Tides", id: "tides" },
@@ -29,10 +29,10 @@ const layers = [
   { name: "AIS AisHub.net", id: "ahais" },
   { name: "AIS RTLSDR", id: "wsais" },
   { name: "AIS RTLSDR (Canvas)", id: "wsais-canvas" },
-  { name: "AIS Combined", id: "ais" },
+  // { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
   { name: "Weather", id: "weather" },
-  { name: "Weather Stations", id: "weather-stations" },
+  // { name: "Weather Stations", id: "weather-stations" },
 ];
 
 const defaultSelected = ["world", "tiles", "ais", "wsais"];
@@ -50,11 +50,9 @@ function Live() {
   const tideVectors = useTides(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
 
-  const isAHAISActive = selectedLayers.includes("ahais") || selectedLayers.includes("ais");
   const isWSAISActive = selectedLayers.includes("wsais") || selectedLayers.includes("ais");
-  const vesselsAH = useAHAIS(centre, isAHAISActive ? zoom : 0);
-  const vesselsWS = useWSAIS(isWSAISActive);
-  const vessels = combineAIS([vesselsAH, vesselsWS]);
+  const vesselsWS = useWebsocketVessels(isWSAISActive);
+  // const vessels = combineAIS([vesselsAH, vesselsWS]);
 
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON]);
   const tileLayers = useTileJSONList(tileLayerURLs);
@@ -68,7 +66,6 @@ function Live() {
   //   direction: ((f.forecast?.ForecastWindDirection || 0) + 180) % 360,
   //   magnitude: (f.forecast?.ForecastWindSpeed || 0) * 0.2,
   // }));
-
 
   useEffect(() => {
     if (animateTime) {
@@ -153,10 +150,10 @@ function Live() {
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
-          {selectedLayers.includes("ahais") && <AISLayerSVG vessels={vesselsAH} fade />}
-          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames animation projectedTrack />}
+          {selectedLayers.includes("ahais") && <AisHubVesselsLayer />}
+          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames animate projectTrack />}
           {selectedLayers.includes("wsais-canvas") && <AISLayerCanvas vessels={vesselsWS} />}
-          {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />}
+          {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {/* {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> } */}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />

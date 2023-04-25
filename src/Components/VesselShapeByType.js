@@ -1,8 +1,8 @@
-import { NavigationStatus } from "../util/ais.js";
+import { NavigationStatus } from "../util/ais/ais.js";
 
 /**
  * Vessel Colour by Navigation status
- * @param {import("../util/ais.js").Vessel} vessel
+ * @param {import("../util/ais/ais.js").Vessel} vessel
  * @returns {[ stroke: string, fill: string ]}
  */
 export function getVesselColours (vessel) {
@@ -38,7 +38,7 @@ export function getVesselColours (vessel) {
 /**
  *
  * @param {object} props
- * @param {import("../util/ais.js").Vessel} props.vessel
+ * @param {import("../util/ais/ais.js").Vessel} props.vessel
  * @param {number} props.size
  * @returns
  */

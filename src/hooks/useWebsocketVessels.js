@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { WSAIS } from "../util/ais.js";
+import { WebsocketAIS } from "../util/ais/WebsocketAIS.js";
 
 const VESSEL_CACHE_KEY = "passagePlanner.vessels";
 
 /**
- * @typedef {import("../util/ais.js").VesselReport} VesselReport
+ * @typedef {import("../util/ais/ais.js").VesselReport} VesselReport
  */
 
 /**
  * @param {boolean} [active]
  */
-export function useWSAIS (active = true) {
-    /** @type {import("react").MutableRefObject<WSAIS?>} */
+export function useWebsocketVessels (active = true) {
+    /** @type {import("react").MutableRefObject<WebsocketAIS?>} */
     const aisRef = useRef(null);
 
     const vesselMapRef = useRef(/** @type {Map<number, VesselReport>} */(new Map()));
@@ -20,14 +20,14 @@ export function useWSAIS (active = true) {
     const [ vessels, setVessels ] = useState(/** @type {VesselReport[]} */([]));
 
     if (!aisRef.current) {
-        aisRef.current = new WSAIS();
+        aisRef.current = new WebsocketAIS();
     }
 
     useEffect(() => {
         if (active) {
             /**
              *
-             * @param {import("../util/ais").Vessel & { type: number, repeatIndicator?: number }} message
+             * @param {import("../util/ais/ais.js").Vessel & { type: number, repeatIndicator?: number }} message
              */
             function cb (message) {
                 // console.debug(message);
@@ -36,28 +36,50 @@ export function useWSAIS (active = true) {
 
                 const lastUpdate = Date.now();
 
-                if (type === 1 || type === 2 || type === 3 || type === 5 || type === 18 || type === 19) {
+                const havePosition = (typeof message.longitude === "number" && typeof message.latitude === "number");
+                const haveName = typeof message.name === "string";
+
+                if (havePosition) {
+                    // We received a position report (e.g. 1, 2, 3, 18, 19 etc.)
+
+                    // Are we currently tracking this vessel?
                     const oldVessel = vesselMapRef.current.get(vessel.mmsi);
+
                     if (oldVessel) {
                         const updatedVessel = { ...oldVessel, ...vessel, lastUpdate };
-                        vesselMapRef.current.set(vessel.mmsi, updatedVessel);
-                        setVessels([...vesselMapRef.current.values()]);
 
-                        if (type === 5) {
-                            saveVessel(vessel.mmsi, vessel);
-                        }
+                        vesselMapRef.current.set(vessel.mmsi, updatedVessel);
                     }
-                    // We have position info for a new vessel
-                    else if (type !== 5) {
-                        // Try to retrieve saved info
+                    else {
+                        // We're not currently tracking this vessel
+                        // Try to retrieve saved info from local storage
                         const savedVessel = getSavedVessel(vessel.mmsi) || {};
 
                         vesselMapRef.current.set(vessel.mmsi, { ...savedVessel, ...vessel, lastUpdate });
+                    }
 
+                    setVessels([...vesselMapRef.current.values()]);
+                }
+
+                if (haveName) {
+                    // We received a status report (e.g. 5, 19)
+
+                    // Are we currently tracking this vessel?
+                    const oldVessel = vesselMapRef.current.get(vessel.mmsi);
+
+                    if (oldVessel) {
+                        // Don't update lastUpdate time
+                        const updatedVessel = { ...oldVessel, ...vessel };
+                        vesselMapRef.current.set(vessel.mmsi, updatedVessel);
                         setVessels([...vesselMapRef.current.values()]);
                     }
+
+                    // Save static info to local storage
+                    saveVessel(vessel.mmsi, vessel);
                 }
-                else {
+
+                if (!havePosition && !haveName) {
+                    // Unknown message type
                     console.debug(message);
                 }
             }
@@ -73,7 +95,7 @@ export function useWSAIS (active = true) {
 
 /**
  * @param {number} mmsi
- * @returns {import("../util/ais.js").Vessel|undefined}
+ * @returns {import("../util/ais/ais.js").Vessel|undefined}
  */
 function getSavedVessel (mmsi) {
     const savedNames = localStorage.getItem(VESSEL_CACHE_KEY);
@@ -89,7 +111,7 @@ function getSavedVessel (mmsi) {
 /**
  *
  * @param {number} mmsi
- * @param {import("../util/ais.js").Vessel} vessel
+ * @param {import("../util/ais/ais.js").Vessel} vessel
  */
 function saveVessel (mmsi, vessel) {
     let vessels = {};

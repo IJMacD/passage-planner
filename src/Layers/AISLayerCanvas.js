@@ -7,7 +7,7 @@ import React from "react";
 /**
  *
  * @param {object} props
- * @param {import("../util/ais").Vessel[]} props.vessels
+ * @param {import("../util/ais/ais.js").Vessel[]} props.vessels
  * @returns
  */
 export function AISLayerCanvas ({ vessels }) {

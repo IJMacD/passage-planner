@@ -1,5 +1,5 @@
 /**
- * @param {import("./ais.js").Vessel} vessel
+ * @param {import("./ais/ais.js").Vessel} vessel
  */
 export function isMoving(vessel) {
     return typeof vessel.speedOverGround === "number" ?

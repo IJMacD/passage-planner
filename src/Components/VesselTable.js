@@ -11,7 +11,7 @@ const SortableContext = createContext({ sortField: "", setSortField: /** @type {
 /**
  *
  * @param {object} props
- * @param {import('../hooks/useWSAIS').VesselReport[]} props.vessels
+ * @param {import('../hooks/useWebsocketVessels.js').VesselReport[]} props.vessels
  * @param {(lon: number, lat: number) => void} [props.onClickLonLat]
  * @returns
  */
