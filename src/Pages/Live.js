@@ -37,6 +37,8 @@ const layers = [
 
 const defaultSelected = ["world", "tiles", "ais", "wsais"];
 
+const osmTileJSON = "https://raw.githubusercontent.com/mapbox/tilejson-spec/master/2.2.0/example/osm.layer";
+
 function Live() {
   const [selectedLayers, setSelectedLayers] = useSavedState("passagePlanner.selectedLayers", defaultSelected);
   const [centre, setCentre] = useSavedState("passagePlanner.centre", /** @type {[longitude: number, latitude: number]} */([114.2, 22.2]));
@@ -54,9 +56,9 @@ function Live() {
   const vesselsWS = useWSAIS(isWSAISActive);
   const vessels = combineAIS([vesselsAH, vesselsWS]);
 
-  const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", /** @type {string[]} */([]));
+  const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON]);
   const tileLayers = useTileJSONList(tileLayerURLs);
-  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", /** @type {string[]} */([]));
+  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON]);
 
   // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
   // /** @type {import('../Layers/VectorFieldLayer.js').Field} */
@@ -126,20 +128,19 @@ function Live() {
           Animate
           <input type="checkbox" checked={animateTime} onChange={e => setAnimateTime(e.target.checked)} />
         </label>
-        <label>
-          Layers
+        <label>Layers</label>
+        <button onClick={handleAddTileURL}>Add</button>
           <ToggleSelect
             values={selectedTileLayers}
             onChange={setSelectedTileLayers}
             options={tileLayerURLs.map((url, i) => ({ value: `${i}`, label: tileLayers[i] ? tileLayers[i].name : `Layer ${i}` }))}
+          onRemove={i => setTileLayerURLs(urls => [ ...urls.slice(0, i), ...urls.slice(i + 1) ])}
           />
           <ToggleSelect
             values={selectedLayers}
             onChange={values => setSelectedLayers(values)}
             options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
           />
-          <button onClick={handleAddTileURL}>Add</button>
-        </label>
         <AISKey />
       </div>
       <div style={{flex: 1}}>
