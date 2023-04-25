@@ -67,7 +67,7 @@ export function LatLonGridLayer () {
 
     }, [centre, zoom, pxWidth, pxHeight, width, height]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left  }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width, height, position: "absolute", top, left  }} />;
 }
 
 /**
@@ -84,20 +84,22 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
 
     const projection = lonLat2XY(context);
 
+    const dpr = devicePixelRatio;
+
     ctx.beginPath();
 
     for (let i = minLon; i <= maxLon; i += gridSize) {
         const [x1, y1] = projection(i, minLat);
         const [x2, y2] = projection(i, maxLat);
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(x1 * dpr, y1 * dpr);
+        ctx.lineTo(x2 * dpr, y2 * dpr);
     }
 
     for (let j = minLat; j <= maxLat; j += gridSize) {
         const [x1, y1] = projection(minLon, j);
         const [x2, y2] = projection(maxLon, j);
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(x1 * dpr, y1 * dpr);
+        ctx.lineTo(x2 * dpr, y2 * dpr);
     }
 
     ctx.strokeStyle = "#666";
@@ -117,13 +119,15 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
         for (let i = minLon; i <= maxLon; i += gridSize) {
             const [x] = projection(i, minLat);
 
+            const margin = fontSize / 10;
+
             if (gridSize === 10/60 || gridSize === 1/60) {
                 const degrees = Math.floor(i);
                 const minutes = ((i % 1) * 60).toFixed(0).padStart(2, "0");
-                ctx.fillText(`${degrees}°${minutes}′`, x, context.height);
+                ctx.fillText(`${degrees}°${minutes}′`, x * dpr, (context.height - margin) * dpr);
             }
             else {
-                ctx.fillText(`${i.toFixed(precision)}°`, x, context.height);
+                ctx.fillText(`${i.toFixed(precision)}°`, x * dpr, (context.height - margin) * dpr);
             }
         }
 
@@ -131,13 +135,15 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
         for (let j = minLat; j <= maxLat; j += gridSize) {
             const [, y] = projection(maxLon, j);
 
+            const margin = fontSize / 10;
+
             if (gridSize === 10/60 || gridSize === 1/60) {
                 const degrees = Math.floor(j);
                 const minutes = ((j % 1) * 60).toFixed(0).padStart(2, "0");
-                ctx.fillText(`${degrees}°${minutes}′`, context.width, y - fontSize / 10);
+                ctx.fillText(`${degrees}°${minutes}′`, (context.width - margin) * dpr, (y - margin) * dpr);
             }
             else {
-                ctx.fillText(`${j.toFixed(precision)}°`, context.width, y - fontSize / 10);
+                ctx.fillText(`${j.toFixed(precision)}°`, (context.width - margin) * dpr, (y - margin) * dpr);
             }
         }
     }
