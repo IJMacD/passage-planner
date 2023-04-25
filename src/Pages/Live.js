@@ -58,6 +58,10 @@ function Live() {
   const tileLayers = useTileJSONList(tileLayerURLs);
   const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON]);
 
+  const [ showVesselNames, setShowVesselNames ] = useSavedState("passagePlanner.showNames", false);
+  const [ showVesselPredictedTrack, setShowVesselPredictedTrack ] = useSavedState("passagePlanner.predictedTrack", false);
+  const [ showVesselAnimation, setShowVesselAnimation ] = useSavedState("passagePlanner.animate", false);
+
   // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
   // /** @type {import('../Layers/VectorFieldLayer.js').Field} */
   // const weatherMarkers = weatherForecast.map(f => ({
@@ -127,17 +131,30 @@ function Live() {
         </label>
         <label>Layers</label>
         <button onClick={handleAddTileURL}>Add</button>
-          <ToggleSelect
-            values={selectedTileLayers}
-            onChange={setSelectedTileLayers}
-            options={tileLayerURLs.map((url, i) => ({ value: `${i}`, label: tileLayers[i] ? tileLayers[i].name : `Layer ${i}` }))}
+        <ToggleSelect
+          values={selectedTileLayers}
+          onChange={setSelectedTileLayers}
+          options={tileLayerURLs.map((url, i) => ({ value: `${i}`, label: tileLayers[i] ? tileLayers[i].name : `Layer ${i}` }))}
           onRemove={i => setTileLayerURLs(urls => [ ...urls.slice(0, i), ...urls.slice(i + 1) ])}
-          />
-          <ToggleSelect
-            values={selectedLayers}
-            onChange={values => setSelectedLayers(values)}
-            options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
-          />
+        />
+        <ToggleSelect
+          values={selectedLayers}
+          onChange={values => setSelectedLayers(values)}
+          options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
+        />
+        <label>Options</label>
+        <label>
+          <input type="checkbox" checked={showVesselNames} onChange={e => setShowVesselNames(e.target.checked)} />
+          Show Vessel Names
+        </label>
+        <label>
+          <input type="checkbox" checked={showVesselPredictedTrack} onChange={e => setShowVesselPredictedTrack(e.target.checked)} />
+          Show Vessel Predicted Track
+        </label>
+        <label>
+          <input type="checkbox" checked={showVesselAnimation} onChange={e => setShowVesselAnimation(e.target.checked)} />
+          Show Vessel Animation
+        </label>
         <AISKey />
       </div>
       <div style={{flex: 1}}>
@@ -150,8 +167,8 @@ function Live() {
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
-          {selectedLayers.includes("ahais") && <AisHubVesselsLayer />}
-          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames animate projectTrack />}
+          {selectedLayers.includes("ahais") && <AisHubVesselsLayer showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
+          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
           {selectedLayers.includes("wsais-canvas") && <AISLayerCanvas vessels={vesselsWS} />}
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
