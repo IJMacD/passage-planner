@@ -59,7 +59,9 @@ export function useTiles(centre, zoom, width, height, layer) {
  * @param {number} y
  */
 export function formatTileURL(layer, z, x, y) {
-    const template = layer.tiles[Math.random()*layer.tiles.length|0];
+    const l = layer.tiles.length|0;
+    // Don't use Math.random(). We need to be deterministic
+    const template = layer.tiles[(z+x+y)%l];
     return template.replace(/{([xyz])}/g, (_, t) => ({z,x,y}[t]));
 }
 
