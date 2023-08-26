@@ -17,6 +17,8 @@
         $trophies = getTrophies($entry->id);
         if ($trophies) view_trophies($trophies, $entry->id, getRecordSettingTracks());
     ?></dd>
+    <dt>Export</dt>
+    <dd><a href="/logbook/api/v1/logs/<?=dechex($entry->id)?>/track">gpx</a></dd>
 </dl>
 <div id="map"></div>
 <div id="polar-plot"></div>

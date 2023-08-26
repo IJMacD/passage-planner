@@ -41,7 +41,13 @@ class API {
                 exit;
             }
 
-            $params[$field] = $_POST[$field];
+            $value = $_POST[$field];
+
+            if ($field === "start_time" || $field === "end_time") {
+                $value = (new DateTime($value))->format(FORMAT_SQL_DATE);
+            }
+
+            $params[$field] = $value;
         }
 
         global $db;
@@ -156,6 +162,17 @@ class API {
         $stmt->execute(["id" => hexdec($id)]);
 
         header("Content-Type: application/gpx+xml");
+
+        if (isset($_SERVER['HTTP_ACCEPT']) && strstr($_SERVER['HTTP_ACCEPT'], "text/html") !== false) {
+            $stmt_start = $db->prepare("SELECT start_time FROM logbook WHERE id = :id");
+
+            $stmt_start->execute(["id" => hexdec($id)]);
+
+            $d = str_replace(" ", "T", str_replace(["-",":"], "", $stmt_start->fetchColumn())) . "Z";
+
+            header("Content-Disposition: attachment; filename=logbook-$d.gpx");
+        }
+
         echo $stmt->fetchColumn();
     }
 

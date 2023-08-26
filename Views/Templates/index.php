@@ -22,7 +22,7 @@ $records = getRecordSettingTracks();
             <th>Distance</th>
             <th>Duration</th>
             <th>Average Speed</th>
-            <th>Trophies</th>
+            <th><a href="/logbook/records">Trophies</a></th>
         </tr>
     </thead>
     <tbody>

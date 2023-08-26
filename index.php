@@ -32,12 +32,14 @@ Router::registerWithPrefix("/api/v1", [
     ["post",    "/logs",                [ "API", "handleLogsPost" ]],
 ]);
 Router::registerWithPrefix("/api/v1/auth", [
+    ["get",     "/generate",    [ "Auth", "handleGenerate" ]],
     ["post",    "/generate",    [ "Auth", "handleGenerate" ]],
     ["post",    "/exchange",    [ "Auth", "handleExchange" ]],
     ["post",    "/verify",      [ "Auth", "handleVerify" ]],
 ]);
 Router::register([
     ["get",     "/records",     fn() => handleRecords()],
+    ["get",     "/all",         fn() => handleAllTracks()],
     ["get",     "/:hid",        fn($hid) => handleLogEntry(hexdec($hid))],
     ["get",     "/",            fn() => handleIndex()],
     ["get",     "",             fn() => handleIndex()],
@@ -58,14 +60,15 @@ try {
 }
 
 function handleIndex () {
-    $entries = getAllEntries();
     include "Views/LogbookIndex.php";
 }
 
-
 function handleRecords () {
-    $records = getRecordSettingTracks();
     include "Views/LogbookRecords.php";
+}
+
+function handleAllTracks () {
+    include "Views/LogbookAllTracks.php";
 }
 
 function handleLogEntry ($id) {

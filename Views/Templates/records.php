@@ -1,4 +1,4 @@
-<h1>Logbook Records</h1>
+<h1><?=$title?></h1>
 <?php
 
 foreach ($records as $record => $id):
@@ -16,18 +16,38 @@ endforeach;
 <div id="map"></div>
 <script src="/logbook/static/vendor/passage-planner-lib.js"></script>
 <script>
-    const bounds = <?=json_encode(getOverallBounds(), JSON_NUMERIC_CHECK)?>;
-    const track = {
+    const bounds = [
+    <?php
+        foreach ($tracks as $track) {
+            echo json_encode($track->getBounds(), JSON_NUMERIC_CHECK) . ",\n";
+        }
+    ?>
+    ];
+    const tracks = bounds.map(b => ({
+        name: "Bounds",
+        segments: [
+            { lon: b.minLon, lat: b.minLat },
+            { lon: b.maxLon, lat: b.minLat },
+            { lon: b.maxLon, lat: b.maxLat },
+            { lon: b.minLon, lat: b.maxLat },
+            { lon: b.minLon, lat: b.minLat },
+        ],
+        color: "orange"
+    }));
+
+    const overallBounds = <?=json_encode($bounds, JSON_NUMERIC_CHECK)?>;
+    const overallTrack = {
         name: "Bounds",
         segments: [
             [
-                { lon: bounds.minLon, lat: bounds.minLat },
-                { lon: bounds.maxLon, lat: bounds.minLat },
-                { lon: bounds.maxLon, lat: bounds.maxLat },
-                { lon: bounds.minLon, lat: bounds.maxLat },
-                { lon: bounds.minLon, lat: bounds.minLat },
+                { lon: overallBounds.minLon, lat: overallBounds.minLat },
+                { lon: overallBounds.maxLon, lat: overallBounds.minLat },
+                { lon: overallBounds.maxLon, lat: overallBounds.maxLat },
+                { lon: overallBounds.minLon, lat: overallBounds.maxLat },
+                { lon: overallBounds.minLon, lat: overallBounds.minLat },
             ]
         ]
     };
-    passagePlanner.renderTrackMap(document.getElementById("map"), track);
+    tracks.push(overallTrack);
+    passagePlanner.renderTrackMap(document.getElementById("map"), tracks);
 </script>

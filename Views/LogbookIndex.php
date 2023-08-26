@@ -1,6 +1,7 @@
 <?php
 
 $title = "Logbook";
-$content = include_contents("Templates/index.php", ["entries" => $entries]);
+$entries = getAllEntries();
+$content = include_contents("Templates/index.php", ["entries" => $entries ]);
 
 require("Templates/layout.php");

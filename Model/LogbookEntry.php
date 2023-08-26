@@ -43,6 +43,10 @@ class LogbookEntry implements JsonSerializable {
         }
     }
 
+    function getBounds () {
+        return getTrackBounds($this->id);
+    }
+
     function jsonSerialize()
     {
         $start = $this->start;

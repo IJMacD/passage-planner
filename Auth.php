@@ -4,13 +4,25 @@ class Auth {
     private static $auth_pass = "EXgCQzjpqFCpXinTquoCVfSFTsiFhU";
 
     static function handleGenerate () {
-        if (!isset($_POST['user']) && !isset($_POST['pass'])) {
-            header("HTTP/1.1 400 Bad Request");
+        $user = "";
+        $pass = "";
+
+        if (isset($_SERVER['HTTP_AUTHORIZATION']) && strpos($_SERVER['HTTP_AUTHORIZATION'], "Basic ") === 0) {
+            $decoded = base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6));
+            list ($user, $pass) = explode(":", $decoded);
+        }
+        else if (isset($_POST['user']) && isset($_POST['pass'])) {
+            $user = $_POST['user'];
+            $pass = $_POST['pass'];
+        }
+        else {
+            header("HTTP/1.1 401 Unauthorized");
+            header("WWW-Authenticate: Basic realm=logbook");
             exit;
         }
 
-        if ($_POST['user'] !== "auth_user" || $_POST['pass'] !== self::$auth_pass) {
-            header("HTTP/1.1 400 Bad Request");
+        if ($user !== "auth_user" || $pass !== self::$auth_pass) {
+            header("HTTP/1.1 403 Forbidden");
             exit;
         }
 
@@ -20,8 +32,8 @@ class Auth {
 
         $result = [
             "token" => $token,
-            "expires" => $expires->format(DateTime::RFC3339),
-            "user" => $_POST['user'],
+            "expires" => $expires->format(FORMAT_SQL_DATE),
+            "user" => $user,
             "type" => "refresh",
         ];
 
@@ -49,13 +61,18 @@ class Auth {
 
         $user = $stmt->fetchColumn();
 
+        if ($user === false) {
+            header("HTTP/1.1 403 Forbidden");
+            exit;
+        }
+
         $token = random_str();
 
         $expires = new DateTime("+1 hour");
 
         $result = [
             "token" => $token,
-            "expires" => $expires->format(DateTime::RFC3339),
+            "expires" => $expires->format(FORMAT_SQL_DATE),
             "user" => $user,
             "type" => "access",
         ];
@@ -84,11 +101,13 @@ class Auth {
     static function verifyHeader () {
         if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
             header("HTTP/1.1 401 Unauthorized");
+            header("WWW-Authenticate: Bearer");
             exit;
         }
 
         if (strpos($_SERVER['HTTP_AUTHORIZATION'], "Bearer ") !== 0) {
             header("HTTP/1.1 401 Unauthorized");
+            header("WWW-Authenticate: Bearer");
             exit;
         }
 

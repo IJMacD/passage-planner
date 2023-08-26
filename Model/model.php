@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @return LogbookEntry[]
+ */
 function getAllEntries ($params = []) {
     global $db;
 
@@ -35,7 +38,7 @@ function getTrackBounds ($id) {
 
     $result = $stmt->fetch();
 
-    if ($stmt->rowCount() === 0 || $result['bounds_w'] == null) {
+    if ($stmt->rowCount() === 0 || $result['minLon'] === null) {
         if (calculateTrackBounds($id)) {
             $stmt->execute([ "id" => $id ]);
             return $stmt->fetch();
