@@ -21,9 +21,11 @@ function Tracks () {
 
     const [ editMode, setEditMode ] = useState(false);
 
+    const [ refreshToken, setRefreshToken ] = useSavedState('logbook.refreshToken', "");
+
     const authFetch = useAuthFetch({
         exchangeURL: "https://passage.ijmacd.com/logbook/api/v1/auth/exchange",
-        refreshToken: localStorage['logbook.refreshToken'],
+        refreshToken,
     });
 
     function loadTrack (trackSerialized) {
@@ -147,6 +149,22 @@ function Tracks () {
         });
     }
 
+    async function handleLogin () {
+        const pass = prompt("Token Generation Password");
+        if (pass) {
+            const body = new FormData();
+            body.set("user", "auth_user");
+            body.set("pass", pass);
+
+            const token = await fetch("https://passage.ijmacd.com/logbook/api/v1/auth/generate", {
+                method: "post",
+                body
+            }).then(r => r.json()).then(d => d.token);
+
+            setRefreshToken(token);
+        }
+    }
+
     /** @type {Track[]} */
     // @ts-ignore
     const bgTracks = bgCheckboxes.map((c,i)=>c?savedTracks[i]:null).filter(x => x);
@@ -164,7 +182,7 @@ function Tracks () {
                                     <input type="checkbox" checked={bgCheckboxes[i]||false} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
                                     {t.name}{' '}
                                     <button onClick={() => loadTrack(t)}>Load</button>{' '}
-                                    <button onClick={() => uploadTrack(t)}>Upload</button>{' '}
+                                    <button onClick={() => uploadTrack(t)} disabled={!refreshToken}>Upload</button>{' '}
                                     <button onClick={() => removeTrack(i)}>Remove</button>{' '}
                                 </li>)
                             )
@@ -173,6 +191,7 @@ function Tracks () {
                     <button onClick={() => setTrack(null)}>Clear</button>
                     <button onClick={() => setEditMode(!editMode)}>{editMode?"View":"Edit"}</button>
                     <button onClick={handleDownload}>Download</button>
+                    {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
                     <br/>
                     <input type="file" onChange={handleFileLoad} />
                     {/* <input value={track.name} onChange={e => setTrack(t => ({ ...t, name: e.target.value }))} /> */}
