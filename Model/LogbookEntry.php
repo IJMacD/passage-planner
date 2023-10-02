@@ -1,16 +1,23 @@
 <?php
 
+/**
+ * @property-read DateInterval $total_duration
+ * @property-read object $start
+ * @property-read object $end
+ */
 class LogbookEntry implements JsonSerializable {
     var $id;
-    /** @var number $total_distance Nautical Miles */
+    /** @var float $total_distance Nautical Miles */
     var $total_distance;
-    var $start_location;
-    var $start_time;
-    var $start_timezone;
-    var $end_location;
-    var $end_time;
-    var $end_timezone;
+    private $start_location;
+    private $start_time;
+    private $start_timezone;
+    private $end_location;
+    private $end_time;
+    private $end_timezone;
+    /** @var string $weather Description */
     var $weather;
+    /** @var string $comments Description */
     var $comments;
 
     function __get($name)

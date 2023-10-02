@@ -29,6 +29,9 @@ function getEntry ($id) {
     return $stmt->fetch();
 }
 
+/**
+ * @return float[]|false
+ */
 function getTrackBounds ($id) {
     global $db;
 
