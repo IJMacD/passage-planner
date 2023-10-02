@@ -161,7 +161,7 @@ export function TrackDetails ({ track, additionalTracks }) {
                 <MarkerLayer markers={markers} />
                 <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
             </StaticMap>
-            <div>
+            <div style={{flexBasis:500}}>
                 <div>
                     <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{width:400}} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>

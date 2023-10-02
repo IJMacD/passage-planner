@@ -86,9 +86,10 @@ export function StaticMap ({ centre, zoom, width = 1024, height = 1024, onClick,
 
             onClick(lon, lat, e);
 
-            mouseDragStartRef.current = null;
             setDragOffset([0,0]);
         }
+
+        mouseDragStartRef.current = null;
     }
 
     /**
