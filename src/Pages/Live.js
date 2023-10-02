@@ -23,7 +23,7 @@ import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
 import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
 
 const layers = [
-  { name: "Tides", id: "tides" },
+  { name: "Currents", id: "tides" },
   { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
@@ -56,7 +56,7 @@ function Live() {
 
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON]);
   const tileLayers = useTileJSONList(tileLayerURLs);
-  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON]);
+  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", ["0"]);
 
   const [ showVesselNames, setShowVesselNames ] = useSavedState("passagePlanner.showNames", false);
   const [ showVesselPredictedTrack, setShowVesselPredictedTrack ] = useSavedState("passagePlanner.predictedTrack", false);
