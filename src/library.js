@@ -1,17 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { PolarPlot } from "./Components/PolarPlot";
-import { StaticMap } from "./Components/StaticMap";
-import { TrackDetails } from "./Components/TrackDetails";
-import { getCentreAndZoom } from "./hooks/useCentreAndZoom";
-import { HongKongMarineLayer } from "./Layers/HongKongMarineLayer";
-import { PathLayer } from "./Layers/PathLayer";
-import { WorldLayer } from "./Layers/WorldLayer";
-import { latlon2bearing, latlon2nm } from "./util/geo";
-import { parseGPXDocument } from "./util/gpx";
-import { makeCoursePlot } from "./util/makeCoursePlot";
+import { PolarPlot } from "./Components/PolarPlot.js";
+import { StaticMap } from "./Components/StaticMap.js";
+import { TrackDetails } from "./Components/TrackDetails.js";
+import { getCentreAndZoom } from "./hooks/useCentreAndZoom.js";
+import { HongKongMarineLayer } from "./Layers/HongKongMarineLayer.js";
+import { PathLayer } from "./Layers/PathLayer.js";
+import { WorldLayer } from "./Layers/WorldLayer.js";
+import { latlon2bearing, latlon2nm } from "./util/geo.js";
+import { parseGPXDocument } from "./util/gpx.js";
+import { makeCoursePlot } from "./util/makeCoursePlot.js";
 
-export * as gpx from "./util/gpx";
+export * as gpx from "./util/gpx.js";
 
 /**
  * @param {ReactDOM.Container} domNode
