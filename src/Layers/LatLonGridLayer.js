@@ -45,8 +45,11 @@ export function LatLonGridLayer () {
                 drawGrid(ctx, context, 1, 2);
                 drawGrid(ctx, context, 0.1, 1, true);
             }
+            else if (zoom > 5) {
+                drawGrid(ctx, context, 1, 1, true);
+            }
             else {
-                drawGrid(ctx, context, 1, 2, true);
+                drawGrid(ctx, context, 10, 2, true);
             }
         }
         else {
@@ -60,8 +63,11 @@ export function LatLonGridLayer () {
                 drawGrid(ctx, context, 1, 2);
                 drawGrid(ctx, context, 10 / 60, 1, true);
             }
+            else if (zoom > 6) {
+                drawGrid(ctx, context, 1, 1, true);
+            }
             else {
-                drawGrid(ctx, context, 1, 2, true);
+                drawGrid(ctx, context, 10, 1, true);
             }
         }
 
@@ -76,9 +82,10 @@ export function LatLonGridLayer () {
  */
 function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
     const lonLatBounds = getBounds(context);
+    const { width, height } = context;
 
-    const minLon = Math.floor(lonLatBounds[0]);
-    const minLat = Math.floor(lonLatBounds[1]);
+    const minLon = Math.floor(lonLatBounds[0]/gridSize)*gridSize;
+    const minLat = Math.floor(lonLatBounds[1]/gridSize)*gridSize;
     const maxLon = Math.ceil(lonLatBounds[2]);
     const maxLat = Math.ceil(lonLatBounds[3]);
 
@@ -89,17 +96,17 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
     ctx.beginPath();
 
     for (let i = minLon; i <= maxLon; i += gridSize) {
-        const [x1, y1] = projection(i, minLat);
-        const [x2, y2] = projection(i, maxLat);
-        ctx.moveTo(x1 * dpr, y1 * dpr);
-        ctx.lineTo(x2 * dpr, y2 * dpr);
+        const [x1,] = projection(i, minLat);
+        const [x2,] = projection(i, maxLat);
+        ctx.moveTo(x1 * dpr, 0);
+        ctx.lineTo(x2 * dpr, height * dpr);
     }
 
     for (let j = minLat; j <= maxLat; j += gridSize) {
-        const [x1, y1] = projection(minLon, j);
-        const [x2, y2] = projection(maxLon, j);
-        ctx.moveTo(x1 * dpr, y1 * dpr);
-        ctx.lineTo(x2 * dpr, y2 * dpr);
+        const [, y1] = projection(minLon, j);
+        const [, y2] = projection(maxLon, j);
+        ctx.moveTo(0, y1 * dpr);
+        ctx.lineTo(width * dpr, y2 * dpr);
     }
 
     ctx.strokeStyle = "#666";
