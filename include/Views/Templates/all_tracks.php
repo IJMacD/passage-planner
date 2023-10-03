@@ -12,7 +12,7 @@
     ?>;
 
     Promise.all(
-        tracksIDs.map(id => fetch(`/logbook/api/v1/logs/${id}/track`).then(r => r.text()))
+        tracksIDs.map(id => fetch(`/logbook/api/v1/logs/${id}.gpx`).then(r => r.text()))
     ).then(tracks => {
         passagePlanner.renderGPXTracks(document.getElementById("map"), tracks);
     });

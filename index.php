@@ -1,15 +1,15 @@
 <?php
 ini_set("display_errors", 1);
 
-require_once "AccessControl.php";
-require_once "Auth.php";
-require_once "API.php";
-require_once "Router.php";
-require_once "Model/LogbookEntry.php";
-require_once "Model/model.php";
-require_once "Views/view.php";
-require_once "util.php";
-require_once "db.php";
+require_once "include/AccessControl.php";
+require_once "include/Auth.php";
+require_once "include/API.php";
+require_once "include/Router.php";
+require_once "include/Model/LogbookEntry.php";
+require_once "include/Model/model.php";
+require_once "include/Views/view.php";
+require_once "include/util.php";
+require_once "include/db.php";
 
 AccessControl::allowOrigin("http://localhost:3000");
 AccessControl::allowMethod("post");
@@ -22,6 +22,7 @@ Auth::maintenance();
 Router::setRoot("/logbook");
 
 Router::registerWithPrefix("/api/v1", [
+    ["get",     "/logs/:hid.gpx",       [ "API", "handleLogTrackGet" ]],
     ["get",     "/logs/:hid/track",     [ "API", "handleLogTrackGet" ]],
     ["post",    "/logs/:hid/track",     [ "API", "handleLogTrackPost" ]],
     ["get",     "/logs/:hid/bounds",    [ "API", "handleLogEntryBounds" ]],
@@ -60,15 +61,15 @@ try {
 }
 
 function handleIndex () {
-    include "Views/LogbookIndex.php";
+    include "include/Views/LogbookIndex.php";
 }
 
 function handleRecords () {
-    include "Views/LogbookRecords.php";
+    include "include/Views/LogbookRecords.php";
 }
 
 function handleAllTracks () {
-    include "Views/LogbookAllTracks.php";
+    include "include/Views/LogbookAllTracks.php";
 }
 
 function handleLogEntry ($id) {
@@ -79,5 +80,5 @@ function handleLogEntry ($id) {
         exit;
     }
 
-    include "Views/LogbookSingle.php";
+    include "include/Views/LogbookSingle.php";
 }
