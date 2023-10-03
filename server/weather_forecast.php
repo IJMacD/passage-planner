@@ -17,7 +17,7 @@ header("HTTP/1.1 400 Bad Request");
 echo "Bad Request";
 
 function getForecast ($location) {
-    $url = "https://maps.hko.gov.hk/ocf/dat/$location.xml";
+    $url = "https://maps.weather.gov.hk/ocf/dat/$location.xml";
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
