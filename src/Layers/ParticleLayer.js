@@ -10,7 +10,7 @@ import React from "react";
  */
 
 /**
- *
+ * Layer to show many particles all following a single vector
  * @param {object} props
  * @param {[number,number]} props.vector
  * @returns

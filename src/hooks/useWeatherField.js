@@ -6,25 +6,23 @@ import { latlon2nm } from "../util/geo.js";
 /**
  * @param {import("../Components/StaticMap.js").StaticMapContextValue} context
  */
-export function useWeatherField (context) {
+export function useWeatherField ({ centre, zoom, width, height }) {
     const [ weatherField, setWeatherField ] = useState(/** @type {{ weather: import("../util/weather.js").WeatherResponse; distance: number; loc: string; lat: number; lon: number; }[]} */([]));
 
     useEffect(() => {
         let current = true;
 
-        const bounds = getBounds(context);
-
-        const centre = { lon: context.centre[0], lat: context.centre[1] };
+        const bounds = getBounds({ centre, zoom, width, height });
 
         let stations = ALL_STATION_LOCATIONS
             .filter(filterByBounds(bounds))
             .map(s => ({
                 ...s,
-                distance: latlon2nm(s, centre),
+                distance: latlon2nm(s, { lon: centre[0], lat: centre[1] }),
             }));
 
         if (stations.length === 0) {
-            stations = getNearestStations(context.centre, 3);
+            stations = getNearestStations(centre, 3);
         }
 
         const promises = stations.map(station =>
@@ -41,7 +39,7 @@ export function useWeatherField (context) {
             });
 
         return () => { current = false; };
-    }, [context]);
+    }, [centre, zoom, width, height]);
 
     return weatherField;
 }

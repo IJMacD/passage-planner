@@ -1,3 +1,4 @@
+import { dateFormat } from "./dateFormat.js";
 import { latlon2nm } from "./geo.js";
 
 export const ALL_STATIONS = ["CCH", "HKA", "HKO", "HKS", "JKB", "LFS", "PEN", "SEK", "SHA", "SKG", "TKL", "TPO", "TUN", "TY1", "WGL", "SSH" ];
@@ -86,36 +87,15 @@ export function findForecast (weather, time) {
 /**
  * Find the closest hourly forecast
  * @param {{ lon: number, lat: number, weather: WeatherResponse }[]} weather
- * @param {Date} time
+ * @param {string} timeString Forecasts are hourly so timeString looks like "2023100316"
  */
-export function findFieldForecast (weather, time) {
-    const d = time.getMinutes() < 30 ? time : new Date(+time + 30 * 60 * 1000);
-    const timeString = dateFormat(d, "%Y%M%D%h");
+export function findFieldForecast (weather, timeString) {
     return weather.map(field => {
         const { weather, ...rest } = field;
         const forecast = weather.HourlyWeatherForecast.find(f => f.ForecastHour === timeString) || null;
         return { ...rest, forecast };
     });
 }
-
-/**
- * @param {Date} d
- * @param {string} f
- */
-function dateFormat (d, f) {
-    return f.replace(/%\w/gi, s => {
-        switch (s) {
-            case '%Y': return d.getFullYear().toString().padStart(4, "0");
-            case '%M': return (d.getMonth()+1).toString().padStart(2, "0");
-            case '%D': return d.getDate().toString().padStart(2, "0");
-            case '%h': return d.getHours().toString().padStart(2, "0");
-            case '%m': return d.getMinutes().toString().padStart(2, "0");
-            case '%s': return d.getSeconds().toString().padStart(2, "0");
-            default: return s;
-        }
-    });
-}
-
 
 export function getPointOfSail(heading, windDirection) {
     const delta = (heading - windDirection + 180) % 360 - 180;

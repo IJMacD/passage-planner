@@ -16,6 +16,7 @@ export function lonLat2XY({ centre, zoom, width, height }) {
     /**
      * @param {number} lon
      * @param {number} lat
+     * @returns {[x: number, y: number]}
      */
     return (lon, lat) => {
         const tileX = lon2tileFrac(lon, zoom);
