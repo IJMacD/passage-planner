@@ -27,7 +27,7 @@ const layers = [
   { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
-  { name: "AIS RTLSDR", id: "wsais" },
+  { name: "AIS RTLSDR (SVG)", id: "wsais" },
   { name: "AIS RTLSDR (Canvas)", id: "wsais-canvas" },
   // { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
@@ -35,7 +35,7 @@ const layers = [
   // { name: "Weather Stations", id: "weather-stations" },
 ];
 
-const defaultSelected = ["world", "tiles", "ais", "wsais"];
+const defaultSelected = ["world", "wsais"];
 
 const osmTileJSON = "https://raw.githubusercontent.com/mapbox/tilejson-spec/master/2.2.0/example/osm.layer";
 
@@ -56,7 +56,7 @@ function Live() {
 
   const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON]);
   const tileLayers = useTileJSONList(tileLayerURLs);
-  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", ["0"]);
+  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON]);
 
   const [ showVesselNames, setShowVesselNames ] = useSavedState("passagePlanner.showNames", false);
   const [ showVesselPredictedTrack, setShowVesselPredictedTrack ] = useSavedState("passagePlanner.predictedTrack", false);
@@ -105,6 +105,41 @@ function Live() {
     }
   }
 
+  // Up means up in the layer stack, to appear above other layers.
+  // Layers are drawn in array order with index 0 being at bottom.
+  // This means to move layers up it must move later in the array.
+  /**
+   * @param {string} url
+   */
+  function handleMoveTileLayerUp (url) {
+    setTileLayerURLs(tileLayerURLs => {
+      const index = tileLayerURLs.indexOf(url);
+
+      if (index < 0 || index >= tileLayerURLs.length - 1) {
+        return tileLayerURLs;
+      }
+
+      const urls = [...tileLayerURLs];
+
+      const tmp = urls[index];
+      urls[index] = urls[index + 1];
+      urls[index + 1] = tmp;
+
+      return urls;
+    });
+  }
+
+  /**
+   * @param {import('react').MouseEvent<HTMLButtonElement>} e
+   */
+  function handleNowButton (e) {
+    e.stopPropagation();
+    setTime(roundTime());
+    setAnimateTime(false);
+  }
+
+  const isLive = time === roundTime();
+
   return (
     <div className="Live">
       <div className="Controls">
@@ -124,24 +159,27 @@ function Live() {
         <label>
           Time
           <input value={time} onChange={e => setTime(e.target.value)} style={{ width: 80 }} />
+          <button onClick={handleNowButton} disabled={isLive}>Now</button>
         </label>
+        <input type="range" value={timeToMinutes(time)} min={0} max={24 * 60} onChange={e => setTime(minutesToTime(+e.target.value))} style={{width:"100%"}} />
         <label>
-          Animate
+          Animate Time
           <input type="checkbox" checked={animateTime} onChange={e => setAnimateTime(e.target.checked)} />
         </label>
         <label>Layers</label>
-        <button onClick={handleAddTileURL}>Add</button>
         <ToggleSelect
-          values={selectedTileLayers}
-          onChange={setSelectedTileLayers}
-          options={tileLayerURLs.map((url, i) => ({ value: `${i}`, label: tileLayers[i] ? tileLayers[i].name : `Layer ${i}` }))}
-          onRemove={i => setTileLayerURLs(urls => [ ...urls.slice(0, i), ...urls.slice(i + 1) ])}
-        />
-        <ToggleSelect
-          values={selectedLayers}
+          selectedValues={selectedLayers}
           onChange={values => setSelectedLayers(values)}
-          options={layers.map(layer => ({ value: layer.id, label: layer.name }))}
+          options={[...layers].reverse().map(layer => ({ value: layer.id, label: layer.name }))}
         />
+        <ToggleSelect
+          selectedValues={selectedTileLayers}
+          onChange={setSelectedTileLayers}
+          options={[...tileLayerURLs].reverse().map((url, i) => ({ value: url, label: tileLayers[tileLayers.length-i-1] ? tileLayers[tileLayers.length-i-1].name : `Layer ${i}` }))}
+          onRemove={url => setTileLayerURLs(urls => urls.filter(u => u !== url))}
+          onMoveUp={handleMoveTileLayerUp}
+        />
+        <button onClick={handleAddTileURL}>Add</button>
         <label>Options</label>
         <label>
           <input type="checkbox" checked={showVesselNames} onChange={e => setShowVesselNames(e.target.checked)} />
@@ -161,7 +199,7 @@ function Live() {
         <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])} onDoubleClick={(lon, lat) => {setCentre([lon, lat]); setZoom(z=>z+1);}} draggable width="100%" height={768}>
           <WorldLayer />
           {
-            tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
+            tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
           {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
@@ -187,4 +225,22 @@ function roundTime (time = new Date(), minutes = 15) {
   const r = +time % (minutes * 60 * 1000);
   const d2 = new Date(+time - r);
   return `${d2.getHours().toString().padStart(2, "0")}:${d2.getMinutes().toString().padStart(2, "0")}`;
+}
+
+/**
+ * @param {string} time e.g. "12:00"
+ */
+function timeToMinutes (time) {
+  const parts = time.split(":");
+  return +parts[0] * 60 + +parts[1];
+}
+
+/**
+ * @param {number} time e.g. 720
+ * @returns {string} e.g. "12:00"
+ */
+function minutesToTime (time) {
+  const hours = Math.floor(time / 60);
+  const minutes = time % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 }

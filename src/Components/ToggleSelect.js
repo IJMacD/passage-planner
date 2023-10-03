@@ -3,22 +3,23 @@ import React from "react";
 /**
  *
  * @param {object} props
- * @param {string[]} props.values
+ * @param {string[]} props.selectedValues
  * @param {(values: string[]) => void} props.onChange
  * @param {{value: string; label: string }[]} props.options
- * @param {(index: number) => void} [props.onRemove]
+ * @param {(value: string) => void} [props.onRemove]
+ * @param {(value: string) => void} [props.onMoveUp]
  * @returns
  */
-export function ToggleSelect ({ values, onChange, options, onRemove }) {
+export function ToggleSelect ({ selectedValues, onChange, options, onRemove, onMoveUp }) {
     function handleChange (e) {
         if (e.target.checked) {
-            onChange([ ...values, e.target.value ]);
+            onChange([ ...selectedValues, e.target.value ]);
         } else {
-            onChange(values.filter(v => v !== e.target.value));
+            onChange(selectedValues.filter(v => v !== e.target.value));
         }
     }
 
-    const removeStyle = {
+    const btnStyle = {
         fontSize: "0.8em",
         marginLeft: "1em",
     };
@@ -28,10 +29,13 @@ export function ToggleSelect ({ values, onChange, options, onRemove }) {
             {
                 options.map((option, i) => {
                     return (
-                        <label key={option.value} style={{display: "flex"}}>
-                            <input type="checkbox" value={option.value} onChange={handleChange} checked={values.includes(option.value)} />
+                        <label key={option.value} style={{display: "flex"}} title={option.value}>
+                            <input type="checkbox" value={option.value} onChange={handleChange} checked={selectedValues.includes(option.value)} />
                             <span style={{flex:1}}>{ option.label }</span>
-                            { onRemove && <button onClick={e => { e.preventDefault(); onRemove(i); }} style={removeStyle}>❌</button> }
+                            <div style={btnStyle}>
+                                { i > 0 && onMoveUp && <button onClick={e => { e.preventDefault(); onMoveUp(option.value); }} title="Move Layer Up">⬆️</button> }
+                                { onRemove && <button onClick={e => { e.preventDefault(); onRemove(option.value); }} title="Remove Layer">❌</button> }
+                            </div>
                         </label>
                     )
                 })
