@@ -158,7 +158,7 @@ function Live() {
         <AISKey />
       </div>
       <div style={{flex: 1}}>
-        <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])} draggable width="100%" height={768}>
+        <StaticMap centre={centre} zoom={zoom} onClick={(lon, lat) => setCentre([lon, lat])} onDoubleClick={(lon, lat) => {setCentre([lon, lat]); setZoom(z=>z+1);}} draggable width="100%" height={768}>
           <WorldLayer />
           {
             tileLayers.map((layer, i) => selectedTileLayers.includes(`${i}`) && layer && <CanvasTileLayer key={i} layer={layer} />)
