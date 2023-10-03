@@ -1,9 +1,14 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { lat2tile, lon2tile } from "../util/geo.js";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.js";
+import { lonLat2XY } from "../util/projection.js";
 
-const TILE_SIZE = 256;
-
+/**
+ *
+ * @param {object} props
+ * @param {HTMLImageElement} props.image
+ * @param {[west: number, south: number, east: number, north: number]} props.bounds
+ * @returns
+ */
 export function ImageLayer ({ image, bounds }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
@@ -14,6 +19,8 @@ export function ImageLayer ({ image, bounds }) {
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
+
+    const [ west, south, east, north ] = bounds;
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -28,26 +35,24 @@ export function ImageLayer ({ image, bounds }) {
         ctx.canvas.width = pxWidth;
         ctx.canvas.height = pxHeight;
 
-        const tileWidth = TILE_SIZE * devicePixelRatio;
-        const tileHeight = TILE_SIZE * devicePixelRatio;
+        const projection = lonLat2XY({ centre, zoom, width, height });
 
-        const tileCountX = width / tileWidth;
-        const tileCountY = height / tileHeight;
+        const pxTopLeft = projection(west, north);
+        const pxBottomRight = projection(east, south);
 
-        const tileOffsetX = lon2tile(centre[0], zoom) - tileCountX / 2;
-        const tileOffsetY = lat2tile(centre[1], zoom) - tileCountY / 2;
+        const dx = pxTopLeft[0] * devicePixelRatio;
+        const dy = pxTopLeft[1] * devicePixelRatio;
+        const dw = (pxBottomRight[0] - pxTopLeft[0]) * devicePixelRatio;
+        const dh = (pxBottomRight[1] - pxTopLeft[1]) * devicePixelRatio;
 
-        const tilesAtZoom = Math.pow(2, zoom);
+        const sx = 0;
+        const sy = 0;
+        const sw = image.width;
+        const sh = image.height;
 
-        const fractionOfWorldX = tileCountX / tilesAtZoom;
-        const fractionOfWorldY = tileCountY / tilesAtZoom;
+        ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
 
-        const blownUpImageWidth = width / fractionOfWorldX;
-        const blownUpImageHeight = height / fractionOfWorldY;
-
-        ctx.drawImage(image, -tileOffsetX * tileWidth, -tileOffsetY * tileHeight, blownUpImageWidth, blownUpImageHeight);
-
-    }, [centre, zoom, width, height, image]);
+    }, [image, centre, zoom, width, height, west, south, east, north]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
