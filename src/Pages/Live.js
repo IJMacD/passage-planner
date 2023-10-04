@@ -23,9 +23,11 @@ import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
 import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
 import { CurrentParticleLayer } from '../Layers/CurrentParticleLayer.js';
 import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.js';
+import { TideLayer } from '../Layers/TideLayer.js';
 
 const layers = [
-  { name: "Currents", id: "tides" },
+  { name: "Tide Heights", id: "tides" },
+  { name: "Currents", id: "currents" },
   { name: "Currents (Particles)", id: "currents-particles" },
   { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
@@ -196,7 +198,8 @@ function Live() {
           {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
-          {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
+          {selectedLayers.includes("tides") && <TideLayer time={currentTime} />}
+          {selectedLayers.includes("currents") && tideVectors && <VectorFieldLayer field={tideVectors} />}
           {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
