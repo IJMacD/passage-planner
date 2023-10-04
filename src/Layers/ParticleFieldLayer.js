@@ -25,10 +25,12 @@ const MAX_PARTICLE_COUNT = 400;
  * @param {number} [props.rangeLimit] In nautical miles. Default = 1 nm
  * @param {number} [props.speed] Arbitrary units. 1 is slow. 10 is fast.
  * @param {number} [props.density] Arbitrary units. 1 is few. 10 is many.
+ * @param {number} [props.particleSize]
  * @param {"rod"|"dot"|"bar"} [props.particleStyle]
+ * @param {number} [props.particleLifetime] Lifetime in seconds
  * @returns
  */
-export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit = 10, speed = 3, density = 1, particleStyle = "dot" }) {
+export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit = 10, speed = 3, density = 1, particleSize = 3, particleStyle = "dot", particleLifetime = 10 }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
@@ -40,17 +42,28 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
     const [left,top] = useContext(DragContext);
 
-
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
 
-    const particle_size = 3;
-    const coef_animation = 5e-4;
+    const bounds = getBounds(context);
 
     if (particlesRef.current.length === 0) {
-        const bounds = getBounds(context);
         particlesRef.current = makeParticles(MAX_PARTICLE_COUNT, bounds);
     }
+
+    const [west, south, east, north] = bounds;
+
+    // Clear canvas when bounds change
+    useEffect(() => {
+        if (!canvasRef.current) return;
+
+        const ctx = canvasRef.current.getContext("2d");
+
+        if (!ctx) return;
+
+        ctx.canvas.width = pxWidth;
+        ctx.canvas.height = pxHeight;
+    }, [west, south, east, north, pxWidth, pxHeight]);
 
     useEffect(() => {
         const dpr = devicePixelRatio;
@@ -70,9 +83,6 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
         const bounds = getBounds({ centre, zoom, width, height });
 
-        const dLon = bounds[2] - bounds[0];
-        const dLat = bounds[3] - bounds[1];
-
         /**
          * @param {number} time
          */
@@ -87,7 +97,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
             prevTime = time;
 
             if (delta < 0) {
-                console.error(delta);
+                console.error("Negative delta: ", delta);
                 return;
             }
 
@@ -97,17 +107,9 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
             if (!ctx) return;
 
-            // ctx.canvas.width = pxWidth;
-            // ctx.canvas.height = pxHeight;
-
+            // Fade previous render
             changeAlpha(ctx, 0, 0, pxWidth, pxHeight, -16);
 
-            // Draw Particles
-
-            ctx.fillStyle = particleFill;
-            ctx.strokeStyle = particleFill;
-            ctx.lineWidth = particle_size * dpr;
-            ctx.lineCap = "round";
             const desiredParticleCount = 3.2e6 * Math.exp(-0.74893 * zoom) * density;
             let count = 0;
 
@@ -149,6 +151,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
                 // 2/4 + 1/4 = 3/4
                 // 2/4 / 3/4 = 0.666
                 // 1/4 / 3/4 = 0.333
+                /** @type {[number, number]} */
                 const vector = fieldPoints.reduce((vector, p) => {
                     let x;
                     let y;
@@ -175,53 +178,28 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
                     particle.rotation = rotation;
                 }
 
-                const dAnimation = delta * coef_animation * Math.random();
-                particle.animation -= dAnimation;
                 particle.rotation = interpolateAngle(0.9, particle.rotation, rotation);
                 const dx = magnitude * Math.cos(particle.rotation);
                 const dy = magnitude * Math.sin(particle.rotation);
                 particle.lon += dx * f;
                 particle.lat += -dy * f;
 
-                if (particle.animation < 0) {
+                if (isOutOfBounds(particle, vector, bounds)) {
                     resetParticle(particle, bounds);
                     continue;
-                }
-
-                if (vector[0] > 0) {
-                    if (particle.lon > bounds[2] + dLon * 0.1) {
-                        resetParticle(particle, bounds);
-                        continue;
-                    }
-                }
-                else {
-                    if (particle.lon < bounds[0] - dLon * 0.1) {
-                        resetParticle(particle, bounds);
-                        continue;
-                    }
-                }
-
-                if (vector[1] > 0) {
-                    if (particle.lat < bounds[1] - dLat * 0.1) {
-                        resetParticle(particle, bounds);
-                        continue;
-                    }
-                }
-                else {
-                    if (particle.lat > bounds[3] + dLat * 0.1) {
-                        resetParticle(particle, bounds);
-                        continue;
-                    }
                 }
 
                 // console.log({ delta, particle });
 
                 // Draw
 
+                // particle.animation is animation phase offset
+                const animation = ((time / 1000 + particle.animation * particleLifetime) % particleLifetime) / particleLifetime;
+
                 // https://www.geogebra.org/m/zt77cdbb
-                // let opacity = Math.sin(particle.animation * Math.PI);
-                // let opacity = 1 - Math.pow(2 * particle.animation - 1, 2);
-                let opacity = 1 - Math.abs(2 * particle.animation - 1);
+                // let opacity = Math.sin(animation * Math.PI);
+                // let opacity = 1 - Math.pow(2 * animation - 1, 2);
+                let opacity = 1 - Math.abs(2 * animation - 1);
 
                 if (particleStyle === "bar") {
                     opacity *= Math.min(1, magnitude);
@@ -250,8 +228,8 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
                 // particle.opacity += d;
 
-                // Don't render static dots
-                if (d <= 0 && particle.opacity < 0.001) {
+                // Don't render static dots or nearly faded dots
+                if (magnitude < 0.001 || (d <= 0 && particle.opacity < 0.1)) {
                     // Move randomly and hope new position has movement
                     resetParticle(particle, bounds);
 
@@ -266,6 +244,8 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
                 // ctx.fillStyle = "red";
                 // ctx.fill();
 
+                // Draw
+
                 // 0 deg points to right
                 // --->O
 
@@ -273,80 +253,27 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
                 ctx.translate(x * dpr, y * dpr);
                 ctx.rotate(particle.rotation);
 
+                ctx.fillStyle = particleFill;
+                ctx.strokeStyle = particleFill;
+                ctx.lineWidth = particleSize * dpr;
+                ctx.lineCap = "round";
+                ctx.globalAlpha = particle.opacity;
+
                 if (particleStyle === "rod") {
-                    ctx.lineWidth = dpr * particle_size;
-                    ctx.strokeStyle = particleFill;
-
-                    // Trail
-                    // ctx.globalAlpha = particle.opacity / 3;
-                    // ctx.beginPath();
-                    // ctx.moveTo(0, 0);
-                    // ctx.lineTo(-dpr * magnitude * 3, 0);
-                    // ctx.stroke();
-
-                    // ctx.globalAlpha = particle.opacity / 2;
-                    // ctx.beginPath();
-                    // ctx.moveTo(0, 0);
-                    // ctx.lineTo(-dpr * magnitude * 2, 0);
-                    // ctx.stroke();
-
-                    // Outline
-
-                    // ctx.globalAlpha = particle.opacity;
-                    // ctx.lineWidth = 1.5 * dpr * particle_size;
-                    // ctx.strokeStyle = "white";
-                    // ctx.beginPath();
-                    // ctx.moveTo(0, dpr * y - vector[1]);
-                    // ctx.lineTo(0, dpr * y);
-                    // ctx.stroke();
-                    // ctx.lineWidth = dpr * particle_size;
-                    // ctx.strokeStyle = particleFill;
-
-                    ctx.globalAlpha = particle.opacity;
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(-dpr * magnitude, 0);
                     ctx.stroke();
                 }
                 else if (particleStyle === "bar") {
-                    ctx.lineWidth = dpr * particle_size;
-                    ctx.strokeStyle = particleFill;
-
-                    // ctx.globalAlpha = particle.opacity / 3;
-                    // ctx.beginPath();
-                    // ctx.moveTo(-particle_size * dpr * 2, -particle_size * dpr);
-                    // ctx.lineTo(-particle_size * dpr * 2, particle_size * dpr);
-                    // ctx.stroke();
-
-                    // ctx.globalAlpha = particle.opacity / 2;
-                    // ctx.beginPath();
-                    // ctx.moveTo(-particle_size * dpr, -particle_size * dpr);
-                    // ctx.lineTo(-particle_size * dpr, particle_size * dpr);
-                    // ctx.stroke();
-
-                    ctx.globalAlpha = particle.opacity;
                     ctx.beginPath();
-                    ctx.moveTo(0, -particle_size * dpr);
-                    ctx.lineTo(0, particle_size * dpr);
+                    ctx.moveTo(0, -particleSize * dpr);
+                    ctx.lineTo(0, particleSize * dpr);
                     ctx.stroke();
                 }
                 else {
-                    ctx.lineWidth = dpr * particle_size;
-                    ctx.strokeStyle = particleFill;
-
-                    // ctx.globalAlpha = particle.opacity / 3;
-                    // ctx.beginPath();
-                    // ctx.arc(-particle_size * dpr * 2, 0, particle_size, 0, Math.PI * 2);
-                    // ctx.stroke();
-
-                    // ctx.globalAlpha = particle.opacity / 2;
-                    // ctx.beginPath();
-                    // ctx.arc(-particle_size * dpr, 0, particle_size, 0, Math.PI * 2);
-                    // ctx.stroke();
-
-                    ctx.globalAlpha = particle.opacity;
                     ctx.beginPath();
-                    ctx.arc(0, 0, particle_size, 0, Math.PI * 2);
+                    ctx.arc(0, 0, particleSize, 0, Math.PI * 2);
                     ctx.stroke();
                 }
 
@@ -358,7 +285,17 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
         return () => { active = false; }
 
-    }, [centre, zoom, width, height, pxWidth, pxHeight, field, particleFill, rangeLimit, speed, density, particleStyle]);
+    }, [
+        centre, zoom,
+        width, height,
+        pxWidth, pxHeight,
+        field,
+        rangeLimit, speed, density,
+        particleFill,
+        particleStyle,
+        particleLifetime,
+        particleSize,
+    ]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
@@ -439,7 +376,8 @@ function resetParticle (particle, bounds) {
     const dLat = bounds[3] - bounds[1];
     particle.lon = bounds[0] + Math.random() * dLon;
     particle.lat = bounds[1] + Math.random() * dLat;
-    particle.animation = 1;
+    // animation phase
+    particle.animation = Math.random();
     particle.rotation = NaN;
     particle.opacity = 0;
 }
@@ -458,4 +396,38 @@ function changeAlpha(c, x, y, w, h, dA) {
         imageData.data[i] += dA;
     }
     c.putImageData(imageData, x, y );
+}
+
+/**
+ * @param {Particle} particle
+ * @param {[i: number, j: number]} vector
+ * @param {[west: number, south: number, east: number, north: number]} bounds
+ */
+function isOutOfBounds (particle, vector, bounds) {
+    const dLon = bounds[2] - bounds[0];
+    const dLat = bounds[3] - bounds[1];
+
+    if (vector[0] > 0) {
+        if (particle.lon > bounds[2] + dLon * 0.1) {
+            return true;
+        }
+    }
+    else {
+        if (particle.lon < bounds[0] - dLon * 0.1) {
+            return true;
+        }
+    }
+
+    if (vector[1] > 0) {
+        if (particle.lat < bounds[1] - dLat * 0.1) {
+            return true;
+        }
+    }
+    else {
+        if (particle.lat > bounds[3] + dLat * 0.1) {
+            return true;
+        }
+    }
+
+    return false;
 }
