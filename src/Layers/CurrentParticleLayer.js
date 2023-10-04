@@ -1,6 +1,6 @@
 import React from "react";
 import { ParticleFieldLayer } from "./ParticleFieldLayer.js";
-import { useTides } from "../hooks/useTides.js";
+import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
 
 /**
  *
@@ -9,7 +9,7 @@ import { useTides } from "../hooks/useTides.js";
  * @returns
  */
 export function CurrentParticleLayer ({ time }) {
-    const tideVectors = useTides(time);
+    const tideVectors = useTidalCurrents(time);
 
     return tideVectors && <ParticleFieldLayer field={tideVectors} particleFill="#00F" rangeLimit={0.5} speed={20} density={10} particleStyle="bar" />
 }

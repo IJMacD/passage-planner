@@ -7,7 +7,7 @@ import { AISLayerSVG } from '../Layers/AISLayerSVG.js';
 import { ToggleSelect } from '../Components/ToggleSelect.js';
 import { AISKey } from '../Components/AISKey.js';
 import { useWebsocketVessels } from '../hooks/useWebsocketVessels.js';
-import { useTides } from '../hooks/useTides.js';
+import { useTidalCurrents } from '../hooks/useTidalCurrents.js';
 // import { combineAIS } from '../util/ais/ais.js';
 import React from 'react';
 import { LightLayer } from '../Layers/LightLayer.js';
@@ -50,7 +50,7 @@ function Live() {
   const [time, setTime] = useState(() => roundTime());
   const currentTime = makeDateTime(date, time);
 
-  const tideVectors = useTides(currentTime);
+  const tideVectors = useTidalCurrents(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
 
   const isWSAISActive = selectedLayers.includes("wsais") || selectedLayers.includes("ais");
