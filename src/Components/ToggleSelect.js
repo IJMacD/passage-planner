@@ -5,7 +5,7 @@ import React from "react";
  * @param {object} props
  * @param {string[]} props.selectedValues
  * @param {(values: string[]) => void} props.onChange
- * @param {{value: string; label: string }[]} props.options
+ * @param {{value: string; label: string, disabled?: boolean }[]} props.options
  * @param {(value: string) => void} [props.onRemove]
  * @param {(value: string) => void} [props.onMoveUp]
  * @returns
@@ -30,7 +30,7 @@ export function ToggleSelect ({ selectedValues, onChange, options, onRemove, onM
                 options.map((option, i) => {
                     return (
                         <label key={option.value} style={{display: "flex"}} title={option.value}>
-                            <input type="checkbox" value={option.value} onChange={handleChange} checked={selectedValues.includes(option.value)} />
+                            <input type="checkbox" value={option.value} onChange={handleChange} checked={selectedValues.includes(option.value)} disabled={option.disabled} />
                             <span style={{flex:1}}>{ option.label }</span>
                             <div style={btnStyle}>
                                 { i > 0 && onMoveUp && <button onClick={e => { e.preventDefault(); onMoveUp(option.value); }} title="Move Layer Up">⬆️</button> }

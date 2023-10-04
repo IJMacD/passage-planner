@@ -134,6 +134,7 @@ function Live() {
    */
   function handleNowButton (e) {
     e.stopPropagation();
+    setDate(formatDate());
     setTime(roundTime());
     setAnimateTime(false);
   }
@@ -170,7 +171,7 @@ function Live() {
         <ToggleSelect
           selectedValues={selectedLayers}
           onChange={values => setSelectedLayers(values)}
-          options={[...layers].reverse().map(layer => ({ value: layer.id, label: layer.name }))}
+          options={[...layers].reverse().map(layer => ({ value: layer.id, label: layer.name, disabled: !isLive && layer.id.includes("ais") }))}
         />
         <ToggleSelect
           selectedValues={selectedTileLayers}
@@ -205,9 +206,9 @@ function Live() {
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
-          {selectedLayers.includes("ahais") && <AisHubVesselsLayer showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
-          {selectedLayers.includes("wsais") && <AISLayerSVG vessels={vesselsWS} fade showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
-          {selectedLayers.includes("wsais-canvas") && <AISLayerCanvas vessels={vesselsWS} />}
+          {selectedLayers.includes("ahais") && isLive && <AisHubVesselsLayer showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
+          {selectedLayers.includes("wsais") && isLive && <AISLayerSVG vessels={vesselsWS} fade showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
+          {selectedLayers.includes("wsais-canvas") && isLive && <AISLayerCanvas vessels={vesselsWS} />}
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {/* {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> } */}
