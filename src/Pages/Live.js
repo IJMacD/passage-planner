@@ -133,7 +133,7 @@ function Live() {
     setAnimateTime(false);
   }
 
-  const isLive = time === roundTime();
+  const isLive = date === formatDate() && time === roundTime();
 
   return (
     <div className="Live">

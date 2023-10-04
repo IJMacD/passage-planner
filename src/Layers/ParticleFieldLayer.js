@@ -57,7 +57,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
     useEffect(() => {
         if (!canvasRef.current) return;
 
-        const ctx = canvasRef.current.getContext("2d");
+        const ctx = canvasRef.current.getContext("2d", { willReadFrequently: true });
 
         if (!ctx) return;
 
@@ -71,7 +71,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
         const coef_speed = 3e-5 * speed;
 
         let active = true;
-        let prevTime = performance.now();
+        let prevTime = NaN;
         const particles = particlesRef.current;
 
         if (particles.length === 0) return;
@@ -93,6 +93,11 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
             requestAnimationFrame(step);
 
+            if (isNaN(prevTime)) {
+                prevTime = time;
+                return;
+            }
+
             const delta = time - prevTime;
             prevTime = time;
 
@@ -103,7 +108,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
             if (!canvasRef.current) return;
 
-            const ctx = canvasRef.current.getContext("2d");
+            const ctx = canvasRef.current.getContext("2d", { willReadFrequently: true });
 
             if (!ctx) return;
 
@@ -115,19 +120,21 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
             const weightLimit = 1 / rangeLimit;
 
+            const projection = lonLat2XY({ centre, zoom, width, height });
+
             for (const particle of particles) {
                 if (count++ > desiredParticleCount) {
                     break;
                 }
 
-                const projection = lonLat2XY({ centre, zoom, width, height });
-
                 const [ x, y ] = projection(particle.lon, particle.lat);
 
+                /** @type {((import("./VectorFieldLayer.js").PolarFieldPoint|import("./VectorFieldLayer.js").VectorFieldPoint)&{weight:number})[]} */
+                // @ts-ignore
                 const fieldPoints = field.map(fp => {
                     const weight = 1 / latlon2nm(particle, fp);
-                    return { ...fp, weight };
-                }).filter(fp => fp.weight > weightLimit);
+                    return (weight > weightLimit) ? { ...fp, weight } : null;
+                }).filter(fp => fp);
 
                 // Debug influence circle
                 if (debugInfluenceCircle) {
@@ -143,7 +150,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
                 const sum = fieldPoints.reduce((sum, p) => sum + p.weight, 0);
 
-                // 2 ---> x  <--------- 4
+                // 2 ---> x <--------- 4
                 // sum = 6
                 // A: 0.66666
                 // B: 0.33333
