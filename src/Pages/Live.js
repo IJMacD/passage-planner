@@ -21,9 +21,12 @@ import { WorldLayer } from '../Layers/WorldLayer.js';
 import { ControlsLayer } from '../Layers/ControlsLayer.js';
 import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
 import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
+import { CurrentParticleLayer } from '../Layers/CurrentParticleLayer.js';
+import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.js';
 
 const layers = [
   { name: "Currents", id: "tides" },
+  { name: "Currents (Particles)", id: "currents-particles" },
   { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
@@ -32,7 +35,7 @@ const layers = [
   // { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
   { name: "Weather", id: "weather" },
-  // { name: "Weather Stations", id: "weather-stations" },
+  { name: "Weather Stations", id: "weather-stations" },
 ];
 
 const defaultSelected = ["world", "wsais"];
@@ -61,15 +64,6 @@ function Live() {
   const [ showVesselNames, setShowVesselNames ] = useSavedState("passagePlanner.showNames", false);
   const [ showVesselPredictedTrack, setShowVesselPredictedTrack ] = useSavedState("passagePlanner.predictedTrack", false);
   const [ showVesselAnimation, setShowVesselAnimation ] = useSavedState("passagePlanner.animate", false);
-
-  // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
-  // /** @type {import('../Layers/VectorFieldLayer.js').Field} */
-  // const weatherMarkers = weatherForecast.map(f => ({
-  //   lat: f.lat,
-  //   lon: f.lon,
-  //   direction: ((f.forecast?.ForecastWindDirection || 0) + 180) % 360,
-  //   magnitude: (f.forecast?.ForecastWindSpeed || 0) * 0.2,
-  // }));
 
   useEffect(() => {
     if (animateTime) {
@@ -203,6 +197,7 @@ function Live() {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
           {selectedLayers.includes("tides") && tideVectors && <VectorFieldLayer field={tideVectors} />}
+          {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
@@ -211,7 +206,7 @@ function Live() {
           {selectedLayers.includes("wsais-canvas") && isLive && <AISLayerCanvas vessels={vesselsWS} />}
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
-          {/* {selectedLayers.includes("weather-stations") &&  weatherMarkers && <VectorFieldLayer field={weatherMarkers} /> } */}
+          {selectedLayers.includes("weather-stations") && <WeatherStationsLayer time={currentTime} /> }
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>
         {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} />}
