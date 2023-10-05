@@ -12,8 +12,8 @@ import { PolarPlotSVG } from "./PolarPlotSVG.js";
 import { ControlsLayer } from "../Layers/ControlsLayer.js";
 
 import "./TrackDetails.css";
-import { useTides } from "../hooks/useTides.js";
 import { VectorFieldLayer } from "../Layers/VectorFieldLayer.js";
+import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
 
 const playSpeed = 60; // 1 minute per second
 
@@ -89,7 +89,7 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     // }, [track]);
 
-    const tideVectors = useTides(selectedDate);
+    const tideVectors = useTidalCurrents(selectedDate);
 
     const paths = useMemo(() => {
         /** @type {import("../Layers/PathLayer").Path[]} */

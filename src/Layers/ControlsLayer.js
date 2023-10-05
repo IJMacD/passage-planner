@@ -12,14 +12,21 @@ export function ControlsLayer ({ setCentre, setZoom }) {
      * @param {number} dy Number of tiles to move vertically
      */
     function moveCentre (dx, dy) {
-      setCentre(centre => {
-        const tileX = lon2tile(centre[0], zoom);
-        const tileY = lat2tile(centre[1], zoom);
+      setCentre((/** @type {[lon: number, lat: number]} */ centre) => {
+        let [ lon, lat ] = centre;
 
-        const lon = tile2long(tileX + dx, zoom);
-        const lat = tile2lat(tileY + dy, zoom);
+        const tileX = lon2tile(lon, zoom);
+        const tileY = lat2tile(lat, zoom);
 
-        return [lon, lat];
+        if (dx) {
+          lon = tile2long(tileX + dx, zoom);
+        }
+
+        if (dy) {
+          lat = tile2lat(tileY + dy, zoom);
+        }
+
+        return [ lon, lat ];
       });
     }
 
@@ -30,7 +37,7 @@ export function ControlsLayer ({ setCentre, setZoom }) {
                     <button onClick={() => moveCentre(0, -1)}>North</button><br/>
                     <button onClick={() => moveCentre(-1, 0)}>West</button>
                     <button onClick={() => moveCentre(1, 0)}>East</button><br/>
-                    <button onClick={() => moveCentre(0, 1.1)}>South</button><br/>
+                    <button onClick={() => moveCentre(0, 1)}>South</button><br/>
                 </>
             }
             { setZoom &&
