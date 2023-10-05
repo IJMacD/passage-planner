@@ -5,11 +5,15 @@
  * @param {number} [config.searchTolerance]
  * @param {string} [config.matchColour]
  * @param {string} [config.nonMatchColour]
- * @param {boolean} [config.blur]
+ * @param {number} [config.blur]
  */
 export function maskCanvas(canvas, config) {
     const {
-        searchColour, searchTolerance = 10, matchColour = "", nonMatchColour = "", blur = false,
+        searchColour,
+        searchTolerance = 10,
+        matchColour = "",
+        nonMatchColour = "",
+        blur = 0,
     } = config;
 
     const searchColourValue = parseHexColour(searchColour);
@@ -44,10 +48,9 @@ export function maskCanvas(canvas, config) {
         if (ctx2) {
             ctx2.putImageData(imageData, 0, 0);
 
-            const edgeBlur = 4, edgeBrightness = 2, edgeContrast = 6;
-
             canvas.width = width;
-            ctx.filter = `blur( ${edgeBlur}px ) brightness( ${edgeBrightness} ) contrast( ${edgeContrast} )`;
+            // ctx.filter = `blur( ${edgeBlur}px ) brightness( ${edgeBrightness}% ) contrast( ${edgeContrast}% )`;
+            ctx.filter = `blur( ${blur}px )`;
             ctx.drawImage(canvas2, 0, 0);
         }
     }
@@ -55,6 +58,29 @@ export function maskCanvas(canvas, config) {
         ctx.putImageData(imageData, 0, 0);
     }
 }
+
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} threshold
+ */
+export function clampAlpha (canvas, threshold = 127) {
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
+
+    const { width, height } = canvas;
+
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const d = imageData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+        const a = d[i + 3];
+        d[i + 3] = a > threshold ? 255: 0;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+}
+
 /**
  * @param {DataView} a
  * @param {number[]} b

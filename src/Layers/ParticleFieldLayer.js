@@ -41,7 +41,7 @@ export function ParticleFieldLayer ({
         particleSize = 3,
         particleStyle = "dot",
         particleLifetime = 10,
-        mask = null ,
+        mask = null,
     }) {
 
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */

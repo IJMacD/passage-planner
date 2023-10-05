@@ -52,7 +52,7 @@ export function useLandMask (layer, canvas) {
                         searchTolerance: 40,
                         matchColour: "#000000FF",
                         nonMatchColour: "#00000000",
-                        blur: true,
+                        blur: 4,
                     });
                 }
             }

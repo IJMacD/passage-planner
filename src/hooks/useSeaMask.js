@@ -3,7 +3,7 @@ import { StaticMapContext } from "../Components/StaticMap.js";
 import { useTiles } from "./useTiles.js";
 import { loadImage } from "../util/loadImage.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
-import { maskCanvas } from "../util/maskCanvas.js";
+import { clampAlpha, maskCanvas } from "../util/maskCanvas.js";
 
 /**
  * @param {import("./useTileJSONList.js").TileJSON | null} layer
@@ -45,6 +45,9 @@ export function useSeaMask (layer, canvas) {
                 const images = await Promise.all(tiles.map(tile => loadImage(tile.url)));
 
                 if (canvas && isCurrent.value) {
+                    // Force software rendering for this canvas
+                    canvas.getContext("2d", { willReadFrequently: true });
+
                     renderCanvasTileLayer(canvas, context, tiles, images, overscale);
 
                     maskCanvas(canvas, {
@@ -52,8 +55,10 @@ export function useSeaMask (layer, canvas) {
                         searchTolerance: 40,
                         matchColour: "#00000000",
                         nonMatchColour: "#000000FF",
-                        blur: true,
+                        blur: 4,
                     });
+
+                    clampAlpha(canvas, 225);
                 }
             }
         }());
