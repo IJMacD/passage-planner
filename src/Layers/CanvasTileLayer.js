@@ -4,9 +4,6 @@ import { useTiles } from "../hooks/useTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";
 
-export const TILE_SIZE = 256;
-export const DEBUG = false;
-
 /**
  *
  * @param {object} props
@@ -40,14 +37,14 @@ export function CanvasTileLayer ({ layer }) {
     const tiles = useTiles(centre, zoom, width / overscale, height / overscale, layer);
 
     useEffect(() => {
-    // useEffectDebugger(() => {
-    //     console.log("CanvasTileLayer: render");
         if (canvasRef.current) {
             let isCurrent = { value: true };
 
+            // Clear canvas
             canvasRef.current.width = context.width * devicePixelRatio;
             canvasRef.current.height = context.height * devicePixelRatio;
 
+            // Load each image and render whenever it's ready
             for (const tile of tiles) {
                 loadImage(tile.url).then(image => {
                     if (canvasRef.current && isCurrent.value) {

@@ -8,12 +8,12 @@ const TILE_SIZE = 265;
  * @param {number} zoom
  * @param {number} width
  * @param {number} height
- * @param {import("../Layers/TileMapLayer").TileJSON} layer
+ * @param {import("../Layers/TileMapLayer").TileJSON|null} layer
  */
 export function useTiles(centre, zoom, width, height, layer) {
     const tiles = [];
 
-    if (zoom >= +layer.minzoom && zoom <= +layer.maxzoom) {
+    if (layer && zoom >= +layer.minzoom && zoom <= +layer.maxzoom) {
         const tileCountX = Math.ceil(width / TILE_SIZE) + 2;
         const tileCountY = Math.ceil(height / TILE_SIZE) + 2;
 
@@ -38,10 +38,11 @@ export function useTiles(centre, zoom, width, height, layer) {
         }
     }
 
+    const urlList = tiles.map(t => t.url);
+
     // Return a stable object array
     // If all the URLs are the same then just return the cached result
     const resultRef = useRef(tiles);
-    const urlList = tiles.map(t => t.url);
     const urlRef = useRef(urlList);
 
     if (!areArraysEqual(urlList, urlRef.current)) {

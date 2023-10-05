@@ -4,8 +4,9 @@ import React from "react";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 import { latlon2nm } from "../util/geo.js";
 
-const debugInfluenceCircle = false;
 const MAX_PARTICLE_COUNT = 400;
+const debugInfluenceCircle = false;
+const debugMask = false;
 
 /**
  * @typedef Particle
@@ -28,9 +29,21 @@ const MAX_PARTICLE_COUNT = 400;
  * @param {number} [props.particleSize]
  * @param {"rod"|"dot"|"bar"} [props.particleStyle]
  * @param {number} [props.particleLifetime] Lifetime in seconds
+ * @param {HTMLCanvasElement?} [props.mask]
  * @returns
  */
-export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit = 10, speed = 3, density = 1, particleSize = 3, particleStyle = "dot", particleLifetime = 10 }) {
+export function ParticleFieldLayer ({
+        field,
+        particleFill = "#999",
+        rangeLimit = 10,
+        speed = 3,
+        density = 1,
+        particleSize = 3,
+        particleStyle = "dot",
+        particleLifetime = 10,
+        mask = null ,
+    }) {
+
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
@@ -111,6 +124,8 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
             const ctx = canvasRef.current.getContext("2d", { willReadFrequently: true });
 
             if (!ctx) return;
+
+            ctx.globalCompositeOperation = "source-over";
 
             // Fade previous render
             changeAlpha(ctx, 0, 0, pxWidth, pxHeight, -16);
@@ -286,6 +301,14 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
 
                 ctx.restore();
             }
+
+            if (mask) {
+                ctx.globalCompositeOperation = "destination-in";
+                if (debugMask) {
+                    ctx.globalCompositeOperation = "copy";
+                }
+                ctx.drawImage(mask, 0, 0);
+            }
         }
 
         requestAnimationFrame(step);
@@ -302,6 +325,7 @@ export function ParticleFieldLayer ({ field, particleFill = "#999", rangeLimit =
         particleStyle,
         particleLifetime,
         particleSize,
+        mask,
     ]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;

@@ -1,5 +1,7 @@
 import { tileXY2CanvasXY } from "../util/projection.js";
-import { TILE_SIZE, DEBUG } from "../Layers/CanvasTileLayer.js";
+
+const TILE_SIZE = 256;
+const DEBUG = false;
 
 /**
  * @param {HTMLCanvasElement} canvas

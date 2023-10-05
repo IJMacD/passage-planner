@@ -24,6 +24,7 @@ export function loadImage(src) {
     const promise = new Promise((resolve, reject) => {
         const img = new Image();
         img.src = src;
+        img.crossOrigin = "anonymous";
         img.onload = () => {
             resolve(img);
             promiseCache[src] = null;

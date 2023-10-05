@@ -156,6 +156,10 @@ function Live() {
     setDate(e.target.value);
     setLockNow(false);
   }
+  function handleAnimationChange (e) {
+    setAnimateTime(e.target.checked);
+    setLockNow(false);
+  }
 
   const isLive = date === formatDate() && time === roundTime();
 
@@ -184,7 +188,7 @@ function Live() {
         <input type="range" value={timeToMinutes(time)} min={0} max={24 * 60} onChange={handleTimeSliderChange} style={{width:"100%"}} />
         <label>
           Animate Time
-          <input type="checkbox" checked={animateTime} onChange={e => setAnimateTime(e.target.checked)} />
+          <input type="checkbox" checked={animateTime} onChange={handleAnimationChange} />
         </label>
         <label>Layers</label>
         <ToggleSelect
