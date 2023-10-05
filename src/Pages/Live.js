@@ -55,6 +55,7 @@ function Live() {
 
   const tideVectors = useTidalCurrents(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
+  const [animateDate, setAnimateDate] = useState(false);
 
   const isWSAISActive = selectedLayers.includes("wsais") || selectedLayers.includes("ais");
   const vesselsWS = useWebsocketVessels(isWSAISActive);
@@ -85,6 +86,13 @@ function Live() {
 
           if (hours >= 24) {
             hours = 0;
+
+            if (animateDate) {
+              setDate(date => {
+                const d = new Date(`${date}T00:00:00`);
+                return formatDate(new Date(+d + 86400000));
+              });
+            }
           }
 
           return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
@@ -93,7 +101,7 @@ function Live() {
 
       return () => clearInterval(id);
     }
-  }, [animateTime, setTime]);
+  }, [animateTime, animateDate]);
 
   const nowTime = roundTime(new Date());
   useEffect(() => {
@@ -156,8 +164,12 @@ function Live() {
     setDate(e.target.value);
     setLockNow(false);
   }
-  function handleAnimationChange (e) {
+  function handleAnimateTimeChange (e) {
     setAnimateTime(e.target.checked);
+    setLockNow(false);
+  }
+  function handleAnimateDateChange (e) {
+    setAnimateDate(e.target.checked);
     setLockNow(false);
   }
 
@@ -186,10 +198,16 @@ function Live() {
           { lockNow && <span>🔒</span> }
         </label>
         <input type="range" value={timeToMinutes(time)} min={0} max={24 * 60} onChange={handleTimeSliderChange} style={{width:"100%"}} />
-        <label>
-          Animate Time
-          <input type="checkbox" checked={animateTime} onChange={handleAnimationChange} />
-        </label>
+        <div>
+          <label style={{display:"inline"}}>
+            Animate Time
+            <input type="checkbox" checked={animateTime} onChange={handleAnimateTimeChange} />
+          </label>
+          <label style={{display:"inline"}}>
+            Animate Date
+            <input type="checkbox" checked={animateDate} onChange={handleAnimateDateChange} disabled={!animateTime} />
+         </label>
+        </div>
         <label>Layers</label>
         <ToggleSelect
           selectedValues={selectedLayers}
