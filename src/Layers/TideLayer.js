@@ -24,14 +24,14 @@ export function TideLayer ({ time }) {
             {
                 tides.map((tideStationRecord) => {
                     const [left, top] = projection(tideStationRecord.station.longitude, tideStationRecord.station.latitude);
-                    return <TideMarker key={tideStationRecord.station.code} height={tideStationRecord.height} left={left} top={top} />
+                    return <TideMarker key={tideStationRecord.station.code} height={tideStationRecord.height} left={left} top={top} title={tideStationRecord.station.name} />
                 })
             }
         </div>
     );
 }
 
-function TideMarker ({ height, left, top }) {
+function TideMarker ({ height, left, top, title = "" }) {
     const outerWidth = 15;
     const outerHeight = 50;
     const padding = 2;
@@ -47,7 +47,7 @@ function TideMarker ({ height, left, top }) {
     const innerHeight = tideFraction * maxInnerHeight;
 
     return (
-        <div style={{boxSizing:"border-box",border:border+"px solid black",background:"white",position:"absolute",left:left-outerWidth/2,top:top-outerHeight,width: outerWidth,height: outerHeight}}>
+        <div style={{boxSizing:"border-box",border:border+"px solid black",background:"white",position:"absolute",left:left-outerWidth/2,top:top-outerHeight,width: outerWidth,height: outerHeight}} title={title}>
             <div style={{boxSizing:"border-box",background:"red",position:"absolute",bottom:padding,left:padding,width:innerWidth,height:innerHeight}} />
             { height > 0 && <p style={{color:"red",fontSize:"0.8rem",fontWeight:"bold",position:"absolute",left:-outerWidth/2,top:outerHeight-5,width:"max-content"}}>{`${height} m`}</p> }
         </div>

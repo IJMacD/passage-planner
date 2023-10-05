@@ -26,10 +26,9 @@ import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.js';
 import { TideLayer } from '../Layers/TideLayer.js';
 
 const layers = [
-  { name: "Tide Heights", id: "tides" },
+  { name: "Grid", id: "grid" },
   { name: "Currents", id: "currents" },
   { name: "Currents (Particles)", id: "currents-particles" },
-  { name: "Grid", id: "grid" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
   { name: "AIS RTLSDR (SVG)", id: "wsais" },
@@ -38,6 +37,7 @@ const layers = [
   { name: "Lights", id: "lights" },
   { name: "Weather", id: "weather" },
   { name: "Weather Stations", id: "weather-stations" },
+  { name: "Tide Heights", id: "tides" },
 ];
 
 const defaultSelected = ["world", "wsais"];
@@ -50,6 +50,7 @@ function Live() {
   const [zoom, setZoom] = useSavedState("passagePlanner.zoom", 10);
   const [date, setDate] = useState(() => formatDate());
   const [time, setTime] = useState(() => roundTime());
+  const [lockNow, setLockNow] = useState(true);
   const currentTime = makeDateTime(date, time);
 
   const tideVectors = useTidalCurrents(currentTime);
@@ -94,6 +95,13 @@ function Live() {
     }
   }, [animateTime, setTime]);
 
+  const nowTime = roundTime(new Date());
+  useEffect(() => {
+    if (lockNow) {
+      setTime(nowTime);
+    }
+  }, [lockNow, nowTime])
+
   function handleAddTileURL() {
     const newTileLayerURL = prompt("Enter new TileJSON url", "https://");
     if (newTileLayerURL) {
@@ -133,6 +141,20 @@ function Live() {
     setDate(formatDate());
     setTime(roundTime());
     setAnimateTime(false);
+    setLockNow(true);
+  }
+
+  function handleTimeSliderChange (e) {
+    setTime(minutesToTime(+e.target.value));
+    setLockNow(false);
+  }
+  function handleTimeChange (e) {
+    setTime(e.target.value);
+    setLockNow(false);
+  }
+  function handleDateChange (e) {
+    setDate(e.target.value);
+    setLockNow(false);
   }
 
   const isLive = date === formatDate() && time === roundTime();
@@ -151,14 +173,15 @@ function Live() {
         </label>
         <label>
           Date
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: 120 }} />
+          <input type="date" value={date} onChange={handleDateChange} style={{ width: 120 }} />
         </label>
         <label>
           Time
-          <input value={time} onChange={e => setTime(e.target.value)} style={{ width: 80 }} />
+          <input value={time} onChange={handleTimeChange} style={{ width: 80 }} />
           <button onClick={handleNowButton} disabled={isLive}>Now</button>
+          { lockNow && <span>🔒</span> }
         </label>
-        <input type="range" value={timeToMinutes(time)} min={0} max={24 * 60} onChange={e => setTime(minutesToTime(+e.target.value))} style={{width:"100%"}} />
+        <input type="range" value={timeToMinutes(time)} min={0} max={24 * 60} onChange={handleTimeSliderChange} style={{width:"100%"}} />
         <label>
           Animate Time
           <input type="checkbox" checked={animateTime} onChange={e => setAnimateTime(e.target.checked)} />
@@ -198,10 +221,9 @@ function Live() {
           {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
-          {selectedLayers.includes("tides") && <TideLayer time={currentTime} />}
+          {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("currents") && tideVectors && <VectorFieldLayer field={tideVectors} />}
           {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
-          {selectedLayers.includes("grid") && <LatLonGridLayer />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
           {selectedLayers.includes("ahais") && isLive && <AisHubVesselsLayer showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
@@ -210,6 +232,7 @@ function Live() {
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {selectedLayers.includes("weather-stations") && <WeatherStationsLayer time={currentTime} /> }
+          {selectedLayers.includes("tides") && <TideLayer time={currentTime} />}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>
         {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} />}

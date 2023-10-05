@@ -4,6 +4,7 @@ import { ALL_TIDE_STATIONS_INFO } from "../util/weather.js";
 /**
  * @typedef TideStation
  * @property {string} code
+ * @property {string} name
  * @property {number} longitude
  * @property {number} latitude
  */
@@ -39,28 +40,33 @@ export function useTides(date, bounds) {
         let isCurrent = true;
 
         const allTideStations = Object.keys(ALL_TIDE_STATIONS_INFO);
-        const stationsInBounds = allTideStations.filter(sta => {
+        const stationsInBounds = /** @type {(keyof ALL_TIDE_STATIONS_INFO)[]} */(allTideStations.filter(sta => {
             const info = ALL_TIDE_STATIONS_INFO[sta];
             const lon = info.latlon[0];
             const lat = info.latlon[1];
             return lon >= west && lon <= east && lat >= south && lat <= north;
-        });
+        }));
 
-        Promise.all(stationsInBounds.map(sta => {
+        Promise.all(stationsInBounds.map(async sta => {
             const url = `https://data.weather.gov.hk/weatherAPI/opendata/opendata.php?dataType=HHOT&station=${sta}&year=${year}&month=${month}&day=${day}&rformat=json`;
             const info = ALL_TIDE_STATIONS_INFO[sta];
             const station = {
                 code: sta,
+                name: info.name,
                 longitude: info.latlon[0],
                 latitude: info.latlon[1],
             };
 
-            return fetch(url).then(r => r.json()).then(d => {
+            try {
+                const r = await fetch(url);
+                const d = await r.json();
                 return {
                     station: station,
                     heights: d.data[0].slice(2),
                 };
-            }).catch(() => ({ station, heights: []}));
+            } catch {
+                return ({ station, heights: [] });
+            }
         })).then(tideStationDailyRecords => {
             if (isCurrent) {
                 setTideStationDailyRecords(tideStationDailyRecords);
