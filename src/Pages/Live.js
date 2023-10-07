@@ -23,7 +23,7 @@ import { LatLonGridLayer } from '../Layers/LatLonGridLayer.js';
 import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
 import { CurrentParticleLayer } from '../Layers/CurrentParticleLayer.js';
 import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.js';
-import { TideLayer } from '../Layers/TideLayer.js';
+import { TideHeightLayer } from '../Layers/TideHeightLayer.js';
 
 const layers = [
   { name: "Grid", id: "grid" },
@@ -254,7 +254,7 @@ function Live() {
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {selectedLayers.includes("weather-stations") && <WeatherStationsLayer time={currentTime} /> }
-          {selectedLayers.includes("tides") && <TideLayer time={currentTime} />}
+          {selectedLayers.includes("tides") && <TideHeightLayer time={currentTime} />}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>
         {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} />}

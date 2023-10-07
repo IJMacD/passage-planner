@@ -31,7 +31,7 @@ export function useTides(date, bounds) {
 
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    const day = date.getDay() + 1;
+    const day = date.getDate();
     const hour = Math.round(date.getHours() + date.getMinutes() / 60);
 
     const [tideStationDailyRecords, setTideStationDailyRecords] = useState(/** @type {TideStationDailyRecord[]} */([]));

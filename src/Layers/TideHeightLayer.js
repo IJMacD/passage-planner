@@ -9,7 +9,7 @@ import { useTides } from "../hooks/useTides.js";
  * @param {Date} props.time
  * @returns
  */
-export function TideLayer ({ time }) {
+export function TideHeightLayer ({ time }) {
     const context = useContext(StaticMapContext);
     const projection = lonLat2XY(context);
 
