@@ -44,7 +44,7 @@ function Tracks () {
         });
 
         return { ...trackSerialized, segments };
-    }, [selectedTrackID]);
+    }, [savedTracks, selectedTrackID]);
 
     /**
      * @param {number} index
@@ -52,6 +52,14 @@ function Tracks () {
     function removeTrack (index) {
         setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index+1) ]);
         setSelectedTrackID(oldID => oldID === index ? -1 : oldID);
+    }
+
+    /**
+     * @param {number} index
+     */
+    function renameTrack (index) {
+        const name = prompt("Enter track name", savedTracks[index].name||"");
+        setSavedTracks(tracks => tracks.map((t,i) => i === index ? { ...t, name } : t));
     }
 
     /**
@@ -120,13 +128,27 @@ function Tracks () {
                     const doc = parser.parseFromString(text, "text/xml");
                     const gpxDoc = parseGPXDocument(doc);
 
+                    // Convert one route to track if needed
+                    if (gpxDoc.tracks.length === 0 && gpxDoc.routes.length > 0) {
+                        const route = gpxDoc.routes.pop();
+                        if (route) {
+                            const name = route.name;
+                            const track = { name, segments: [route.points] };
+                            gpxDoc.tracks.push(track);
+                            console.log("Converted route to track");
+                        }
+                    }
+
                     if (gpxDoc.tracks.length > 0) {
                         const track = gpxDoc.tracks[0];
-                        setSavedTracks(tracks => [ ...tracks, track ]);
-                        setSelectedTrackID(savedTracks.length - 1);
+                        setSavedTracks(tracks => {
+                            setSelectedTrackID(tracks.length);
+                            return [ ...tracks, track ];
+                        });
                     }
                 }
             });
+            e.target.value = "";
         }
     }
 
@@ -189,9 +211,10 @@ function Tracks () {
                         {
                             savedTracks.map((t, i) => (
                                 <li key={i}>
-                                    <input type="radio" name="track" checked={selectedTrackID === i} onChange={() => setSelectedTrackID(i)} />{' '}
+                                    <input type="radio" id={`saved-track-select-${i}`} name="track" checked={selectedTrackID === i} onChange={() => setSelectedTrackID(i)} />{' '}
                                     <input type="checkbox" checked={bgCheckboxes[i]||false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
-                                    {t.name}{' '}
+                                    <label htmlFor={`saved-track-select-${i}`}>{t.name||<span style={{fontStyle:"italic",color:"grey"}}>No name</span>}</label>{' '}
+                                    <button onClick={() => renameTrack(i)} disabled={!refreshToken}>Rename</button>{' '}
                                     <button onClick={() => uploadTrack(t)} disabled={!refreshToken}>Upload</button>{' '}
                                     <button onClick={() => removeTrack(i)}>Remove</button>{' '}
                                 </li>)
