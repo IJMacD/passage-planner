@@ -4,7 +4,7 @@ import { filterByBounds, getBounds } from "../util/projection.js";
 import { latlon2nm } from "../util/geo.js";
 
 /**
- * @param {import("../Components/StaticMap.js").StaticMapContextValue} context
+ * @param {import("../Components/StaticMap.jsx").StaticMapContextValue} context
  */
 export function useWeatherField ({ centre, zoom, width, height }) {
     const [ weatherField, setWeatherField ] = useState(/** @type {{ weather: import("../util/weather.js").WeatherResponse; distance: number; loc: string; lat: number; lon: number; }[]} */([]));

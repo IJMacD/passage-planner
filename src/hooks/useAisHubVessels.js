@@ -3,7 +3,7 @@ import { fetchAIS, getAISURL } from "../util/ais/ais.js";
 import { getBounds } from "../util/projection.js";
 
 /**
- * @param {import("../Components/StaticMap.js").StaticMapContextValue} context
+ * @param {import("../Components/StaticMap.jsx").StaticMapContextValue} context
  */
 export function useAisHubVessels (context) {
     const [ vessels, setVessels ] = useState(/** @type {import("../util/ais/ais.js").VesselReport[]} */([]));
