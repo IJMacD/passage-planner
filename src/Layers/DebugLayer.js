@@ -73,7 +73,11 @@ export function DebugLayer () {
         ctx.font = `${pxFontSize}px sans-serif`;
         for (let i = 0; i < tileCountX + 1; i++) {
             for (let j = 0; j < tileCountY + 1; j++) {
-                ctx.fillText(`${tileOffsetX + i},${tileOffsetY + j},${zoom}`, i * tileWidth - xOffset + 10, j * tileHeight - yOffset + 10 + pxFontSize);
+                const px = i * tileWidth - xOffset + 10;
+                const py = j * tileHeight - yOffset + 10 + pxFontSize;
+                ctx.fillText(`x = ${tileOffsetX + i}`, px, py);
+                ctx.fillText(`y = ${tileOffsetY + j}`, px, py + pxFontSize);
+                ctx.fillText(`z = ${zoom}`, px, py + 2 * pxFontSize);
             }
         }
 
