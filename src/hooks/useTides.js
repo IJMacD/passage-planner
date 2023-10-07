@@ -19,6 +19,7 @@ import { ALL_TIDE_STATIONS_INFO } from "../util/weather.js";
  * @property {TideStation} station
  * @property {number} hour
  * @property {number} height
+ * @property {number} dHeight
  */
 
 /**
@@ -81,6 +82,8 @@ export function useTides(date, bounds) {
         station: record.station,
         hour,
         height: record.heights[hour],
+        // Average derivative of tide height at hour
+        dHeight: (record.heights[hour + 1] - record.heights[hour - 1]) / 2,
     }));
 
     return tideStationRecords;
