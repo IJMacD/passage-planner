@@ -10,15 +10,21 @@ export function useFetch (url, type="json") {
     const [ isLoading, setIsLoading ] = useState(false);
 
     useEffect(() => {
+        let current = true;
+
         setIsLoading(true);
         fetch(url).then(r => {
-            if (r.ok) {
-                return type === "json" ? r.json() : r.text()
+            if (current) {
+                if (r.ok) {
+                    return type === "json" ? r.json() : r.text()
+                }
+                throw r.text()
             }
-            throw r.text()
         })
         .then(setData, setError)
-        .then(() => setIsLoading(false));
+        .then(() => current && setIsLoading(false));
+
+        return () => { current = false; }
     }, [url, type]);
 
     return [ data, error, isLoading ];
