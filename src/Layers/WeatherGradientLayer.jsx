@@ -26,7 +26,7 @@ export function WeatherGradientLayer ({ time }) {
      * @type {import('./VectorFieldLayer.jsx').VectorFieldPoint[]}
      */
     const weatherFieldVector = useMemo(() => weatherForecast &&
-      weatherForecast.map(weather => ({
+      weatherForecast.filter(f => (f.forecast?.ForecastWindSpeed||0)<1000).map(weather => ({
         lon: weather.lon,
         lat: weather.lat,
         vector: [

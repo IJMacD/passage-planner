@@ -24,12 +24,12 @@ export function WeatherStationsLayer ({ time }) {
 
     // const weatherMarkers = ALL_STATION_LOCATIONS.map(s => weather.find());
     /** @type {import('./VectorFieldLayer.jsx').Field} */
-    const weatherMarkers = weatherForecast.map(f => ({
+    const weatherMarkers = weatherForecast.filter(f => (f.forecast?.ForecastWindSpeed||0)<1000).map(f => ({
       lat: f.lat,
       lon: f.lon,
       direction: ((f.forecast?.ForecastWindDirection || 0) + 180) % 360,
-      magnitude: (f.forecast?.ForecastWindSpeed || 0) * 0.2,
+      magnitude: (f.forecast?.ForecastWindSpeed || 0) > 1000  ? 0 : (f.forecast?.ForecastWindSpeed || 0),
     }));
 
-    return weatherMarkers && <VectorFieldLayer field={weatherMarkers} scale={2.5} />;
+    return weatherMarkers && <VectorFieldLayer field={weatherMarkers} scale={0.5} />;
 }
