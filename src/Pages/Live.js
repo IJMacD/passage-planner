@@ -24,6 +24,7 @@ import { AisHubVesselsLayer } from '../Layers/AisHubVesselsLayer.js';
 import { CurrentParticleLayer } from '../Layers/CurrentParticleLayer.js';
 import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.js';
 import { TideHeightLayer } from '../Layers/TideHeightLayer.js';
+import { WeatherGradientLayer } from '../Layers/WeatherGradientLayer.js';
 
 const layers = [
   { name: "Grid", id: "grid" },
@@ -35,6 +36,7 @@ const layers = [
   { name: "AIS RTLSDR (Canvas)", id: "wsais-canvas" },
   // { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
+  { name: "Weather Gradient", id: "weather-gradient" },
   { name: "Weather", id: "weather" },
   { name: "Weather Stations", id: "weather-stations" },
   { name: "Tide Heights", id: "tides" },
@@ -252,6 +254,7 @@ function Live() {
           {selectedLayers.includes("wsais") && isLive && <AISLayerSVG vessels={vesselsWS} fade showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}
           {selectedLayers.includes("wsais-canvas") && isLive && <AISLayerCanvas vessels={vesselsWS} />}
           {/* {selectedLayers.includes("ais") && <AISLayerSVG vessels={vessels} fade showNames animation />} */}
+          {selectedLayers.includes("weather-gradient") &&  <WeatherGradientLayer time={currentTime} /> }
           {selectedLayers.includes("weather") &&  <WeatherLayer time={currentTime} /> }
           {selectedLayers.includes("weather-stations") && <WeatherStationsLayer time={currentTime} /> }
           {selectedLayers.includes("tides") && <TideHeightLayer time={currentTime} />}

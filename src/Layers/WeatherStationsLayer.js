@@ -31,5 +31,5 @@ export function WeatherStationsLayer ({ time }) {
       magnitude: (f.forecast?.ForecastWindSpeed || 0) * 0.2,
     }));
 
-    return weatherMarkers && <VectorFieldLayer field={weatherMarkers} />;
+    return weatherMarkers && <VectorFieldLayer field={weatherMarkers} scale={2.5} />;
 }
