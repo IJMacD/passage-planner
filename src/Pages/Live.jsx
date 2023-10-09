@@ -25,6 +25,7 @@ import { CurrentParticleLayer } from '../Layers/CurrentParticleLayer.jsx';
 import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.jsx';
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { WeatherGradientLayer } from '../Layers/WeatherGradientLayer.jsx';
+import { TidalCurrentVectorLayer } from '../Layers/TidalCurrentVectorLayer.jsx';
 
 const layers = [
   { name: "Grid", id: "grid" },
@@ -37,7 +38,7 @@ const layers = [
   // { name: "AIS Combined", id: "ais" },
   { name: "Lights", id: "lights" },
   { name: "Weather Gradient", id: "weather-gradient" },
-  { name: "Weather", id: "weather" },
+  { name: "Weather (Particles)", id: "weather" },
   { name: "Weather Stations", id: "weather-stations" },
   { name: "Tide Heights", id: "tides" },
 ];
@@ -55,7 +56,6 @@ function Live() {
   const [lockNow, setLockNow] = useState(true);
   const currentTime = makeDateTime(date, time);
 
-  const tideVectors = useTidalCurrents(currentTime);
   const [animateTime, setAnimateTime] = useState(false);
   const [animateDate, setAnimateDate] = useState(false);
 
@@ -246,7 +246,7 @@ function Live() {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
-          {selectedLayers.includes("currents") && tideVectors && <VectorFieldLayer field={tideVectors} />}
+          {selectedLayers.includes("currents") && <TidalCurrentVectorLayer time={currentTime} />}
           {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
