@@ -2,7 +2,7 @@
 const CHAR_MAP = `@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !"#$%&'()*+,-./0123456789:;<=>?`;
 
 /**
- * @typedef {{type: number;repeatIndicator: number;mmsi: number;}} AISReport
+ * @typedef {{type: number;repeatIndicator: number;mmsi: number;[field: string]: any}} AISReport
  */
 /**
  * @see https://gpsd.gitlab.io/gpsd/AIVDM.html
@@ -10,34 +10,39 @@ const CHAR_MAP = `@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !"#$%&'()*+,-./0123456789:;<
  * @returns {AISReport?}
  */
 
-export function decodeRawMessage(input) {
+let multipartCache = "";
+
+/**
+ * @param {string} input
+ */
+export function decodeRawMessage (input) {
     if (!input.startsWith("!AIVDM")) {
         console.error("Unrecognised AIS message: ", input);
         return null;
     }
 
-    const lines = input.trim().split(/\r?\n/);
+    let [type, totalFragments, fragmentNo, sequentialID, channel, data, check] = input.split(",");
 
-    // Assuming we only get single messages or doubles together:
-    //  !AIVDM,1,1,...
-    //
-    //  !AIVDM,2,1,...
-    //  !AIVDM,2,2,...
-    const data = lines.map(line => {
-        // eslint-disable-next-line
-        const [type, totalFragments, fragmentNo, sequentialID, channel, data, check] = line.split(",");
-        return data;
-    }).join("");
+    if (+totalFragments > 1) {
+        multipartCache += data;
 
-    // console.log(data);
-    const dd = [...data].map(c => {
-        let v = c.charCodeAt(0);
-        v -= 48;
-        if (v > 40) {
-            v -= 8;
+        if (+fragmentNo < +totalFragments) {
+            return null;
         }
-        return v;
-    });
+
+        data = multipartCache;
+        multipartCache = "";
+    }
+
+    return decodeRawMessageData(data);
+}
+
+/**
+ * @param {string} data
+ */
+export function decodeRawMessageData (data) {
+    // console.log(data);
+    const dd = getDecodedDataBits(data);
 
     // console.log(dd);
     // dd is groups of 6 bit values
@@ -50,19 +55,8 @@ export function decodeRawMessage(input) {
     // [5]: 6 7 0 1 2 3  30..35
     // [6]: 4 5 6 7 0 1  36..41
     // [7]: 2 3 4 4 5 6  42..47
-    // bits 0 - 5
-    const messageType = dd[0];
 
-    // bits 6 - 7
-    const repeatIndicator = dd[1] >> 4;
-
-    // bits 8 - 37
-    const mmsi = ((dd[1] & 0x0F) << 26) | // 4
-        (dd[2] << 20) | // 10
-        (dd[3] << 14) | // 16
-        (dd[4] << 8) | // 22
-        (dd[5] << 2) | // 28
-        (dd[6] >> 4); // 30
+    const { mmsi, messageType, repeatIndicator } = getMessageBasics(dd);
 
     if (messageType === 1 || messageType === 2 || messageType === 3) {
         // Spec: https://gpsd.gitlab.io/gpsd/AIVDM.html#_types_1_2_and_3_position_report_class_a
@@ -260,6 +254,13 @@ export function decodeRawMessage(input) {
         return message;
     }
 
+    if (messageType === 15) {
+        // "Interrogation" message
+    }
+
+    // Different method of parsing: Convert the data to one long string of
+    // binary digits and use substring to get the slices required.
+
     const binary = dd.map(n => n.toString(2).padStart(6, "0")).join("");
 
     if (messageType === 18) {
@@ -368,7 +369,6 @@ export function decodeRawMessage(input) {
         };
     }
 
-
     return {
         type: messageType,
         repeatIndicator,
@@ -376,6 +376,28 @@ export function decodeRawMessage(input) {
         data: dd,
     };
 }
+
+/**
+ * @param {number[]} dd
+ */
+function getMessageBasics(dd) {
+    // bits 0 - 5
+    const messageType = dd[0];
+
+    // bits 6 - 7
+    const repeatIndicator = dd[1] >> 4;
+
+    // bits 8 - 37
+    const mmsi = ((dd[1] & 0x0F) << 26) | // 4
+        (dd[2] << 20) | // 10
+        (dd[3] << 14) | // 16
+        (dd[4] << 8) | // 22
+        (dd[5] << 2) | // 28
+        (dd[6] >> 4); // 30
+
+    return { mmsi, messageType, repeatIndicator };
+}
+
 /**
  * @param {number[]} dd nibbles
  * @param {number} firstBit
@@ -415,4 +437,18 @@ function getChars(dd, firstBit, lastBit) {
         chars.push(CHAR_MAP[index]);
     }
     return chars.join("");
+}
+
+/**
+ * @param {string} data
+ */
+function getDecodedDataBits (data) {
+    return [...data].map(c => {
+        let v = c.charCodeAt(0);
+        v -= 48;
+        if (v > 40) {
+            v -= 8;
+        }
+        return v;
+    });
 }

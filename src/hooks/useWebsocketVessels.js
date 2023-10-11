@@ -16,7 +16,6 @@ export function useWebsocketVessels (active = true) {
 
     const vesselMapRef = useRef(/** @type {Map<number, VesselReport>} */(new Map()));
 
-
     const [ vessels, setVessels ] = useState(/** @type {VesselReport[]} */([]));
 
     if (!aisRef.current) {

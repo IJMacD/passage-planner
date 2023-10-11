@@ -1,4 +1,5 @@
-import { decodeRawMessage } from "./decodeRawMessage.js";
+import { debugLogAISMessage } from "./debugLogAISMessage.js";
+import { decodeRawMessageData } from "./decodeRawMessage.js";
 
 /**
  * @typedef {import("./decodeRawMessage").AISReport} AISReport
@@ -16,17 +17,68 @@ export class WebsocketAIS {
 
     #messageTypeStats = {};
 
+    #multipartCache = [];
+
     constructor () {
         this.#socketCallback = (/** @type {{ data: Blob; }} */ event) => {
             /** @type {Blob} */
             const data = event.data;
 
             if (data.size > 2) {
+
+                // Sometimes websocket data comes with multiline messages
+                // in same data packet.
+                // However sometimes multiline messages do arrive in sequential
+                // data packets.
+
                 data.text().then(t => {
-                    // console.log(t);
-                    const result = decodeRawMessage(t);
+                    let rawMessages = t.trim().split("\r\n");
+
+                    // If we just got a single message in this packet, check to
+                    // see if it's part of a multiline message
+                    if (rawMessages.length === 1) {
+                        let { totalFragments, fragmentNo, sequentialID, channel, data } = parseRawMessageFields(t);
+
+                        if (+totalFragments > 1) {
+                            const prevSequenceNo = this.#multipartCache[0]?.sequentialID || sequentialID;
+
+                            if (prevSequenceNo != sequentialID) {
+                                // Sequence ID didn't match. Just throw out the
+                                // cache and start collecting more messages.
+                                this.#multipartCache.length = 0;
+                            }
+
+                            // We've received a multipart message, add it to the
+                            // cache.
+                            this.#multipartCache.push({ rawMessage: t, totalFragments, fragmentNo, sequentialID, channel, data });
+
+                            // Check if this is the last one or not
+
+                            if (+fragmentNo < +totalFragments) {
+                                // Not last one, so just stop processing here
+                                // for now.
+                                return;
+                            }
+
+                            // We have just received last of multi part message.
+                            // Join messages and start decoding process
+
+                            rawMessages = this.#multipartCache.map(m => m.rawMessage);
+                            data = this.#multipartCache.map(m => m.data).join("");
+                            this.#multipartCache.length = 0;
+                        }
+                    }
+
+                    const data = rawMessages.map(m => parseRawMessageFields(m).data).join("");
+
+                    const result = decodeRawMessageData(data);
 
                     if (result) {
+                        // Debug status messages
+                        if (result.name) {
+                            debugLogAISMessage(rawMessages, data, result);
+                        }
+
                         // Stats
                         this.#totalMessages++;
 
@@ -106,4 +158,12 @@ export class WebsocketAIS {
             this.#socket = null;
         }
     }
+}
+
+/**
+ * @param {string} line
+ */
+function parseRawMessageFields(line) {
+    const [type, totalFragments, fragmentNo, sequentialID, channel, data, check] = line.split(",");
+    return { type, totalFragments, fragmentNo, sequentialID, channel, data, check };
 }
