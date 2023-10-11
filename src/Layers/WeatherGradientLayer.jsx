@@ -9,8 +9,7 @@ import { useWeatherFieldVectors } from "../hooks/useWeatherFieldVectors.jsx";
  * @returns
  */
 export function WeatherGradientLayer ({ time }) {
-
     const weatherFieldVector = useWeatherFieldVectors(time);
 
-    return <GradientFieldLayer field={weatherFieldVector} alpha={128} rangeLimit={Infinity} />
+    return <GradientFieldLayer field={weatherFieldVector} alpha={128} rangeLimit={100} />
 }

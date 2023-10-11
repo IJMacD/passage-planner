@@ -26,11 +26,13 @@ import { WeatherStationsLayer } from '../Layers/WeatherStationsLayer.jsx';
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { WeatherGradientLayer } from '../Layers/WeatherGradientLayer.jsx';
 import { TidalCurrentVectorLayer } from '../Layers/TidalCurrentVectorLayer.jsx';
+import { CurrentGradientLayer } from '../Layers/CurrentGradientLayer.jsx';
 
 const layers = [
   { name: "Grid", id: "grid" },
-  { name: "Currents", id: "currents" },
+  { name: "Currents (Gradient)", id: "currents-gradient" },
   { name: "Currents (Particles)", id: "currents-particles" },
+  { name: "Currents (Arrows)", id: "currents" },
   { name: "Debug", id: "debug" },
   { name: "AIS AisHub.net", id: "ahais" },
   { name: "AIS RTLSDR (SVG)", id: "wsais" },
@@ -246,8 +248,9 @@ function Live() {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
           {selectedLayers.includes("grid") && <LatLonGridLayer />}
-          {selectedLayers.includes("currents") && <TidalCurrentVectorLayer time={currentTime} />}
+          {selectedLayers.includes("currents-gradient") &&  <CurrentGradientLayer time={currentTime} /> }
           {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
+          {selectedLayers.includes("currents") && <TidalCurrentVectorLayer time={currentTime} />}
           {selectedLayers.includes("debug") && <DebugLayer />}
           {selectedLayers.includes("lights") && <LightLayer />}
           {selectedLayers.includes("ahais") && isLive && <AisHubVesselsLayer showNames={showVesselNames} animate={showVesselAnimation} projectTrack={showVesselPredictedTrack} />}

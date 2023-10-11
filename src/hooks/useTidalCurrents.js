@@ -15,7 +15,7 @@ export function useTidalCurrents (time) {
 
     /** @type {import("../Layers/VectorFieldLayer.js").PolarFieldPoint[]} */
     const tideVectors = useMemo(() => {
-        if (!tideJSON) return null;
+        if (!tideJSON) return [];
         return tideJSON.features.map(feature => ({ lat: feature.geometry.coordinates[1], lon: feature.geometry.coordinates[0], magnitude: +feature.properties.knot, direction: +feature.properties.deg }));
     }, [tideJSON]);
 
