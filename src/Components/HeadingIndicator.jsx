@@ -1,3 +1,5 @@
+import React from "react";
+
 export function HeadingIndicator ({ heading, fill = "red", stroke = "darkred" }) {
     const s = 15;
     return (

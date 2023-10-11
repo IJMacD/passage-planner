@@ -214,7 +214,7 @@ function Tracks () {
                                     <input type="radio" id={`saved-track-select-${i}`} name="track" checked={selectedTrackID === i} onChange={() => setSelectedTrackID(i)} />{' '}
                                     <input type="checkbox" checked={bgCheckboxes[i]||false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
                                     <label htmlFor={`saved-track-select-${i}`}>{t.name||<span style={{fontStyle:"italic",color:"grey"}}>No name</span>}</label>{' '}
-                                    <button onClick={() => renameTrack(i)} disabled={!refreshToken}>Rename</button>{' '}
+                                    <button onClick={() => renameTrack(i)}>Rename</button>{' '}
                                     <button onClick={() => uploadTrack(t)} disabled={!refreshToken}>Upload</button>{' '}
                                     <button onClick={() => removeTrack(i)}>Remove</button>{' '}
                                 </li>)

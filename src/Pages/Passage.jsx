@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { HeadingIndicator } from "../Components/HeadingIndicator.jsx";
 import { latlon2bearing, latlon2nm } from "../util/geo.js";
 import { useSavedState } from "../hooks/useSavedState.js";
@@ -10,7 +10,6 @@ import { PointOfSail } from "../Components/PointOfSail.jsx";
 import { ParticleLayer } from "../Layers/ParticleLayer.jsx";
 import { BasicMap } from "../Components/BasicMap.jsx";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.jsx";
-import React from "react";
 
 const KPH_TO_KNOTS = 0.539957;
 
@@ -156,7 +155,7 @@ function Passage () {
         return <button onClick={() => setEditMode(name)} disabled={editMode === name}>{ label }</button>
     }
 
-    const legs = makeLegs(passage);
+    const legs = haveStartAndEnd ? makeLegs(passage) : [];
 
     const totalDistance = legs.reduce((total, leg) => total + latlon2nm(leg.from, leg.to), 0);
 
@@ -261,7 +260,7 @@ function Passage () {
                     <PathLayer paths={legPaths} />
                     { weatherVector && <ParticleLayer vector={weatherVector} /> }
                     <MarkerLayer markers={posMarkers} />
-                    <MarkerLayer markers={routePoints} onClick={i => (i-1) !== selectedWaypoint && editWaypoint(i-1)} />
+                    <MarkerLayer markers={routePoints} onClick={i => (i-1) === selectedWaypoint ? editWaypoint(-1) : editWaypoint(i-1)} />
                 </BasicMap>
             </div>
 
