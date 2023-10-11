@@ -73,6 +73,8 @@ function Live() {
   const [ showVesselPredictedTrack, setShowVesselPredictedTrack ] = useSavedState("passagePlanner.predictedTrack", false);
   const [ showVesselAnimation, setShowVesselAnimation ] = useSavedState("passagePlanner.animate", false);
 
+  const [ latLonMode, setLatLonMode ] = useSavedState("passagePlanner.latLonMode", /** @type {"decimal"|"minutes"} */("minutes"));
+
   useEffect(() => {
     if (animateTime) {
       const id = setInterval(() => {
@@ -239,6 +241,13 @@ function Live() {
           <input type="checkbox" checked={showVesselAnimation} onChange={e => setShowVesselAnimation(e.target.checked)} />
           Show Vessel Animation
         </label>
+        <label>
+          Lat/Lon Mode{' '}
+          <select value={latLonMode} onChange={e => setLatLonMode(e.target.value)}>
+            <option value="decimal">Decimal</option>
+            <option value="minutes">Minutes</option>
+          </select>
+        </label>
         <AISKey />
       </div>
       <div style={{flex: 1}}>
@@ -247,7 +256,7 @@ function Live() {
           {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)
           }
-          {selectedLayers.includes("grid") && <LatLonGridLayer />}
+          {selectedLayers.includes("grid") && <LatLonGridLayer mode={latLonMode} />}
           {selectedLayers.includes("currents-gradient") &&  <CurrentGradientLayer time={currentTime} /> }
           {selectedLayers.includes("currents-particles") &&  <CurrentParticleLayer time={currentTime} /> }
           {selectedLayers.includes("currents") && <TidalCurrentVectorLayer time={currentTime} />}
@@ -263,7 +272,7 @@ function Live() {
           {selectedLayers.includes("tides") && <TideHeightLayer time={currentTime} />}
           <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
         </StaticMap>
-        {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} />}
+        {selectedLayers.includes("wsais") && <VesselTable vessels={vesselsWS} onClickLonLat={(lon, lat) => setCentre([lon, lat])} latLonMode={latLonMode} />}
       </div>
     </div>
   );

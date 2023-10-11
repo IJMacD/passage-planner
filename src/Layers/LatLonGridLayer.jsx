@@ -4,7 +4,11 @@ import React from "react";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 
 
-export function LatLonGridLayer () {
+/**
+ * @param {Object} props
+ * @param {"decimal"|"minutes"} props.mode
+ */
+export function LatLonGridLayer ({ mode }) {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     const [left,top] = useContext(DragContext);
@@ -29,13 +33,8 @@ export function LatLonGridLayer () {
 
         const context = { centre, zoom, width, height };
 
-        /** @type {"decimal"|"minutes"} */
-        const mode = "minutes";
-
-        // @ts-ignore
         if (mode === "decimal") {
-
-            if (zoom > 14) {
+            if (zoom > 12) {
                 drawGrid(ctx, context, 1, 2);
                 drawGrid(ctx, context, 0.1, 1);
                 drawGrid(ctx, context, 0.01, 0.5, true);
@@ -71,7 +70,7 @@ export function LatLonGridLayer () {
             }
         }
 
-    }, [centre, zoom, pxWidth, pxHeight, width, height]);
+    }, [centre, zoom, pxWidth, pxHeight, width, height, mode]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width, height, position: "absolute", top, left  }} />;
 }

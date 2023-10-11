@@ -13,9 +13,10 @@ const SortableContext = createContext({ sortField: "", setSortField: /** @type {
  * @param {object} props
  * @param {import('../hooks/useWebsocketVessels.js').VesselReport[]} props.vessels
  * @param {(lon: number, lat: number) => void} [props.onClickLonLat]
+ * @param {"decimal"|"minutes"} [props.latLonMode]
  * @returns
  */
-export function VesselTable({ vessels, onClickLonLat }) {
+export function VesselTable({ vessels, onClickLonLat, latLonMode = "decimal" }) {
   const [ sortField, setSortField ] = useState("-lastUpdate");
 
   useAnimation(true, 1000);
@@ -93,17 +94,17 @@ export function VesselTable({ vessels, onClickLonLat }) {
               <td>
                 { onClickLonLat ?
                   <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
-                    {vessel.latitude.toFixed(5)}
+                    {formatLatitude(vessel.latitude, latLonMode)}
                   </button> :
-                  vessel.latitude.toFixed(5)
+                  formatLatitude(vessel.latitude, latLonMode)
                 }
               </td>
               <td>
                 { onClickLonLat ?
                   <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
-                    {vessel.longitude.toFixed(5)}
+                    {formatLongitude(vessel.longitude, latLonMode)}
                   </button> :
-                  vessel.longitude.toFixed(5)
+                  formatLongitude(vessel.longitude, latLonMode)
                 }
               </td>
               <td>{vessel.speedOverGround} {typeof vessel.speedOverGround === "number" && "kn"}</td>
@@ -115,7 +116,7 @@ export function VesselTable({ vessels, onClickLonLat }) {
               <td>{beam}</td>
               <td>{vessel.draught}</td>
               <td>{vessel.destination}</td>
-              <td>{vessel.etaMonth ? `\u2011\u2011${vessel.etaMonth.toString().padStart(2, "0")}\u2011${vessel.etaDay.toString().padStart(2, "0")}T${vessel.etaHour.toString().padStart(2, "0")}:${vessel.etaMinute.toString().padStart("2", 0)}` : ""}</td>
+              <td>{vessel.etaMonth ? `${vessel.etaMonth.toString().padStart(2, "0")}-${vessel.etaDay.toString().padStart(2, "0")}T${vessel.etaHour.toString().padStart(2, "0")}:${vessel.etaMinute.toString().padStart(2, "0")}Z` : ""}</td>
               <td>{typeof vessel.lastUpdate=="number"?Math.floor((Date.now() - vessel.lastUpdate) / 1000)+"s":""}</td>
               <td>{dist.toFixed(2)} NM</td>
             </tr>
@@ -184,4 +185,32 @@ function SortableHeading ({ field, children }) {
   }
 
   return <th style={style} onClick={handleClick}>{children}</th>
+}
+
+/**
+ * @param {number} longitude
+ * @param {"decimal"|"minutes"} latLonMode
+ */
+function formatLongitude (longitude, latLonMode) {
+  if (latLonMode === "decimal") return longitude.toFixed(5);
+
+  const sign = Math.sign(longitude) > 0 ? "E" : "W";
+  const degrees = Math.floor(Math.abs(longitude));
+  const minutes = ((longitude % 1) * 60).toFixed(2).padStart(2, "0");
+
+  return `${degrees}° ${minutes}′ ${sign}`;
+}
+
+/**
+ * @param {number} latitude
+ * @param {"decimal"|"minutes"} latLonMode
+ */
+function formatLatitude (latitude, latLonMode) {
+  if (latLonMode === "decimal") return latitude.toFixed(5);
+
+  const sign = Math.sign(latitude) > 0 ? "N" : "S";
+  const degrees = Math.floor(Math.abs(latitude));
+  const minutes = ((latitude % 1) * 60).toFixed(2).padStart(2, "0");
+
+  return `${degrees}° ${minutes}′ ${sign}`;
 }
