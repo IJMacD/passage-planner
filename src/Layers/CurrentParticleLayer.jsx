@@ -14,12 +14,8 @@ import { useInitRef } from "../hooks/useInitRef.js";
 export function CurrentParticleLayer ({ time }) {
     const tideVectors = useTidalCurrents(time);
 
-    const maskCanvasRef = useInitRef(() => document.createElement("canvas"));
+    const seaMask = useSeaMask();
 
-    const tileLayer = useTileJSON("https://ijmacd.com/tiles/hongkong-marine/tiles.json");
-
-    useSeaMask(tileLayer, maskCanvasRef.current);
-
-    return tideVectors && <ParticleFieldLayer field={tideVectors} particleFill="#00F" rangeLimit={0.5} speed={20} density={10} particleStyle="bar" mask={maskCanvasRef.current} />
+    return <ParticleFieldLayer field={tideVectors} particleFill="#00F" rangeLimit={0.5} speed={20} density={10} particleStyle="bar" mask={seaMask} />
 }
 

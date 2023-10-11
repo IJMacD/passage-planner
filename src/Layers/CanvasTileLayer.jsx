@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
-import { useTiles } from "../hooks/useTiles.js";
+import { getTiles } from "../util/getTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";
 
@@ -17,28 +17,28 @@ export function CanvasTileLayer ({ layer }) {
 
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    let { centre, zoom, width, height } = context;
-
-    let overscale = 1;
-
-    if (zoom < +layer.minzoom) {
-        overscale = 1 / Math.pow(2, +layer.minzoom - zoom);
-        zoom = +layer.minzoom;
-    }
-    else if (zoom > +layer.maxzoom) {
-        overscale = Math.pow(2, zoom - +layer.maxzoom);
-        zoom = +layer.maxzoom;
-    }
-    else if (zoom !== Math.ceil(zoom)) {
-        overscale = Math.pow(2, zoom - Math.ceil(zoom));
-        zoom = Math.ceil(zoom);
-    }
-
-    const tiles = useTiles(centre, zoom, width / overscale, height / overscale, layer);
-
     useEffect(() => {
         if (canvasRef.current) {
             let isCurrent = { value: true };
+
+            let { centre, zoom, width, height } = context;
+
+            let overscale = 1;
+
+            if (zoom < +layer.minzoom) {
+                overscale = 1 / Math.pow(2, +layer.minzoom - zoom);
+                zoom = +layer.minzoom;
+            }
+            else if (zoom > +layer.maxzoom) {
+                overscale = Math.pow(2, zoom - +layer.maxzoom);
+                zoom = +layer.maxzoom;
+            }
+            else if (zoom !== Math.ceil(zoom)) {
+                overscale = Math.pow(2, zoom - Math.ceil(zoom));
+                zoom = Math.ceil(zoom);
+            }
+
+            const tiles = getTiles(centre, zoom, width / overscale, height / overscale, layer);
 
             // Clear canvas
             canvasRef.current.width = context.width * devicePixelRatio;
@@ -55,7 +55,7 @@ export function CanvasTileLayer ({ layer }) {
 
             return () => { isCurrent.value = false };
         }
-    }, [tiles, overscale, context]);
+    }, [context]);
 
     return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }
