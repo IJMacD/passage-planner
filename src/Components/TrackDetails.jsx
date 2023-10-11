@@ -14,7 +14,8 @@ import { ControlsLayer } from "../Layers/ControlsLayer.jsx";
 import "./TrackDetails.css";
 import { VectorFieldLayer } from "../Layers/VectorFieldLayer.jsx";
 import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
-import { findNearestAutomaticWeatherStation, getHistoricalWeatherAtStation } from "../util/historicalWeather.js";
+import { findNearestAutomaticWeatherStation } from "../util/historicalWeather.js";
+import { useHistoricalWeather } from "../hooks/useHistoricalWeather.js";
 
 const colorFns = {
     rainbow: (_, i) => `hsl(${i % 360},100%,50%)`,
@@ -118,20 +119,7 @@ export function TrackDetails ({ track, additionalTracks }) {
         return paths;
     }, [ track, additionalTracks ]);
 
-    const roundedTime = + selectedDate - +selectedDate % (10 * 60 * 1000);
-    /**
-     * @typedef HistoricalWeather
-     * @property {string} dateString
-     * @property {string} stationName
-     * @property {number} windDirection
-     * @property {number} windSpeed
-     * @property {number} windGusts
-     */
-    const [historicalWeather, setHistoricalWeather ] = useState(/** @type {HistoricalWeather?} */(null));
-    useEffect(() => {
-        getHistoricalWeatherAtStation(selectedDate, nearestWeatherStation)
-        .then(setHistoricalWeather);
-    }, [nearestWeatherStation, roundedTime]);
+    const historicalWeather = useHistoricalWeather(nearestWeatherStation, selectedDate);
 
     const trackLegs = makeTrackLegs(trackPoints);
 
