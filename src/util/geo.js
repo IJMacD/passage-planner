@@ -61,8 +61,8 @@ function lon2nm (point1, point2) {
 
 // Equirectangualr approximation
 /**
- * @param {{ lon: number; lat: any; }} point1
- * @param {{ lon: number; lat: any; }} point2
+ * @param {{ lon: number; lat: number; }} point1
+ * @param {{ lon: number; lat: number; }} point2
  */
 export function latlon2nm (point1, point2) {
     const ns = lat2nm(point1.lat, point2.lat);

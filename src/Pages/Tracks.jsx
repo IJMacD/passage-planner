@@ -232,7 +232,7 @@ function Tracks () {
                 {
                     editMode ?
                     <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} /> :
-                    <TrackDetails track={track} additionalTracks={bgTracks} />
+                    track && <TrackDetails track={track} additionalTracks={bgTracks} />
                 }
             </div>
 

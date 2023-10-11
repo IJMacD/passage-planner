@@ -11,6 +11,7 @@ import React from "react";
  * @param {(value: number) => string} [props.labelFn]
  * @param {"line"|"blobs"|"sectors"|"stacked-sectors"} [props.mode]
  * @param {number} [props.size]
+ * @param {number} [props.arrow]
  */
 export function PolarPlotSVG ({
     values,
@@ -22,6 +23,7 @@ export function PolarPlotSVG ({
     labelFn,
     mode = "line",
     size = 5,
+    arrow = NaN,
 }) {
 
     const canvasWidth = 512;
@@ -143,6 +145,11 @@ export function PolarPlotSVG ({
                         <path d={`M ${demiWidth} ${demiHeight} L ${x} ${y}`} stroke="#000" strokeWidth={2} strokeLinecap="round" />
                         { markerValue && <circle cx={x} cy={y} r={4} />}
                     </>;
+                })()
+            }
+            {
+                !isNaN(arrow) && (() => {
+                    return <path d={`M 0 -${radius-10} L -15 -${radius+10} L 15 -${radius+10} Z`} transform={`translate(${demiWidth} ${demiHeight}) rotate(${arrow})`} fill="red" />;
                 })()
             }
         </svg>
