@@ -22,33 +22,34 @@ Auth::maintenance();
 Router::setRoot("/logbook");
 
 Router::registerWithPrefix("/api/v1", [
-    ["get",     "/logs/:hid.gpx",       [ "API", "handleLogTrackGet" ]],
-    ["get",     "/logs/:hid/track",     [ "API", "handleLogTrackGet" ]],
-    ["post",    "/logs/:hid/track",     [ "API", "handleLogTrackPost" ]],
-    ["get",     "/logs/:hid/bounds",    [ "API", "handleLogEntryBounds" ]],
-    ["get",     "/logs/:hid",           [ "API", "handleLogEntryGet" ]],
-    ["post",    "/logs/:hid",           [ "API", "handleLogEntryPost" ]],
-    ["delete",  "/logs/:hid",           [ "API", "handleLogEntryDelete" ]],
-    ["get",     "/logs",                [ "API", "handleLogsGet" ]],
-    ["post",    "/logs",                [ "API", "handleLogsPost" ]],
+    ["get",     "/logs/:hid.gpx",       ["API", "handleLogTrackGet"]],
+    ["get",     "/logs/:hid/track",     ["API", "handleLogTrackGet"]],
+    ["post",    "/logs/:hid/track",     ["API", "handleLogTrackPost"]],
+    ["get",     "/logs/:hid/bounds",    ["API", "handleLogEntryBounds"]],
+    ["get",     "/logs/:hid",           ["API", "handleLogEntryGet"]],
+    ["post",    "/logs/:hid",           ["API", "handleLogEntryPost"]],
+    ["delete",  "/logs/:hid",           ["API", "handleLogEntryDelete"]],
+    ["get",     "/logs",                ["API", "handleLogsGet"]],
+    ["post",    "/logs",                ["API", "handleLogsPost"]],
 ]);
 Router::registerWithPrefix("/api/v1/auth", [
-    ["get",     "/generate",    [ "Auth", "handleGenerate" ]],
-    ["post",    "/generate",    [ "Auth", "handleGenerate" ]],
-    ["post",    "/exchange",    [ "Auth", "handleExchange" ]],
-    ["post",    "/verify",      [ "Auth", "handleVerify" ]],
+    ["get",     "/generate",    ["Auth", "handleGenerate"]],
+    ["post",    "/generate",    ["Auth", "handleGenerate"]],
+    ["post",    "/exchange",    ["Auth", "handleExchange"]],
+    ["post",    "/verify",      ["Auth", "handleVerify"]],
 ]);
 Router::register([
-    ["get",     "/records",     fn() => handleRecords()],
-    ["get",     "/all",         fn() => handleAllTracks()],
-    ["get",     "/:hid",        fn($hid) => handleLogEntry(hexdec($hid))],
-    ["get",     "/",            fn() => handleIndex()],
-    ["get",     "",             fn() => handleIndex()],
-    ["options", "*",            fn() => null],
+    ["get",     "/records",         fn () => handleRecords()],
+    ["get",     "/all",             fn () => handleAllTracks()],
+    ["get",     "/extract/:date",   fn ($date) => handleExtract($date)],
+    ["get",     "/:hid",            fn ($hid) => handleLogEntry(hexdec($hid))],
+    ["get",     "/",                fn () => handleIndex()],
+    ["get",     "",                 fn () => handleIndex()],
+    ["options", "*",                fn () => null],
 ]);
 
 try {
-    if (!Router::execute()){
+    if (!Router::execute()) {
         header("HTTP/1.1 404 Not Found");
         echo "Not Found";
     }
@@ -60,19 +61,28 @@ try {
     echo $e->getMessage();
 }
 
-function handleIndex () {
+function handleIndex()
+{
     include "include/Views/LogbookIndex.php";
 }
 
-function handleRecords () {
+function handleExtract($dateSpec)
+{
+    include "include/Views/LogbookExtract.php";
+}
+
+function handleRecords()
+{
     include "include/Views/LogbookRecords.php";
 }
 
-function handleAllTracks () {
+function handleAllTracks()
+{
     include "include/Views/LogbookAllTracks.php";
 }
 
-function handleLogEntry ($id) {
+function handleLogEntry($id)
+{
     $entry = getEntry($id);
 
     if (!$entry) {

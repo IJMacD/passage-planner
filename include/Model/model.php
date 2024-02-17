@@ -3,17 +3,52 @@
 /**
  * @return LogbookEntry[]
  */
-function getAllEntries ($params = []) {
+function getAllEntries($params = [])
+{
     global $db;
 
-    $stmt = $db->prepare("SELECT id, total_distance, start_location, start_time, 'Asia/Hong_Kong' AS start_timezone, end_location, end_time, 'Asia/Hong_Kong' AS end_timezone, weather, comments FROM logbook ORDER BY start_time DESC");
+    $where = "";
+    $sql_params = [];
 
-    $stmt->execute();
+    if (isset($params['year'])) {
+        $where = "WHERE start_time >= ? AND start_time < ?";
+        $sql_params[] = $params['year'] . "-01-01";
+        $sql_params[] = ($params['year'] + 1) . "-01-01";
+    } else if (isset($params['dateSpec'])) {
+        $iso = iso8601($params['dateSpec']);
+        if (!$iso) {
+            return [];
+        }
+
+        $where = "WHERE start_time >= ? AND start_time < ?";
+        $sql_params[] = $iso[0];
+        $sql_params[] = $iso[1];
+    }
+
+    $sql = "SELECT
+        id,
+        total_distance,
+        start_location,
+        start_time,
+        'Asia/Hong_Kong' AS start_timezone,
+        end_location,
+        end_time,
+        'Asia/Hong_Kong' AS end_timezone,
+        weather,
+        comments
+    FROM logbook
+    $where
+    ORDER BY start_time DESC";
+
+    $stmt = $db->prepare($sql);
+
+    $stmt->execute($sql_params);
 
     return $stmt->fetchAll(PDO::FETCH_CLASS, "LogbookEntry");
 }
 
-function getEntry ($id) {
+function getEntry($id)
+{
     global $db;
 
     $stmt = $db->prepare("SELECT id, total_distance, start_location, start_time, 'Asia/Hong_Kong' AS start_timezone, end_location, end_time, 'Asia/Hong_Kong' AS end_timezone, weather, comments FROM logbook WHERE `id` = :id");
@@ -32,21 +67,21 @@ function getEntry ($id) {
 /**
  * @return float[]|false
  */
-function getTrackBounds ($id) {
+function getTrackBounds($id)
+{
     global $db;
 
     $stmt = $db->prepare("SELECT bounds_W AS minLon, bounds_S AS minLat, bounds_E AS maxLon, bounds_N AS maxLat FROM logbook_tracks WHERE `logbook_id` = :id ORDER BY uploaded_date DESC LIMIT 1");
 
-    $stmt->execute([ "id" => $id ]);
+    $stmt->execute(["id" => $id]);
 
     $result = $stmt->fetch();
 
     if ($stmt->rowCount() === 0 || $result['minLon'] === null) {
         if (calculateTrackBounds($id)) {
-            $stmt->execute([ "id" => $id ]);
+            $stmt->execute(["id" => $id]);
             return $stmt->fetch();
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -54,12 +89,13 @@ function getTrackBounds ($id) {
     return $result;
 }
 
-function calculateTrackBounds ($id) {
+function calculateTrackBounds($id)
+{
     global $db;
 
     $stmt = $db->prepare("SELECT gpx FROM logbook_tracks WHERE logbook_id = :id AND gpx IS NOT NULL");
 
-    $stmt->execute([ "id" => $id ]);
+    $stmt->execute(["id" => $id]);
 
     if ($stmt->rowCount() === 0) {
         return false;
@@ -100,7 +136,8 @@ function calculateTrackBounds ($id) {
     ]);
 }
 
-function getOverallBounds () {
+function getOverallBounds()
+{
     global $db;
 
     $stmt = $db->prepare(
@@ -111,14 +148,16 @@ function getOverallBounds () {
             MAX(bounds_N) AS maxLat
         FROM
             logbook_entry_track
-    ");
+    "
+    );
 
     $stmt->execute();
 
     return $stmt->fetch();
 }
 
-function getTrophies ($id) {
+function getTrophies($id)
+{
     global $db;
 
     $stmt = $db->prepare(
@@ -145,14 +184,16 @@ function getTrophies ($id) {
             (total_distance / TIMESTAMPDIFF(SECOND, start_time, end_time)) = maxSpeed AS Fastest
         FROM Records
         WHERE logbook_id = :id
-    ");
+    "
+    );
 
-    $stmt->execute([ "id" => $id ]);
+    $stmt->execute(["id" => $id]);
 
     return $stmt->fetch();
 }
 
-function getRecordSettingTracks () {
+function getRecordSettingTracks()
+{
     global $db;
 
     $stmt = $db->prepare(
@@ -190,7 +231,8 @@ function getRecordSettingTracks () {
                     (total_distance / TIMESTAMPDIFF(SECOND, t.start_time, t.end_time)) = maxSpeed
             ) AS Fastest
         FROM Records
-    ");
+    "
+    );
 
     $stmt->execute();
 

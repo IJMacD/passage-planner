@@ -1,17 +1,20 @@
 <?php
 
-class Router {
+class Router
+{
     private static $root = "/";
     private static $routes = [];
 
-    static function setRoot ($root) {
+    static function setRoot($root)
+    {
         self::$root = $root;
     }
 
     /**
      * @param Array $routes [ $method: "get"|"post", $urlPattern: string, $handler: callable ][]
      */
-    static function register ($routes) {
+    static function register($routes)
+    {
         foreach ($routes as $route) {
             self::$routes[] = $route;
         }
@@ -21,13 +24,15 @@ class Router {
      * @param string $prefix
      * @param Array $routes [ $method: "get"|"post", $urlPattern: string, $handler: callable ][]
      */
-    static function registerWithPrefix ($prefix, $routes) {
+    static function registerWithPrefix($prefix, $routes)
+    {
         foreach ($routes as $route) {
-            self::$routes[] = [ $route[0], $prefix . $route[1], $route[2] ];
+            self::$routes[] = [$route[0], $prefix . $route[1], $route[2]];
         }
     }
 
-    static function execute ($method = null, $path = null) {
+    static function execute($method = null, $path = null)
+    {
         if ($method === null) {
             $method = strtolower($_SERVER['REQUEST_METHOD']);
         }
@@ -40,6 +45,15 @@ class Router {
         if ($queryPos !== false) {
             $path = substr($path, 0, $queryPos);
         }
+
+        // Routes must be sorted with placeholders after literals
+        usort(self::$routes, function ($a, $b) {
+            // $a_mod = str_replace(":", "\u{FFFC}", $a[1]);
+            // $b_mod = str_replace(":", "\u{FFFC}", $b[1]);
+
+            // return strcmp($a_mod, $b_mod);
+            return strlen($b[1]) - strlen($a[1]);
+        });
 
         foreach (self::$routes as $route) {
             if ($method !== $route[0]) {
