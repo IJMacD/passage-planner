@@ -12,16 +12,16 @@ import { parseGPXDocument, toGPXDocument } from "../util/gpx.js";
  * @typedef {import("../util/gpx.js").Track} Track
  */
 
-function Tracks () {
-    const [ savedTracks, setSavedTracks ] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
+function Tracks() {
+    const [savedTracks, setSavedTracks] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
 
-    const [ bgCheckboxes, setBgCheckboxes ] = useState(() => savedTracks.map(() => false));
+    const [bgCheckboxes, setBgCheckboxes] = useState(() => savedTracks.map(() => false));
 
-    const [ editMode, setEditMode ] = useState(false);
+    const [editMode, setEditMode] = useState(false);
 
-    const [ refreshToken, setRefreshToken ] = useSavedState('logbook.refreshToken', "");
+    const [refreshToken, setRefreshToken] = useSavedState('logbook.refreshToken', "");
 
-    const [ selectedTrackID, setSelectedTrackID ] = useState(-1);
+    const [selectedTrackID, setSelectedTrackID] = useState(-1);
 
     const authFetch = useAuthFetch({
         exchangeURL: "https://passage.ijmacd.com/logbook/api/v1/auth/exchange",
@@ -34,14 +34,7 @@ function Tracks () {
         }
 
         const trackSerialized = savedTracks[selectedTrackID];
-        const segments = trackSerialized.segments.map(seg => {
-            return seg.map(point => {
-                if (typeof point.time === "string") {
-                    point.time = new Date(point.time);
-                }
-                return point;
-            });
-        });
+        const segments = deserializeTrack(trackSerialized).segments;
 
         return { ...trackSerialized, segments };
     }, [savedTracks, selectedTrackID]);
@@ -49,25 +42,25 @@ function Tracks () {
     /**
      * @param {number} index
      */
-    function removeTrack (index) {
-        setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index+1) ]);
+    function removeTrack(index) {
+        setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index + 1)]);
         setSelectedTrackID(oldID => oldID === index ? -1 : oldID);
     }
 
     /**
      * @param {number} index
      */
-    function renameTrack (index) {
-        const name = prompt("Enter track name", savedTracks[index].name||"");
-        setSavedTracks(tracks => tracks.map((t,i) => i === index ? { ...t, name } : t));
+    function renameTrack(index) {
+        const name = prompt("Enter track name", savedTracks[index].name || "");
+        setSavedTracks(tracks => tracks.map((t, i) => i === index ? { ...t, name } : t));
     }
 
     /**
      * @param {Track} track
      */
-    function uploadTrack (track) {
+    function uploadTrack(track) {
         const trackPoints = track ? track.segments.flat() : [];
-        const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i-1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to)}));
+        const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i - 1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to) }));
         const totalDistance = trackLegs.reduce((total, leg) => total + leg.distance, 0);
 
         const l = trackPoints.length - 1;
@@ -91,33 +84,33 @@ function Tracks () {
             method: "post",
             body,
         })
-        .then(r => r.json())
-        .then(result => {
-            const { id } = result;
-
-            const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
-            const serializer = new XMLSerializer();
-
-            const body = new FormData();
-
-            body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
-
-            authFetch(`https://passage.ijmacd.com/logbook/api/v1/logs/${id}/track`, {
-                method: "post",
-                body,
-            })
             .then(r => r.json())
-            .then(d => {
-                console.log(d);
-                alert("Uploaded");
+            .then(result => {
+                const { id } = result;
+
+                const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
+                const serializer = new XMLSerializer();
+
+                const body = new FormData();
+
+                body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
+
+                authFetch(`https://passage.ijmacd.com/logbook/api/v1/logs/${id}/track`, {
+                    method: "post",
+                    body,
+                })
+                    .then(r => r.json())
+                    .then(d => {
+                        console.log(d);
+                        alert("Uploaded");
+                    });
             });
-        });
     }
 
     /**
      * @param {React.ChangeEvent<HTMLInputElement>} e
      */
-    function handleFileLoad (e) {
+    function handleFileLoad(e) {
         if (e.target.files && e.target.files.length > 0) {
             const f = new FileReader();
             f.readAsText(e.target.files[0]);
@@ -143,7 +136,7 @@ function Tracks () {
                         const track = gpxDoc.tracks[0];
                         setSavedTracks(tracks => {
                             setSelectedTrackID(tracks.length);
-                            return [ ...tracks, track ];
+                            return [...tracks, track];
                         });
                     }
                 }
@@ -152,7 +145,7 @@ function Tracks () {
         }
     }
 
-    function handleDownload () {
+    function handleDownload() {
         if (!track) return;
 
         const a = document.createElement("a");
@@ -173,7 +166,7 @@ function Tracks () {
         document.body.removeChild(a);
     }
 
-    function toggleBgCheckbox (index, checked) {
+    function toggleBgCheckbox(index, checked) {
         setBgCheckboxes(checkboxes => {
             const updated = checkboxes.slice();
             updated[index] = checked;
@@ -181,7 +174,7 @@ function Tracks () {
         });
     }
 
-    async function handleLogin () {
+    async function handleLogin() {
         const pass = prompt("Token Generation Password");
         if (pass) {
             const body = new FormData();
@@ -199,21 +192,21 @@ function Tracks () {
 
     /** @type {Track[]} */
     // @ts-ignore
-    const bgTracks = bgCheckboxes.map((c,i)=>c?savedTracks[i]:null).filter(x => x);
+    const bgTracks = bgCheckboxes.map((c, i) => c ? deserializeTrack(savedTracks[i]) : null).filter(x => x);
 
     return (
-        <div style={{padding: "1em"}}>
+        <div style={{ padding: "1em" }}>
             <h1>Tracks</h1>
 
             <div>
                 <div>
-                    <ul style={{listStyle:"none",padding:0}}>
+                    <ul style={{ listStyle: "none", padding: 0 }}>
                         {
                             savedTracks.map((t, i) => (
                                 <li key={i}>
                                     <input type="radio" id={`saved-track-select-${i}`} name="track" checked={selectedTrackID === i} onChange={() => setSelectedTrackID(i)} />{' '}
-                                    <input type="checkbox" checked={bgCheckboxes[i]||false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
-                                    <label htmlFor={`saved-track-select-${i}`}>{t.name||<span style={{fontStyle:"italic",color:"grey"}}>No name</span>}</label>{' '}
+                                    <input type="checkbox" checked={bgCheckboxes[i] || false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
+                                    <label htmlFor={`saved-track-select-${i}`}>{t.name || <span style={{ fontStyle: "italic", color: "grey" }}>No name</span>}</label>{' '}
                                     <button onClick={() => renameTrack(i)}>Rename</button>{' '}
                                     <button onClick={() => uploadTrack(t)} disabled={!refreshToken}>Upload</button>{' '}
                                     <button onClick={() => removeTrack(i)}>Remove</button>{' '}
@@ -221,18 +214,18 @@ function Tracks () {
                             )
                         }
                     </ul>
-                    <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID<0}>Clear</button>
-                    <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID<0}>{editMode?"View":"Edit"}</button>
-                    <button onClick={handleDownload} disabled={selectedTrackID<0}>Download</button>
+                    <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
+                    <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID < 0}>{editMode ? "View" : "Edit"}</button>
+                    <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
                     {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
-                    <br/>
+                    <br />
                     <input type="file" onChange={handleFileLoad} />
                     {/* <input value={track.name} onChange={e => setTrack(t => ({ ...t, name: e.target.value }))} /> */}
                 </div>
                 {
-                    editMode ?
-                    <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} /> :
-                    track && <TrackDetails track={track} additionalTracks={bgTracks} />
+                    editMode && track ?
+                        <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} /> :
+                        track && <TrackDetails track={track} additionalTracks={bgTracks} />
                 }
             </div>
 
@@ -241,3 +234,18 @@ function Tracks () {
 }
 
 export default Tracks;
+
+function deserializeTrack(trackSerialized) {
+    return {
+        ...trackSerialized,
+        segments: trackSerialized.segments.map(seg => {
+            return seg.map(point => {
+                if (typeof point.time === "string") {
+                    point.time = new Date(point.time);
+                }
+                return point;
+            });
+        })
+    };
+}
+

@@ -16,22 +16,22 @@ import "./TrackEdit.css";
 /**
  *
  * @param {object} props
- * @param {import("../util/gpx.js").Track?} props.track
+ * @param {import("../util/gpx.js").Track} props.track
  * @param {(track: import("../util/gpx.js").Track) => void} props.addTrack
  * @param {import("../util/gpx.js").Track[]} [props.additionalTracks]
  */
-export function TrackEdit ({ track, addTrack, additionalTracks }) {
+export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
     const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
-    const [ centre, setCentre ] = useState(initialCentre);
-    const [ zoom, setZoom ] = useState(initialZoom);
-    const [ mode, setMode ] = useState("rest");
-    const [ tempPoint, setTempPoint ] = useState(/** @type {import("../util/gpx.js").Point?} */(null));
-    const [ lines, setLines ] = useState(additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || []); // useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
+    const [centre, setCentre] = useState(initialCentre);
+    const [zoom, setZoom] = useState(initialZoom);
+    const [mode, setMode] = useState("rest");
+    const [tempPoint, setTempPoint] = useState(/** @type {import("../util/gpx.js").Point?} */(null));
+    const [lines, setLines] = useState(additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4, 4] })) || []); // useSavedState("passage-planner.constructionLines", /** @type {import("../Layers/PathLayer").Path[]} */([]));
 
-    const [ newTrackPoints, setNewTrackPoints ] = useState(/** @type {TrackSegment} */([])); // useSavedState("passage-planner.newTrackPoints", /** @type {import("../util/gpx").Point[]} */([]));
-    const [ expandedSegments, setExpandedSegments ] = useState(/** @type {number[]} */([]));
+    const [newTrackPoints, setNewTrackPoints] = useState(/** @type {TrackSegment} */([])); // useSavedState("passage-planner.newTrackPoints", /** @type {import("../util/gpx").Point[]} */([]));
+    const [expandedSegments, setExpandedSegments] = useState(/** @type {number[]} */([]));
 
-    const [ segments, setSegments ] = useState(/** @type {TrackSegment[]} */(track?track.segments:[]));
+    const [segments, setSegments] = useState(/** @type {TrackSegment[]} */(track ? track.segments : []));
 
     const trackPoints = segments.flat();
 
@@ -42,17 +42,21 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
     }, [initialCentre, initialZoom]);
 
     useEffect(() => {
-        setSegments(track?track.segments:[]);
-    }, [track]);
+        const segments = [
+            ...(track ? track.segments : []),
+            ...additionalTracks.map(t => t.segments).flat()
+        ];
+        setSegments(segments);
+    }, [track, additionalTracks]);
 
     if (!track) {
         return null;
     }
 
-    function handleClick (lon, lat) {
+    function handleClick(lon, lat) {
         if (mode === "add-construction-line") {
             if (tempPoint) {
-                setLines(lines => [ ...lines, { points: [tempPoint, { lon, lat }], color: "black", lineDash: [4,4] } ]);
+                setLines(lines => [...lines, { points: [tempPoint, { lon, lat }], color: "black", lineDash: [4, 4] }]);
                 setTempPoint(null);
                 setMode("rest");
             }
@@ -61,7 +65,7 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
             }
         }
         else if (mode === "draw-track") {
-            setNewTrackPoints(points => [...points, {lon, lat}]);
+            setNewTrackPoints(points => [...points, { lon, lat }]);
         }
     }
 
@@ -81,7 +85,7 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
      * @param {number} index
      * @param {import('react').ChangeEvent<HTMLInputElement>} event
      */
-    function handleDateUpdate (index, event) {
+    function handleDateUpdate(index, event) {
         setNewTrackPoints(points => points.map((p, i) => {
             if (i === index) {
                 return { ...p, time: new Date(event.target.value) };
@@ -90,29 +94,46 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
         }));
     }
 
-    function handleSortPoints () {
-
+    function handleSortSegments() {
+        setSegments(segments => [...segments].sort((segA, segB) => {
+            return +(segA[0].time || Number.POSITIVE_INFINITY) - +(segB[0].time || Number.POSITIVE_INFINITY);
+        }))
     }
 
-    function handleSegmentSplit (segmentIndex, pointIndex) {
+    /**
+     * @param {number} segmentIndex
+     * @param {number} pointIndex
+     */
+    function handleSegmentSplit(segmentIndex, pointIndex) {
         setSegments(segments => {
             const segment = segments[segmentIndex];
             const newA = segment.slice(0, pointIndex + 1);
             const newB = segment.slice(pointIndex + 1);
-            return [...segments.slice(0, segmentIndex), newA, newB, ...segments.slice(segmentIndex+1) ];
+            return [...segments.slice(0, segmentIndex), newA, newB, ...segments.slice(segmentIndex + 1)];
         });
+        setExpandedSegments(expandedSegments => [...expandedSegments.map(i => i <= segmentIndex ? i : i + 1), segmentIndex + 1])
+    }
+
+    function handleSave() {
+        const newSegments = segments;
+
+        if (newTrackPoints.length) {
+            newSegments.push(newTrackPoints);
+        }
+
+        addTrack({ ...track, segments: newSegments })
     }
 
     const l = trackPoints.length - 1;
 
     return (
         <div>
-            <button onClick={() => setMode("add-construction-line")} disabled={mode==="add-construction-line"}>Add Construction Line</button>
-            <button onClick={() => setMode(mode==="draw-track"?"rest":"draw-track")}>{mode==="draw-track"?"Finish":"Draw Track"}</button>
-            {mode==="draw-track"&&<button onClick={() => setNewTrackPoints(tp => tp.slice(0, -1))} disabled={newTrackPoints.length === 0}>Undo Point</button>}
-            <button onClick={handleSortPoints}>Sort Points</button>
-            <button onClick={() => addTrack({ ...track, segments: [ ...track.segments, newTrackPoints ]})}>Save Track</button>
-            <div style={{display:"flex"}}>
+            <button onClick={() => setMode("add-construction-line")} disabled={mode === "add-construction-line"}>Add Construction Line</button>
+            <button onClick={() => setMode(mode === "draw-track" ? "rest" : "draw-track")}>{mode === "draw-track" ? "Finish" : "Draw Track"}</button>
+            {mode === "draw-track" && <button onClick={() => setNewTrackPoints(tp => tp.slice(0, -1))} disabled={newTrackPoints.length === 0}>Undo Point</button>}
+            <button onClick={handleSortSegments}>Sort Segments</button>
+            <button onClick={handleSave}>Save Track</button>
+            <div style={{ display: "flex" }}>
                 <StaticMap centre={centre} zoom={zoom} width={800} height={800} onClick={handleClick}>
                     <WorldLayer />
                     <HongKongMarineLayer />
@@ -141,7 +162,7 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
                         segments.map((trkseg, i) => {
                             if (expandedSegments.includes(i)) {
                                 return trkseg.map((p, j) => {
-                                    const leg = getLegByIndex(trkseg, j+1);
+                                    const leg = getLegByIndex(trkseg, j + 1);
 
                                     const className = j === 0 ? "segment-start" :
                                         (j === trkseg.length - 1 ? "segment-end" : "");
@@ -157,7 +178,7 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
                                             <td>{leg?.duration && `${(leg.duration / 3600000).toFixed(1)} hrs`}</td>
                                             <td>{leg?.duration && `${(leg.distance / (leg.duration / 3600000)).toFixed(1)} knots`}</td>
                                             <td>
-                                                {j<trkseg.length-1 && <button onClick={() => handleSegmentSplit(i, j)}>Split After</button>}
+                                                {j < trkseg.length - 1 && <button onClick={() => handleSegmentSplit(i, j)}>Split After</button>}
                                                 {j === 0 && <button onClick={() => setExpandedSegments(s => s.filter(t => t !== i))}>Collapse</button>}
                                             </td>
                                         </tr>
@@ -194,8 +215,8 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
                         })
                     }
                     {
-                        newTrackPoints.map((p,i) => {
-                            const leg = getLegByIndex([trackPoints[l], ...newTrackPoints], i+1);
+                        newTrackPoints.map((p, i) => {
+                            const leg = getLegByIndex([trackPoints[l], ...newTrackPoints], i + 1);
 
                             const className = i === 0 ? "segment-start" :
                                 (i === newTrackPoints.length - 1 ? "segment-end" : "");
@@ -224,16 +245,16 @@ export function TrackEdit ({ track, addTrack, additionalTracks }) {
  *
  * @param {string|Date?} [value]
  */
-function inputDateTime (value) {
+function inputDateTime(value) {
     if (!value) return undefined;
 
     if (typeof value === "string") value = new Date(value);
 
-    return `${value.getFullYear()}-${pad2(value.getMonth()+1)}-${pad2(value.getDate())}T${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
+    return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}T${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
 }
 
 /** @param {number} n */
-function pad2 (n) { return n.toString().padStart(2, "0"); }
+function pad2(n) { return n.toString().padStart(2, "0"); }
 
 /**
  *
@@ -241,10 +262,10 @@ function pad2 (n) { return n.toString().padStart(2, "0"); }
  * @param {number} index
  * @returns
  */
-function getLegByIndex (points, index) {
+function getLegByIndex(points, index) {
     if (index < 1 || index >= points.length) return null;
 
-    const from = points[index-1];
+    const from = points[index - 1];
     const to = points[index];
 
     return {
