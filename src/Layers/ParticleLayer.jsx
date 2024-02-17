@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 
 /**
@@ -15,7 +15,7 @@ import React from "react";
  * @param {[number,number]} props.vector
  * @returns
  */
-export function ParticleLayer ({ vector }) {
+export function ParticleLayer({ vector }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
@@ -48,7 +48,7 @@ export function ParticleLayer ({ vector }) {
         /**
          * @param {number} time
          */
-        function step (time) {
+        function step(time) {
             if (active) {
                 requestAnimationFrame(step);
             }
@@ -102,7 +102,7 @@ export function ParticleLayer ({ vector }) {
 
                 ctx.globalAlpha = opacity;
                 ctx.beginPath();
-                ctx.moveTo(particle.x - vector[0]/2, particle.y - vector[1]/2);
+                ctx.moveTo(particle.x - vector[0] / 2, particle.y - vector[1] / 2);
                 ctx.lineTo(particle.x, particle.y);
                 ctx.stroke();
 
@@ -122,11 +122,11 @@ export function ParticleLayer ({ vector }) {
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />;
 }
 
-function makeParticles (n, width, height) {
+function makeParticles(n, width, height) {
     return Array.from({ length: n }).map(() => ({ x: Math.random() * width, y: Math.random() * height, animation: Math.random() }));
 }
 
-function resetParticle (particle, width, height) {
+function resetParticle(particle, width, height) {
     particle.x = Math.random() * width;
     particle.y = Math.random() * height;
     particle.animation = 1;

@@ -11,7 +11,7 @@ import { getBoundingBox } from "../util/geo.js";
 export function useCentreAndZoom(track) {
     return useMemo(() => {
         if (!track) {
-            return { centre: [0,0], zoom: 0 };
+            return { centre: [0, 0], zoom: 0 };
         }
 
         const trackPoints = track.segments.flat();

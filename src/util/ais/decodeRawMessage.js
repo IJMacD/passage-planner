@@ -39,6 +39,7 @@ export function decodeRawMessage (input) {
 
 /**
  * @param {string} data
+ * @return {AISReport?}
  */
 export function decodeRawMessageData (data) {
     // console.log(data);
@@ -337,7 +338,7 @@ export function decodeRawMessageData (data) {
 
         const timestamp = parseInt(binary.substring(133, 139), 2);
 
-        const name = [...binary.substring(143, 263).matchAll(/\d{6}/g)].map(m => CHAR_MAP[parseInt(m[0], 2)]).join("").trim();
+        const name = [...binary.substring(143, 263).matchAll(/\d{6}/g)].map(m => CHAR_MAP[parseInt(m[0], 2)]).join("").trim().replace(/@+$/, "");
 
         const shipType = parseInt(binary.substring(263, 271), 2);
 
@@ -436,7 +437,11 @@ function getChars(dd, firstBit, lastBit) {
 
         chars.push(CHAR_MAP[index]);
     }
-    return chars.join("");
+
+    const msg = chars.join("");
+
+    // '@' character is like nul byte
+    return msg.trim().replace(/@+$/, "");
 }
 
 /**

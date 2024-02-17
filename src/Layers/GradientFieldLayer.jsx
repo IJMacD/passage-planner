@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 import { calculateGradient } from "../util/calculateGradient.js";
 
@@ -13,7 +13,7 @@ import { calculateGradient } from "../util/calculateGradient.js";
  * @param {HTMLCanvasElement|null|undefined} [props.mask]
  * @returns {React.JSX.Element}
  */
-export function GradientFieldLayer ({
+export function GradientFieldLayer({
     field,
     alpha = 255,
     rangeLimit = 10,
@@ -22,7 +22,7 @@ export function GradientFieldLayer ({
 }) {
     const context = useContext(StaticMapContext);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);

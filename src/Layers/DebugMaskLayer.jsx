@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react"
 import { useRef } from "react"
-import { DragContext } from "../Components/StaticMap";
+import { DragContext } from "../Components/StaticMapContext";
 
 /**
  *

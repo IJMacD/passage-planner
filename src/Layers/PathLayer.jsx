@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import { renderPathLayer } from "../canvas-renderers/renderPathLayer.js";
 
 /**
@@ -12,19 +12,19 @@ import { renderPathLayer } from "../canvas-renderers/renderPathLayer.js";
  * @param {Path[]} props.paths
  * @returns
  */
-export function PathLayer ({ paths }) {
+export function PathLayer({ paths }) {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
     const context = useContext(StaticMapContext);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const pxWidth = context.width * devicePixelRatio;
     const pxHeight = context.height * devicePixelRatio;
 
-    useEffect(() => {
     // useEffectDebugger(() => {
     //     console.log("PathLayer: render");
+    useEffect(() => {
 
         if (!canvasRef.current) return;
 

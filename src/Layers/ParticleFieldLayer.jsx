@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 import { latlon2nm } from "../util/geo.js";
@@ -32,17 +32,17 @@ const debugMask = false;
  * @param {HTMLCanvasElement?} [props.mask]
  * @returns
  */
-export function ParticleFieldLayer ({
-        field,
-        particleFill = "#999",
-        rangeLimit = 10,
-        speed = 3,
-        density = 1,
-        particleSize = 3,
-        particleStyle = "dot",
-        particleLifetime = 10,
-        mask = null,
-    }) {
+export function ParticleFieldLayer({
+    field,
+    particleFill = "#999",
+    rangeLimit = 10,
+    speed = 3,
+    density = 1,
+    particleSize = 3,
+    particleStyle = "dot",
+    particleLifetime = 10,
+    mask = null,
+}) {
 
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
@@ -53,7 +53,7 @@ export function ParticleFieldLayer ({
     const context = useContext(StaticMapContext);
     const { centre, zoom, width, height } = context;
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
@@ -99,7 +99,7 @@ export function ParticleFieldLayer ({
         /**
          * @param {number} time
          */
-        function step (time) {
+        function step(time) {
             if (!active) {
                 return;
             }
@@ -142,7 +142,7 @@ export function ParticleFieldLayer ({
                     break;
                 }
 
-                const [ x, y ] = projection(particle.lon, particle.lat);
+                const [x, y] = projection(particle.lon, particle.lat);
 
                 /** @type {((import("./VectorFieldLayer.js").PolarFieldPoint|import("./VectorFieldLayer.js").VectorFieldPoint)&{weight:number})[]} */
                 // @ts-ignore
@@ -157,7 +157,7 @@ export function ParticleFieldLayer ({
                     ctx.beginPath();
                     // range is in nautical miles
                     const distInDegrees = rangeLimit / 60;
-                    const [,y2] = projection(particle.lon, particle.lat + distInDegrees);
+                    const [, y2] = projection(particle.lon, particle.lat + distInDegrees);
                     ctx.arc(x * dpr, y * dpr, (y - y2) * dpr, 0, Math.PI * 2);
                     ctx.strokeStyle = "red";
                     ctx.stroke();
@@ -178,7 +178,7 @@ export function ParticleFieldLayer ({
                     let x;
                     let y;
                     if ("vector" in p) {
-                        [ x, y ] = p.vector;
+                        [x, y] = p.vector;
                     }
                     else {
                         x = p.magnitude * Math.sin(p.direction * Math.PI / 180);
@@ -189,7 +189,7 @@ export function ParticleFieldLayer ({
                         vector[0] + t * x,
                         vector[1] + t * y,
                     ];
-                }, [0,0]);
+                }, [0, 0]);
 
                 const rotation = Math.atan2(vector[1], vector[0]);
                 const magnitude = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
@@ -230,7 +230,7 @@ export function ParticleFieldLayer ({
                 // Interpolate opacity
                 const t = 0.1;
                 const oldOpacity = particle.opacity;
-                particle.opacity *= (1-t);
+                particle.opacity *= (1 - t);
                 particle.opacity += opacity * t;
                 const d = particle.opacity - oldOpacity;
 
@@ -373,9 +373,9 @@ function interpolateAngle(t, currentRotation, targetRotation) {
     // return theta0 + t * (delta - sign * two_pi);
 
     // https://stackoverflow.com/a/30129248/1228394
-    const CS = (1-t)*Math.cos(targetRotation) + t*Math.cos(currentRotation);
-    const SN = (1-t)*Math.sin(targetRotation) + t*Math.sin(currentRotation);
-    const C = Math.atan2(SN,CS);
+    const CS = (1 - t) * Math.cos(targetRotation) + t * Math.cos(currentRotation);
+    const SN = (1 - t) * Math.sin(targetRotation) + t * Math.sin(currentRotation);
+    const C = Math.atan2(SN, CS);
 
     return C;
 }
@@ -385,14 +385,14 @@ function interpolateAngle(t, currentRotation, targetRotation) {
  * @param {[minLon: number, minLat: number, maxLon: number, maxLat: number]} bounds
  * @returns {Particle[]}
  */
-function makeParticles (n, bounds) {
+function makeParticles(n, bounds) {
     const dLon = bounds[2] - bounds[0];
     const dLat = bounds[3] - bounds[1];
     return Array.from({ length: n }).map(() => ({
         lon: bounds[0] + Math.random() * dLon,
         lat: bounds[1] + Math.random() * dLat,
         animation: Math.random(),
-        vector: [0,0],
+        vector: [0, 0],
         rotation: NaN,
         opacity: 0,
     }));
@@ -402,7 +402,7 @@ function makeParticles (n, bounds) {
  * @param {Particle} particle
  * @param {[number, number, number, number]} bounds
  */
-function resetParticle (particle, bounds) {
+function resetParticle(particle, bounds) {
     const dLon = bounds[2] - bounds[0];
     const dLat = bounds[3] - bounds[1];
     particle.lon = bounds[0] + Math.random() * dLon;
@@ -423,10 +423,10 @@ function resetParticle (particle, bounds) {
  */
 function changeAlpha(c, x, y, w, h, dA) {
     let imageData = c.getImageData(x, y, w, h);
-    for(let i = 3; i < imageData.data.length; i += 4){
+    for (let i = 3; i < imageData.data.length; i += 4) {
         imageData.data[i] += dA;
     }
-    c.putImageData(imageData, x, y );
+    c.putImageData(imageData, x, y);
 }
 
 /**
@@ -434,7 +434,7 @@ function changeAlpha(c, x, y, w, h, dA) {
  * @param {[i: number, j: number]} vector
  * @param {[west: number, south: number, east: number, north: number]} bounds
  */
-function isOutOfBounds (particle, vector, bounds) {
+function isOutOfBounds(particle, vector, bounds) {
     const dLon = bounds[2] - bounds[0];
     const dLat = bounds[3] - bounds[1];
 

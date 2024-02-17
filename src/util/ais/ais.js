@@ -2,15 +2,15 @@
  * @typedef Vessel
  * @property {number} mmsi
  * @property {string} [name]
- * @property {number} navigationStatus
- * @property {number} longitude
- * @property {number} latitude
+ * @property {number} [navigationStatus]
+ * @property {number} [longitude]
+ * @property {number} [latitude]
  * @property {number} [speedOverGround] Knots
  * @property {number} [courseOverGround] Degrees
- * @property {number} rateOfTurn Degrees per minute
+ * @property {number} [rateOfTurn] Degrees per minute
  * @property {number} [trueHeading] Degrees
- * @property {number} timestamp clock seconds of report
- * @property {number} manoeuvreIndicator
+ * @property {number} [timestamp] clock seconds of report
+ * @property {number} [manoeuvreIndicator]
  * @property {number} [aisVersion]
  * @property {number} [imoNumber]
  * @property {string} [callSign]

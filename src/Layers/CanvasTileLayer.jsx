@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import { getTiles } from "../util/getTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";
@@ -10,10 +10,10 @@ import { loadImage } from "../util/loadImage.js";
  * @param {import("./TileMapLayer.js").TileJSON} props.layer
  * @returns
  */
-export function CanvasTileLayer ({ layer }) {
+export function CanvasTileLayer({ layer }) {
     const context = useContext(StaticMapContext);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 

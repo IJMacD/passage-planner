@@ -3,7 +3,7 @@ import { lonLat2XY } from "../util/projection.js";
 /**
  * @param {HTMLCanvasElement} canvas
  * @param {{ centre: [number, number]; zoom: number; width: number; height: number; }} context
- * @param {Path[]} paths
+ * @param {import("../Layers/PathLayer.jsx").Path[]} paths
  */
 export function renderPathLayer(canvas, context, paths) {
     const ctx = canvas.getContext("2d");

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { latlon2nm as latLon2nm } from '../util/geo.js';
 import { useAnimation } from '../hooks/useAnimation.js';
-import { getVesselColours, getVesselShape } from './VesselShapeByType.jsx';
+import { VesselShape } from "../Components/VesselShapeByType.jsx";
+import { getVesselColours } from "./getVesselColours.jsx";
 import { isMoving } from '../util/isMoving.js';
 
 const baseStation = { lon: 114.173162, lat: 22.303057 };
@@ -9,14 +10,21 @@ const baseStation = { lon: 114.173162, lat: 22.303057 };
 const SortableContext = createContext({ sortField: "", setSortField: /** @type {any} */(null) })
 
 /**
+ * @typedef {import('../hooks/useWebsocketVessels.js').VesselReport} VesselReport
+ */
+
+/**
  *
  * @param {object} props
- * @param {import('../hooks/useWebsocketVessels.js').VesselReport[]} props.vessels
+ * @param {VesselReport[]} props.vessels
+ * @param {(vessel: VesselReport) => void} [props.onClickVessel]
  * @param {(lon: number, lat: number) => void} [props.onClickLonLat]
  * @param {"decimal"|"minutes"} [props.latLonMode]
+ * @param {"arrows"|"houses"} [props.vesselStyle]
+ * @param {number} [props.selectedMMSI]
  * @returns
  */
-export function VesselTable({ vessels, onClickLonLat, latLonMode = "decimal" }) {
+export function VesselTable({ vessels, onClickVessel, onClickLonLat, latLonMode = "decimal", vesselStyle = "arrows", selectedMMSI = NaN }) {
   const [ sortField, setSortField ] = useState("-lastUpdate");
 
   useAnimation(true, 1000);
@@ -33,13 +41,12 @@ export function VesselTable({ vessels, onClickLonLat, latLonMode = "decimal" }) 
             <td></td>
             <SortableHeading field="mmsi">MMSI</SortableHeading>
             <SortableHeading field="name">Name</SortableHeading>
-            <th>Latitude</th>
-            <th>Longitude</th>
+            <th>Position</th>
             <SortableHeading field="speedOverGround">Speed</SortableHeading>
             <th>Course</th>
             <th>Heading</th>
+            <th>Rate of Turn</th>
             <th>Call Sign</th>
-            <th>Type</th>
             <th>LOA</th>
             <th>Beam</th>
             <th>Draught</th>
@@ -78,15 +85,24 @@ export function VesselTable({ vessels, onClickLonLat, latLonMode = "decimal" }) 
 
           const [ stroke, fill ] = getVesselColours(vessel);
           const strokeDash = isMoving(vessel) ? void 0 : "1 1";
-          const strokeWidth = isMoving(vessel) ? 2 : 1;
+          const strokeWidth = 1; //isMoving(vessel) ? 2 : 1;
           const courseOverGround = typeof vessel.courseOverGround === "number" ? vessel.courseOverGround : 0;
           const rotation = typeof vessel.trueHeading === "number" ? vessel.trueHeading : courseOverGround;
 
+          const eta = (vessel.etaMonth && vessel.etaDay && typeof vessel.etaHour === "number" && typeof vessel.etaMinute === "number") ?
+            `${vessel.etaMonth.toString().padStart(2, "0")}-${vessel.etaDay.toString().padStart(2, "0")}T${vessel.etaHour.toString().padStart(2, "0")}:${vessel.etaMinute.toString().padStart(2, "0")}Z`
+            : "";
+
+          /** @type {import('react').CSSProperties} */
+          const rowStyle = {
+            background: vessel.mmsi === selectedMMSI ? "#FFC" : "none",
+          };
+
           return (
-            <tr key={vessel.mmsi}>
-              <td>
+            <tr key={vessel.mmsi} style={rowStyle}>
+              <td title={vessel.shipType?.toString()}>
                 <svg viewBox="-10 -10 20 20" style={{ width: 20, height: 20 }}>
-                  <path d={getVesselShape(vessel, 5)} transform={`rotate(${rotation})`} stroke={stroke} fill={fill} opacity={opacity} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
+                  <VesselShape vessel={vessel} vesselStyle={vesselStyle} transform={`rotate(${rotation})`} stroke={stroke} fill={fill} opacity={opacity} strokeWidth={strokeWidth} strokeDasharray={strokeDash} strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </td>
               <td><a href={`https://www.marinetraffic.com/en/ais/details/ships/mmsi:${vessel.mmsi}`} target="_blank" rel="noreferrer">{vessel.mmsi}</a></td>
@@ -94,29 +110,32 @@ export function VesselTable({ vessels, onClickLonLat, latLonMode = "decimal" }) 
               <td>
                 { onClickLonLat ?
                   <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
-                    {formatLatitude(vessel.latitude, latLonMode)}
-                  </button> :
-                  formatLatitude(vessel.latitude, latLonMode)
-                }
-              </td>
-              <td>
-                { onClickLonLat ?
-                  <button className="link" onClick={() => onClickLonLat(vessel.longitude, vessel.latitude)}>
+                    {formatLatitude(vessel.latitude, latLonMode)}{' '}
                     {formatLongitude(vessel.longitude, latLonMode)}
                   </button> :
-                  formatLongitude(vessel.longitude, latLonMode)
+                  (
+                    onClickVessel ?
+                    <button className="link" onClick={() => onClickVessel(vessel)}>
+                      {formatLatitude(vessel.latitude, latLonMode)}{' '}
+                      {formatLongitude(vessel.longitude, latLonMode)}
+                    </button> :
+                    <>
+                      {formatLatitude(vessel.latitude, latLonMode)}{' '}
+                      {formatLongitude(vessel.longitude, latLonMode)}
+                    </>
+                  )
                 }
               </td>
-              <td>{vessel.speedOverGround} {typeof vessel.speedOverGround === "number" && "kn"}</td>
+              <td>{vessel.speedOverGround} {typeof vessel.speedOverGround === "number" && "kn"}</td>
               <td>{vessel.courseOverGround}{typeof vessel.courseOverGround === "number" && "°"}</td>
               <td>{vessel.trueHeading}{typeof vessel.trueHeading === "number" && "°"}</td>
+              <td>{vessel.rateOfTurn?.toFixed(2)}{typeof vessel.rateOfTurn === "number" && "°/min"}</td>
               <td>{vessel.callSign}</td>
-              <td>{vessel.shipType}</td>
               <td>{loa}</td>
               <td>{beam}</td>
               <td>{vessel.draught}</td>
               <td>{vessel.destination}</td>
-              <td>{vessel.etaMonth ? `${vessel.etaMonth.toString().padStart(2, "0")}-${vessel.etaDay.toString().padStart(2, "0")}T${vessel.etaHour.toString().padStart(2, "0")}:${vessel.etaMinute.toString().padStart(2, "0")}Z` : ""}</td>
+              <td>{eta}</td>
               <td>{typeof vessel.lastUpdate=="number"?Math.floor((Date.now() - vessel.lastUpdate) / 1000)+"s":""}</td>
               <td>{dist.toFixed(2)} NM</td>
             </tr>

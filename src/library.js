@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { PolarPlot } from "./Components/PolarPlot.js";
-import { StaticMap } from "./Components/StaticMap.js";
+import { StaticMap } from "./Components/StaticMap.jsx";
 import { TrackDetails } from "./Components/TrackDetails.js";
 import { getCentreAndZoom } from "./hooks/useCentreAndZoom.js";
 import { HongKongMarineLayer } from "./Layers/HongKongMarineLayer.js";

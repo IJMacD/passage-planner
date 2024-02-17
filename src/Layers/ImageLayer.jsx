@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import { lonLat2XY } from "../util/projection.js";
 
 /**
@@ -9,18 +9,18 @@ import { lonLat2XY } from "../util/projection.js";
  * @param {[west: number, south: number, east: number, north: number]} props.bounds
  * @returns
  */
-export function ImageLayer ({ image, bounds }) {
+export function ImageLayer({ image, bounds }) {
     /** @type {import("react").MutableRefObject<HTMLCanvasElement?>} */
     const canvasRef = useRef(null);
 
     const { centre, zoom, width, height } = useContext(StaticMapContext);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const pxWidth = width * devicePixelRatio;
     const pxHeight = height * devicePixelRatio;
 
-    const [ west, south, east, north ] = bounds;
+    const [west, south, east, north] = bounds;
 
     useEffect(() => {
         if (!canvasRef.current) return;

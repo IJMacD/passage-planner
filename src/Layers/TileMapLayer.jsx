@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { lat2tile, lon2tile } from "../util/geo.js";
-import { StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import { tileXY2CanvasXY } from "../util/projection.js";
 import { formatTileURL } from "../util/getTiles.js";
 
@@ -62,7 +62,7 @@ const TILE_SIZE = 256;
  * @returns
  */
 
-export function TileMapLayer ({ layer }) {
+export function TileMapLayer({ layer }) {
     const context = useContext(StaticMapContext);
     const { centre, zoom, width, height } = context;
 
@@ -78,7 +78,7 @@ export function TileMapLayer ({ layer }) {
 
     console.warn("TileMapLayer not optimised for non-integer tile offsets");
     const projection = tileXY2CanvasXY(context);
-    const [ left, top ] = projection(tileOffsetX, tileOffsetY);
+    const [left, top] = projection(tileOffsetX, tileOffsetY);
 
     return (
         <div style={{ width: "100%", height: "100%", position: "absolute", top, left, lineHeight: 0, }}>

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
-import { getVesselColours } from "../Components/VesselShapeByType.jsx";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { getVesselColours } from "../Components/getVesselColours.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 
@@ -10,10 +10,10 @@ import React from "react";
  * @param {import("../util/ais/ais.js").Vessel[]} props.vessels
  * @returns
  */
-export function AISLayerCanvas ({ vessels }) {
+export function AISLayerCanvas({ vessels }) {
     const context = useContext(StaticMapContext);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
@@ -43,7 +43,7 @@ export function AISLayerCanvas ({ vessels }) {
 
             ctx.translate(x * dpr, y * dpr);
 
-            const [ dark, light ] = getVesselColours(vessel);
+            const [dark, light] = getVesselColours(vessel);
 
             if (vessel.name) {
                 ctx.fillStyle = dark;

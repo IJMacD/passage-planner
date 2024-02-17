@@ -1,15 +1,15 @@
 import { useContext, useEffect, useRef } from "react";
 import { lat2tile, lat2tileFrac, lon2tile, lon2tileFrac } from "../util/geo.js";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 import { getBounds } from "../util/projection.js";
 
 const TILE_SIZE = 256;
 
-export function DebugLayer () {
+export function DebugLayer() {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const context = useContext(StaticMapContext);
     const { centre, zoom, width, height } = context;
@@ -81,9 +81,9 @@ export function DebugLayer () {
             }
         }
 
-        const [ minLon, minLat, maxLon, maxLat ] = lonLatBounds;
-        const lonFrac = (centre[0]-minLon)/(maxLon-minLon);
-        const latFrac = (maxLat-centre[1])/(maxLat-minLat);
+        const [minLon, minLat, maxLon, maxLat] = lonLatBounds;
+        const lonFrac = (centre[0] - minLon) / (maxLon - minLon);
+        const latFrac = (maxLat - centre[1]) / (maxLat - minLat);
 
         ctx.translate(pxWidth * lonFrac, pxHeight * latFrac);
 
@@ -114,5 +114,5 @@ export function DebugLayer () {
 
     }, [centre, zoom, pxWidth, pxHeight, width, height]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left  }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

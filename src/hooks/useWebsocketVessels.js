@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { WebsocketAIS } from "../util/ais/WebsocketAIS.js";
+import { useInitRef } from "./useInitRef.js";
 
 const VESSEL_CACHE_KEY = "passagePlanner.vessels";
 
@@ -11,16 +12,11 @@ const VESSEL_CACHE_KEY = "passagePlanner.vessels";
  * @param {boolean} [active]
  */
 export function useWebsocketVessels (active = true) {
-    /** @type {import("react").MutableRefObject<WebsocketAIS?>} */
-    const aisRef = useRef(null);
+    const aisRef = useInitRef(() => new WebsocketAIS());
 
     const vesselMapRef = useRef(/** @type {Map<number, VesselReport>} */(new Map()));
 
     const [ vessels, setVessels ] = useState(/** @type {VesselReport[]} */([]));
-
-    if (!aisRef.current) {
-        aisRef.current = new WebsocketAIS();
-    }
 
     useEffect(() => {
         if (active) {

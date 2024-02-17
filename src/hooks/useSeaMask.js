@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import { getTiles } from "../util/getTiles.js";
 import { loadImage } from "../util/loadImage.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { clampAlpha, maskCanvas } from "../util/maskCanvas.js";
 import { useTileJSON } from "./useTileJSON.js";
 
-export function useSeaMask () {
+export function useSeaMask() {
     const [canvas, setCanvas] = useState(/** @type {HTMLCanvasElement?} */(null));
 
     const layer = useTileJSON("https://ijmacd.com/tiles/hongkong-marine/tiles.json");

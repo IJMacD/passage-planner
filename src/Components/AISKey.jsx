@@ -1,8 +1,14 @@
 import React from "react";
-import { getVesselColours } from "./VesselShapeByType.jsx";
+import { VesselShape } from "./VesselShapeByType.jsx";
+import { getVesselColours } from "./getVesselColours.jsx";
 
-export function AISKey () {
-
+/**
+ *
+ * @param {object} props
+ * @param {"arrows"|"houses"} props.vesselStyle
+ * @returns
+ */
+export function AISKey ({ vesselStyle = "arrows" }) {
     const navstat = [
         { value: 0, label: "Underway" },
         { value: 1, label: "At Anchor" },
@@ -28,11 +34,12 @@ export function AISKey () {
             {
                 navstat.map((stat, i) => {
                     const [ dark, light ] = getVesselColours({ navigationStatus: stat.value });
+
                     return (
                         <tr key={stat.value}>
                             <td>
                                 <svg viewBox="-5 -10 10 15" width={16} height={16}>
-                                    <path d="M 0 -10 L 5 5 L 0 2.5 L -5 5 Z"  fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
+                                    <VesselShape vesselStyle={vesselStyle} fill={light} stroke={dark} strokeWidth={1} strokeLinejoin="round" />
                                 </svg>
                             </td>
                             <td>

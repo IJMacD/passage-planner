@@ -1,12 +1,12 @@
 import React from "react";
-import { NavigationStatus } from "../util/ais.js";
+import { NavigationStatus } from "../util/ais/ais.js";
 
 /**
- * @param {import("../util/ais.js").Vessel} vessel
+ * @param {import("../util/ais/ais.js").Vessel} vessel
  * @returns {[ stroke: string, fill: string ]}
  */
 
-export function getVesselColours(vessel) {
+function getVesselColours(vessel) {
 
     const type = typeof vessel.shipType === "number" ? vessel.shipType : 0;
     const type10 = Math.floor(type / 10) * 10;
@@ -53,39 +53,38 @@ export function getVesselColours(vessel) {
 /**
  *
  * @param {object} props
- * @param {import("../util/ais.js").Vessel} props.vessel
- * @param {number} props.size
+ * @param {import("../util/ais/ais.js").Vessel} props.vessel
+ * @param {number} [props.size]
  * @returns
  */
-export function VesselShape({ vessel, size }) {
-    const [stroke, fill] = getVesselColours(vessel);
+export function VesselShape({ vessel, size = 5, ...otherProps }) {
 
     if (vessel.navigationStatus === NavigationStatus.MOORED) {
-        return <ellipse cx={0} cy={0} rx={size} ry={size} fill={fill} stroke={stroke} strokeWidth={2} />;
+        return <ellipse cx={0} cy={0} rx={size} ry={size} strokeWidth={2} {...otherProps} />;
     }
 
     if (vessel.navigationStatus === NavigationStatus.AT_ANCHOR) {
-        return <rect x={-size} y={-size} width={size * 2} height={size * 2} fill={fill} stroke={stroke} strokeWidth={2} />;
+        return <rect x={-size} y={-size} width={size * 2} height={size * 2} strokeWidth={2} {...otherProps} />;
     }
 
     if (vessel.navigationStatus === NavigationStatus.NOT_UNDER_COMMAND) {
-        return <path d={`M 0 ${-size} L ${size / 2} 0 H ${-size / 2} Z`} fill={fill} stroke={stroke} strokeWidth={2} />;
+        return <path d={`M 0 ${-size} L ${size / 2} 0 H ${-size / 2} Z`} strokeWidth={2} {...otherProps} />;
     }
 
     if (vessel.navigationStatus === NavigationStatus.UNDERWAY_USING_ENGINE) {
-        return <path d={`M 0 ${-2 * size} L ${size} ${size} L 0 ${size / 2} L ${-size} ${size} Z`} fill={fill} stroke={stroke} strokeWidth={2} strokeLinejoin="round" />;
+        return <path d={`M 0 ${-2 * size} L ${size} ${size} L 0 ${size / 2} L ${-size} ${size} Z`} strokeWidth={2} strokeLinejoin="round" {...otherProps} />;
     }
 
     if (vessel.navigationStatus === NavigationStatus.UNDERWAY_SAILING) {
-        return <path d={`M 0 ${-2 * size} C ${size} ${-size} ${size * 0.8} 0 ${size * 0.8} ${size} L 0 ${size} L ${-size * 0.8} ${size} C ${-size * 0.8} 0 ${-size} ${-size} 0 ${-2 * size}`} fill={fill} stroke={stroke} strokeWidth={2} strokeLinejoin="round" />;
+        return <path d={`M 0 ${-2 * size} C ${size} ${-size} ${size * 0.8} 0 ${size * 0.8} ${size} L 0 ${size} L ${-size * 0.8} ${size} C ${-size * 0.8} 0 ${-size} ${-size} 0 ${-2 * size}`} strokeWidth={2} strokeLinejoin="round" {...otherProps} />;
     }
 
     if (vessel.navigationStatus === NavigationStatus.RESERVED_HSC) {
-        return <path d={`M 0 ${-2 * size} L ${size} ${size} L 0 ${size / 2} L ${-size} ${size} Z M ${-size} ${size * 1.5} L 0 ${size} L ${size} ${size * 1.5}`} fill={fill} stroke={stroke} strokeWidth={2} strokeLinejoin="round" />;
+        return <path d={`M 0 ${-2 * size} L ${size} ${size} L 0 ${size / 2} L ${-size} ${size} Z M ${-size} ${size * 1.5} L 0 ${size} L ${size} ${size * 1.5}`} strokeWidth={2} strokeLinejoin="round" {...otherProps} />;
     }
 
     return (
-        <ellipse cx={0} cy={0} rx={size / 2} ry={size / 2} fill={stroke} stroke={stroke} strokeWidth={2}>
+        <ellipse cx={0} cy={0} rx={size / 2} ry={size / 2} strokeWidth={2} {...otherProps}>
             <title>{vessel.navigationStatus}</title>
         </ellipse>
     );

@@ -5,7 +5,7 @@ import { hsl2rgb } from "./colour.js";
 /**
 //  * @param // {HTMLCanvasElement|OffscreenCanvas} canvas
  * @param {CanvasRenderingContext2D} ctx
- * @param {import("../Components/StaticMap.jsx").StaticMapContextValue} context
+ * @param {import("../Components/StaticMapContext.js").StaticMapContextValue} context
  * @param {number} pxWidth
  * @param {number} pxHeight
  * @param {import("../Layers/VectorFieldLayer.jsx").Field} field

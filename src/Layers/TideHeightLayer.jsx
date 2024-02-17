@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 import { useTides } from "../hooks/useTides.js";
 
@@ -9,11 +9,11 @@ import { useTides } from "../hooks/useTides.js";
  * @param {Date} props.time
  * @returns
  */
-export function TideHeightLayer ({ time }) {
+export function TideHeightLayer({ time }) {
     const context = useContext(StaticMapContext);
     const projection = lonLat2XY(context);
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const bounds = getBounds(context);
 
@@ -31,7 +31,7 @@ export function TideHeightLayer ({ time }) {
     );
 }
 
-function TideMarker ({ height, left, top, title = "", dHeight = NaN }) {
+function TideMarker({ height, left, top, title = "", dHeight = NaN }) {
     const outerWidth = 15;
     const outerHeight = 50;
     const padding = 2;
@@ -47,10 +47,10 @@ function TideMarker ({ height, left, top, title = "", dHeight = NaN }) {
     const innerHeight = tideFraction * maxInnerHeight;
 
     return (
-        <div style={{boxSizing:"border-box",border:border+"px solid black",background:"white",position:"absolute",left:left-outerWidth/2,top:top-outerHeight,width: outerWidth,height: outerHeight}} title={title}>
-            <div style={{boxSizing:"border-box",background:"red",position:"absolute",bottom:padding,left:padding,width:innerWidth,height:innerHeight}} />
-            <p style={{color:"red",fontSize:"0.8rem",fontWeight:"bold",position:"absolute",left:-outerWidth/2,top:outerHeight-5,width:"max-content"}}>{ height > 0 && `${height} m` }</p>
-            <p style={{color:"red",fontSize:"0.8rem",fontWeight:"bold",position:"absolute",left:-outerWidth/2-(dHeight<0?5:0),top:outerHeight + 5,width:"max-content"}}>{ !isNaN(dHeight) && `${dHeight.toFixed(2)} m/h` }</p>
+        <div style={{ boxSizing: "border-box", border: border + "px solid black", background: "white", position: "absolute", left: left - outerWidth / 2, top: top - outerHeight, width: outerWidth, height: outerHeight }} title={title}>
+            <div style={{ boxSizing: "border-box", background: "red", position: "absolute", bottom: padding, left: padding, width: innerWidth, height: innerHeight }} />
+            <p style={{ color: "red", fontSize: "0.8rem", fontWeight: "bold", position: "absolute", left: -outerWidth / 2, top: outerHeight - 5, width: "max-content" }}>{height > 0 && `${height} m`}</p>
+            <p style={{ color: "red", fontSize: "0.8rem", fontWeight: "bold", position: "absolute", left: -outerWidth / 2 - (dHeight < 0 ? 5 : 0), top: outerHeight + 5, width: "max-content" }}>{!isNaN(dHeight) && `${dHeight.toFixed(2)} m/h`}</p>
         </div>
     );
 }

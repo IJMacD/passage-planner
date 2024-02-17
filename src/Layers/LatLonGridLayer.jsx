@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 
@@ -8,10 +8,10 @@ import { getBounds, lonLat2XY } from "../util/projection.js";
  * @param {Object} props
  * @param {"decimal"|"minutes"} props.mode
  */
-export function LatLonGridLayer ({ mode }) {
+export function LatLonGridLayer({ mode }) {
     const canvasRef = useRef(/** @type {HTMLCanvasElement?} */(null));
 
-    const [left,top] = useContext(DragContext);
+    const [left, top] = useContext(DragContext);
 
     const context = useContext(StaticMapContext);
     const { centre, zoom, width, height } = context;
@@ -72,7 +72,7 @@ export function LatLonGridLayer ({ mode }) {
 
     }, [centre, zoom, pxWidth, pxHeight, width, height, mode]);
 
-    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width, height, position: "absolute", top, left  }} />;
+    return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width, height, position: "absolute", top, left }} />;
 }
 
 /**
@@ -83,8 +83,8 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
     const lonLatBounds = getBounds(context);
     const { width, height } = context;
 
-    const minLon = Math.floor(lonLatBounds[0]/gridSize)*gridSize;
-    const minLat = Math.floor(lonLatBounds[1]/gridSize)*gridSize;
+    const minLon = Math.floor(lonLatBounds[0] / gridSize) * gridSize;
+    const minLat = Math.floor(lonLatBounds[1] / gridSize) * gridSize;
     const maxLon = Math.ceil(lonLatBounds[2]);
     const maxLat = Math.ceil(lonLatBounds[3]);
 
@@ -127,7 +127,7 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
 
             const margin = fontSize / 10;
 
-            if (gridSize === 10/60 || gridSize === 1/60) {
+            if (gridSize === 10 / 60 || gridSize === 1 / 60) {
                 const degrees = Math.floor(i);
                 const minutes = ((i % 1) * 60).toFixed(0).padStart(2, "0");
                 ctx.fillText(`${degrees}°${minutes}′`, x * dpr, (context.height - margin) * dpr);
@@ -143,7 +143,7 @@ function drawGrid(ctx, context, gridSize = 1, lineWidth = 1, labels = false) {
 
             const margin = fontSize / 10;
 
-            if (gridSize === 10/60 || gridSize === 1/60) {
+            if (gridSize === 10 / 60 || gridSize === 1 / 60) {
                 const degrees = Math.floor(j);
                 const minutes = ((j % 1) * 60).toFixed(0).padStart(2, "0");
                 ctx.fillText(`${degrees}°${minutes}′`, (context.width - margin) * dpr, (y - margin) * dpr);
