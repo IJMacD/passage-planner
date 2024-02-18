@@ -37,12 +37,12 @@ function lon2nm($point1, $point2)
     return abs($point1['lon'] - $point2['lon']) * cos($latRad) * $distAtEquator;
 }
 
-// Equirectangualr approximation
+// Equirectangular approximation
 /**
- * @param {{ lon: number; lat: any; }} point1
- * @param {{ lon: number; lat: any; }} point2
+ * @param (array{ lon: number; lat: any; }) $point1
+ * @param (array{ lon: number; lat: any; }) $point2
  */
-function latlon2nm($point1, $point2)
+function latlon2nm(array $point1, array $point2)
 {
     $ns = lat2nm($point1['lat'], $point2['lat']);
     $ew = lon2nm($point1, $point2);

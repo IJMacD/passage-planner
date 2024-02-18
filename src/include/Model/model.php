@@ -89,7 +89,7 @@ function getTrackBounds($id)
     return $result;
 }
 
-function calculateTrackBounds($id)
+function getTrackPoints($id): \DOMNodeList
 {
     global $db;
 
@@ -98,7 +98,7 @@ function calculateTrackBounds($id)
     $stmt->execute(["id" => $id]);
 
     if ($stmt->rowCount() === 0) {
-        return false;
+        return new \DOMNodeList();
     }
 
     $gpx = $stmt->fetchColumn();
@@ -107,6 +107,15 @@ function calculateTrackBounds($id)
     $dom->loadXML($gpx);
 
     $points = $dom->getElementsByTagName("trkpt");
+
+    return $points;
+}
+
+function calculateTrackBounds($id)
+{
+    global $db;
+
+    $points = getTrackPoints($id);
 
     $minLon = INF;
     $minLat = INF;

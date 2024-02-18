@@ -42,6 +42,7 @@ Router::registerWithPrefix("/api/v1/auth", [
 ]);
 Router::register([
     ["get",     "/records",         fn () => handleRecords()],
+    ["get",     "/stats",           fn () => handleStats()],
     ["get",     "/all",             fn () => handleAllTracks()],
     ["get",     "/extract/:date",   fn ($date) => handleExtract($date)],
     ["get",     "/:hid",            fn ($hid) => handleLogEntry(hexdec($hid))],
@@ -76,6 +77,11 @@ function handleExtract($dateSpec)
 function handleRecords()
 {
     include "include/Views/LogbookRecords.php";
+}
+
+function handleStats()
+{
+    include "include/Views/LogbookStats.php";
 }
 
 function handleAllTracks()

@@ -56,6 +56,28 @@ class LogbookEntry implements JsonSerializable
         return getTrackBounds($this->id);
     }
 
+    function getStartPoint(): array
+    {
+        $points = getTrackPoints($this->id);
+        $point = $points->item(0);
+
+        $lat = $point->attributes->getNamedItem("lat")->nodeValue;
+        $lon = $point->attributes->getNamedItem("lon")->nodeValue;
+
+        return ["lat" => $lat, "lon" => $lon];
+    }
+
+    function getEndPoint(): array
+    {
+        $points = getTrackPoints($this->id);
+        $point = $points->item($points->count() - 1);
+
+        $lat = $point->attributes->getNamedItem("lat")->nodeValue;
+        $lon = $point->attributes->getNamedItem("lon")->nodeValue;
+
+        return ["lat" => $lat, "lon" => $lon];
+    }
+
     function jsonSerialize(): mixed
     {
         $start = $this->start;

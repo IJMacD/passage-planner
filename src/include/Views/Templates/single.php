@@ -29,7 +29,9 @@
         $maxLat = round(abs($bounds['maxLat']), 3) . "° " . ($bounds['maxLat'] < 0 ? "S" : "N");
         $minLon = round(abs($bounds['minLon']), 3) . "° " . ($bounds['minLon'] < 0 ? "W" : "E");
         $maxLon = round(abs($bounds['maxLon']), 3) . "° " . ($bounds['maxLon'] < 0 ? "W" : "E");
-        echo "$minLat – $maxLat<br/>$minLon – $maxLon";
+        $dLat = round($bounds['maxLat'] - $bounds['minLat'], 3) . "°";
+        $dLon = round($bounds['maxLon'] - $bounds['minLon'], 3) . "°";
+        echo "$minLat – $maxLat (Δ $dLat)<br/>$minLon – $maxLon (Δ $dLon)";
         ?></dd>
     <dd><?= round(calcBoundsArea($bounds), 2) ?> NM²</dd>
     <dt>Export</dt>
