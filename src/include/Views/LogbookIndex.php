@@ -2,6 +2,7 @@
 
 $title = "Logbook";
 $entries = getAllEntries();
-$content = include_contents("Templates/index.php", ["entries" => $entries ]);
+$entry_years = getAllEntryYears();
+$content = include_contents("Templates/index.php", ["entries" => $entries, "years" => $entry_years]);
 
 require("Templates/layout.php");

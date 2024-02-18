@@ -72,9 +72,9 @@ function isAJAXRequest()
  * Returns array of [inclusive start, exclusive end]
  * i.e. [start, end)
  */
-function iso8601($dateSpec)
+function iso8601($dateSpec): array|null
 {
-    if (strstr($dateSpec, "--") !== false) {
+    if (str_contains($dateSpec, "--")) {
         $parts = explode("--", $dateSpec);
         $start = iso8601($parts[0]);
         $end = iso8601($parts[1]);
@@ -96,6 +96,14 @@ function iso8601($dateSpec)
     if (preg_match("/^(\d{4})-(\d{2})$/", $dateSpec, $matches)) {
         $y1 = $matches[1];
         $m1 = $matches[2];
+
+        if ($m1 > 24) {
+            return subYearGrouping($y1, $m1);
+        }
+
+        if ($m1 > 12) {
+            return null;
+        }
 
         $y2 = $y1;
         $m2 = $m1 + 1;
@@ -175,6 +183,63 @@ function iso8601($dateSpec)
     }
 }
 
+function subYearGrouping(int $year, int $grouping)
+{
+    switch ($grouping) {
+        case 25:
+            // Northern Spring
+            return [$year . "-03-01", $year . "-06-01"];
+        case 26:
+            // Northern Summer
+            return [$year . "-06-01", $year . "-09-01"];
+        case 27:
+            // Northern Autumn
+            return [$year . "-09-01", $year . "-12-01"];
+        case 28:
+            // Northern Winter
+            return [$year . "-12-01", ($year + 1) . "-03-01"];
+        case 29:
+            // Southern Spring
+            return [$year . "-09-01", $year . "-12-01"];
+        case 30:
+            // Southern Summer
+            return [$year . "-12-01", ($year + 1) . "-03-01"];
+        case 31:
+            // Southern Autumn
+            return [$year . "-03-01", $year . "-06-01"];
+        case 32:
+            // Southern Winter
+            return [$year . "-06-01", $year . "-09-01"];
+        case 33:
+            // Q1
+            return [$year . "-01-01", $year . "-04-01"];
+        case 34:
+            // Q2
+            return [$year . "-04-01", $year . "-07-01"];
+        case 35:
+            // Q3
+            return [$year . "-07-01", $year . "-10-01"];
+        case 36:
+            // Q4
+            return [$year . "-10-01", ($year + 1) . "-01-01"];
+        case 37:
+            // First Third
+            return [$year . "-01-01", $year . "-05-01"];
+        case 38:
+            // Second Third
+            return [$year . "-05-01", $year . "-09-01"];
+        case 39:
+            // Third Third
+            return [$year . "-09-01", ($year + 1) . "-01-01"];
+        case 40:
+            // First Half
+            return [$year . "-01-01", $year . "-07-01"];
+        case 41:
+            // Second Half
+            return [$year . "-07-01", ($year + 1) . "-01-01"];
+    }
+}
+
 function month_length(int $year, int $month)
 {
     if ($month === 2) {
@@ -199,4 +264,102 @@ function is_leap_year(int $year)
     }
 
     return false;
+}
+
+/**
+ * Returns array of [inclusive start, exclusive end]
+ * i.e. [start, end)
+ */
+function getDateLabel($dateSpec): string
+{
+    if (str_contains($dateSpec, "--")) {
+        $parts = explode("--", $dateSpec);
+        $start = iso8601($parts[0]);
+        $end = iso8601($parts[1]);
+
+        // exclusive range spec
+        return getDateLabel($start[0]) . " to " . getDateLabel($end[0]);
+
+        // inclusive range spec
+        // return [$start[0], $end[1]];
+    }
+
+    if (preg_match("/^\d{4}$/", $dateSpec)) {
+        return $dateSpec;
+    }
+
+    if (preg_match("/^(\d{4})-(\d{2})$/", $dateSpec, $matches)) {
+        $y1 = $matches[1];
+        $m1 = $matches[2];
+
+        if ($m1 > 24) {
+            return subYearGroupingLabel($y1, $m1);
+        }
+
+        if ($m1 > 12) {
+            return "Invalid";
+        }
+
+        $month_names = explode("_", "January_February_March_April_May_June_July_August_September_October_November_December");
+        return $month_names[$m1 - 1] . " " . $y1;
+    }
+
+    if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $dateSpec, $matches)) {
+        $date = new DateTime($dateSpec);
+        return $date->format("jS F Y");
+    }
+
+    if (preg_match("/^(\d{4})-(\d{3})$/", $dateSpec, $matches)) {
+        $y1 = $matches[1];
+        $od = (int)$matches[2];
+
+        $ord = ($od === 11 || $od === 12 || $od === 13) ? "th" : ($od % 10 === 1 ? "st" : ($od % 10 === 2 ? "nd" : ($od % 10 === 3 ? "rd" : "th")));
+
+        return "The " . $od . $ord . " day of " . $y1;
+    }
+}
+
+function subYearGroupingLabel(int $year, int $grouping): string
+{
+    switch ($grouping) {
+        case 25:
+            return "Northern Spring " . $year;
+        case 26:
+            return "Northern Summer " . $year;
+        case 27:
+            return "Northern Autumn " . $year;
+        case 28:
+            return "Northern Winter " . $year;
+        case 29:
+            return "Southern Spring " . $year;
+        case 30:
+            return "Southern Summer " . $year;
+        case 31:
+            return "Southern Autumn " . $year;
+        case 32:
+            return "Southern Winter " . $year;
+        case 33:
+            return "Q1 " . $year;
+        case 34:
+            return "Q2 " . $year;
+        case 35:
+            return "Q3 " . $year;
+        case 36:
+            return "Q4 " . $year;
+        case 37:
+            return "First Third " . $year;
+        case 38:
+            return "Second Third " . $year;
+        case 39:
+            return "Third Third " . $year;
+        case 40:
+            return "First Half " . $year;
+        case 41:
+            return "Second Half " . $year;
+    }
+}
+
+function formatDurationToHours(DateInterval $duration): string
+{
+    return $duration->format("%a") * 24 + $duration->format("%H") . $duration->format(":%I:%S");
 }

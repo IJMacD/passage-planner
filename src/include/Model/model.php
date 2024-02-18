@@ -238,3 +238,15 @@ function getRecordSettingTracks()
 
     return $stmt->fetch();
 }
+
+function getAllEntryYears()
+{
+    $entry_years = [];
+    foreach (getAllEntries() as $entry) {
+        $y = $entry->start->time->format("Y");
+        if (!in_array($y, $entry_years)) {
+            $entry_years[] = $y;
+        }
+    }
+    return $entry_years;
+}

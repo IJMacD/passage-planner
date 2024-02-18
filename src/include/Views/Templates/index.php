@@ -14,6 +14,9 @@ $total_avg_speed = $total_duration_seconds > 0 ?
     0;
 $records = getRecordSettingTracks();
 ?>
+<?php if (isset($heading)) : ?>
+    <h1><?= $heading ?></h1>
+<?php endif; ?>
 <p><?= $count ?> logbook <?= $count === 1 ? "entry" : "entries" ?>.</p>
 <table>
     <thead>
@@ -42,12 +45,14 @@ $records = getRecordSettingTracks();
                     <span class="hint"><?= view_time($entry->end->time) ?></span>
                 </td>
                 <td rowspan="2"><?= $entry->total_distance ?> NM</td>
-                <td rowspan="2"><?= $entry->total_duration->format("%a:%H:%I:%S") ?></td>
+                <td rowspan="2"><?= $entry->total_duration->format("%H:%I:%S") ?></td>
                 <td rowspan="2"><?= round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2) ?> knots</td>
-                <td rowspan="2"><?php
-                                $trophies = getTrophies($entry->id);
-                                if ($trophies) view_trophies($trophies, $entry->id, $records);
-                                ?></td>
+                <td rowspan="2">
+                    <?php
+                    $trophies = getTrophies($entry->id);
+                    if ($trophies) view_trophies($trophies, $entry->id, $records);
+                    ?>
+                </td>
             </tr>
             <tr>
                 <td colspan="2">
@@ -62,10 +67,37 @@ $records = getRecordSettingTracks();
             <th></th>
             <th></th>
             <th><?= $total_distance ?> NM</th>
-            <th><?= $total_duration->format("%a:%H:%I:%S") ?></th>
+            <th><?= formatDurationToHours($total_duration) ?></th>
             <th><?= round($total_avg_speed, 2) ?> knots</th>
             <th></th>
         </tr>
     </tfoot>
 </table>
+<?php
+if (isset($years)) :
+?>
+    <h2>View extract for year:</h2>
+    <?php
+    foreach ($years as $year) :
+    ?>
+        <a href="/extract/<?= $year ?>"><?= $year ?></a>
+    <?php
+    endforeach;
+    ?>
+<?php
+endif;
+
+if (isset($sub_year_groupings)) :
+?>
+    <h2>View sub-year extract:</h2>
+    <?php
+    foreach ($sub_year_groupings as $date => $label) :
+    ?>
+        <a href="/extract/<?= $date ?>"><?= $label ?></a>
+    <?php
+    endforeach;
+    ?>
+<?php
+endif;
+?>
 <script src="/static/js/util.js"></script>

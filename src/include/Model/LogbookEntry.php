@@ -2,8 +2,8 @@
 
 /**
  * @property-read DateInterval $total_duration
- * @property-read object $start
- * @property-read object $end
+ * @property-read (object{time:DateTime, name:string}) $start
+ * @property-read (object{time:DateTime, name:string}) $end
  */
 class LogbookEntry implements JsonSerializable
 {
