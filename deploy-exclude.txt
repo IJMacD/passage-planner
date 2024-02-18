@@ -1,8 +1,0 @@
-.git
-.gitignore
-API_Docs.md
-create.sql
-conf.ini
-conf.ini.sample
-deploy.sh
-deploy-exclude.txt

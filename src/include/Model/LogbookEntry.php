@@ -5,7 +5,8 @@
  * @property-read object $start
  * @property-read object $end
  */
-class LogbookEntry implements JsonSerializable {
+class LogbookEntry implements JsonSerializable
+{
     var $id;
     /** @var float $total_distance Nautical Miles */
     var $total_distance;
@@ -50,11 +51,12 @@ class LogbookEntry implements JsonSerializable {
         }
     }
 
-    function getBounds () {
+    function getBounds()
+    {
         return getTrackBounds($this->id);
     }
 
-    function jsonSerialize()
+    function jsonSerialize(): mixed
     {
         $start = $this->start;
         $end = $this->end;
@@ -73,7 +75,8 @@ class LogbookEntry implements JsonSerializable {
         ];
     }
 
-    static function fromArray ($array) {
+    static function fromArray($array)
+    {
         $result = new self();
         foreach ($array as $key => $value) {
             $result->$key = $value;
@@ -85,7 +88,8 @@ class LogbookEntry implements JsonSerializable {
 /**
  * @param DateInterval $duration
  */
-function formatDuration ($duration) {
+function formatDuration($duration)
+{
     $str = "P";
     if ($duration->days > 0) {
         $str .= $duration->days . "D";

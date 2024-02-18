@@ -14,7 +14,7 @@ $total_avg_speed = $total_duration_seconds > 0 ?
     0;
 $records = getRecordSettingTracks();
 ?>
-<p><?= $count ?> logbook entries.</p>
+<p><?= $count ?> logbook <?= $count === 1 ? "entry" : "entries" ?>.</p>
 <table>
     <thead>
         <tr>
@@ -24,14 +24,14 @@ $records = getRecordSettingTracks();
             <th>Distance</th>
             <th>Duration</th>
             <th>Average Speed</th>
-            <th><a href="/logbook/records">Trophies</a></th>
+            <th><a href="/records">Trophies</a></th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($entries as $entry) : ?>
             <tr>
                 <td rowspan="2">
-                    <a href="/logbook/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
+                    <a href="/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
                 </td>
                 <td>
                     <?= $entry->start->name ?><br />
@@ -68,4 +68,4 @@ $records = getRecordSettingTracks();
         </tr>
     </tfoot>
 </table>
-<script src="/logbook/static/js/util.js"></script>
+<script src="/static/js/util.js"></script>

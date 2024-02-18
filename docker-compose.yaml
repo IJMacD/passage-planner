@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    image: logbook
+    ports:
+      - "8000:80"
+    environment:
+      - DATABASE_DSN=mysql:host=db;dbname=passage
+      - DATABASE_USER=root
+    volumes:
+      - ./src:/var/www/html/
+  db:
+    image: bitnami/mysql:latest
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=passage
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d/

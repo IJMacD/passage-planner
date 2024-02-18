@@ -1,12 +1,15 @@
 <?php
 
-class SQLException {
+class SQLException
+{
     const INTEGRITY_VIOLATION = "23000";
 }
 
-class API {
+class API
+{
 
-    function handleLogsGet () {
+    static function handleLogsGet()
+    {
         $params = $_GET;
 
         $entries = getAllEntries($params);
@@ -15,7 +18,8 @@ class API {
         echo json_encode($entries);
     }
 
-    function handleLogsPost () {
+    static function handleLogsPost()
+    {
         $params = $_POST;
 
         $auth = Auth::verifyHeader();
@@ -65,16 +69,15 @@ class API {
 
             header("Content-Type: application/json");
             echo json_encode($entry);
-        }
-        catch (PDOException $e) {
+        } catch (PDOException $e) {
             if ($e->errorInfo[0] === SQLException::INTEGRITY_VIOLATION) {
                 header("HTTP/1.1 409 Conflict");
-            }
-            else throw $e;
+            } else throw $e;
         }
     }
 
-    function handleLogEntryGet ($id) {
+    static function handleLogEntryGet($id)
+    {
         $entry = getEntry(hexdec($id));
 
         if (!$entry) {
@@ -86,7 +89,8 @@ class API {
         echo json_encode($entry);
     }
 
-    function handleLogEntryPost ($id) {
+    static function handleLogEntryPost($id)
+    {
         $params = $_POST;
 
         $auth = Auth::verifyHeader();
@@ -101,8 +105,7 @@ class API {
         foreach ($params as $key => $value) {
             if (in_array($key, $fields, true)) {
                 $set_list[] = "`$key` = :$key";
-            }
-            else {
+            } else {
                 unset($params[$key]);
             }
         }
@@ -121,20 +124,21 @@ class API {
         echo json_encode(["result" => "OK"]);
     }
 
-    function handleLogEntryBounds ($id) {
+    static function handleLogEntryBounds($id)
+    {
         $bounds = getTrackBounds(hexdec($id));
 
         if ($bounds) {
             header("Content-Type: application/json");
             echo json_encode($bounds, JSON_NUMERIC_CHECK);
-        }
-        else {
+        } else {
             header("HTTP/1.1 404 Not Found");
             echo "Track not found";
         }
     }
 
-    function handleLogEntryDelete ($id) {
+    static function handleLogEntryDelete($id)
+    {
         $auth = Auth::verifyHeader();
         if (!$auth) {
             header("HTTP/1.1 403 Not Authorized");
@@ -145,16 +149,17 @@ class API {
         global $db;
 
         $stmt = $db->prepare("DELETE FROM logbook WHERE id = :id");
-        $stmt->execute([ "id" => hexdec($id) ]);
+        $stmt->execute(["id" => hexdec($id)]);
 
         $stmt = $db->prepare("DELETE FROM logbook_tracks WHERE logbook_id = :id");
-        $stmt->execute([ "id" => hexdec($id) ]);
+        $stmt->execute(["id" => hexdec($id)]);
 
         header("Content-Type: application/json");
         echo json_encode(["result" => "OK"]);
     }
 
-    function handleLogTrackGet ($id) {
+    static function handleLogTrackGet($id)
+    {
         global $db;
 
         $stmt = $db->prepare("SELECT gpx FROM logbook_tracks WHERE logbook_id = :id ORDER BY uploaded_date DESC LIMIT 1");
@@ -168,7 +173,7 @@ class API {
 
             $stmt_start->execute(["id" => hexdec($id)]);
 
-            $d = str_replace(" ", "T", str_replace(["-",":"], "", $stmt_start->fetchColumn())) . "Z";
+            $d = str_replace(" ", "T", str_replace(["-", ":"], "", $stmt_start->fetchColumn())) . "Z";
 
             header("Content-Disposition: attachment; filename=logbook-$d.gpx");
         }
@@ -176,7 +181,8 @@ class API {
         echo $stmt->fetchColumn();
     }
 
-    function handleLogTrackPost ($id) {
+    static function handleLogTrackPost($id)
+    {
         $auth = Auth::verifyHeader();
         if (!$auth) {
             header("HTTP/1.1 403 Not Authorized");
@@ -195,7 +201,7 @@ class API {
 
         $stmt = $db->prepare("INSERT INTO logbook_tracks (logbook_id, gpx) VALUES (:id, :gpx)");
 
-        $stmt->execute([ "id" => hexdec($id), "gpx" => $gpx ]);
+        $stmt->execute(["id" => hexdec($id), "gpx" => $gpx]);
 
         // Pre-calculate bounds
         calculateTrackBounds(hexdec($id));

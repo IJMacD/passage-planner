@@ -1,3 +1,0 @@
-database_dsn = "mysql:host=localhost;dbname="
-database_user = ""
-database_pass = ""
