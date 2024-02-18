@@ -46,14 +46,27 @@ class Router
             $path = substr($path, 0, $queryPos);
         }
 
-        // Routes must be sorted with placeholders after literals
+        // Sort routes for correct evaluation
         usort(self::$routes, function ($a, $b) {
-            // $a_mod = str_replace(":", "\u{FFFC}", $a[1]);
-            // $b_mod = str_replace(":", "\u{FFFC}", $b[1]);
+            // Longest in terms of path parts first
+            $a_parts = count(explode("/", $a[1]));
+            $b_parts = count(explode("/", $b[1]));
 
-            // return strcmp($a_mod, $b_mod);
-            return strlen($b[1]) - strlen($a[1]);
+            $d = $b_parts - $a_parts;
+
+            if ($d !== 0) {
+                return $d;
+            }
+
+            // Routes must be sorted with placeholders after literals
+
+            $a_mod = str_replace(":", "\u{FFFC}", $a[1]);
+            $b_mod = str_replace(":", "\u{FFFC}", $b[1]);
+
+            return strcmp($a_mod, $b_mod);
         });
+
+        $isExact = true;
 
         foreach (self::$routes as $route) {
             if ($method !== $route[0]) {
@@ -65,7 +78,7 @@ class Router
                 return true;
             }
 
-            $regex = "#^" . self::$root . preg_replace("#(^|/):[^/.]+#", "$1([^/.]+)", $route[1], -1, $param_count) . "#";
+            $regex = "#^" . self::$root . preg_replace("#(^|/):[^/.]+#", "$1([^/.]+)", $route[1], -1, $param_count) . ($isExact ? "$#" : "#");
 
             if (preg_match($regex, $path, $matches)) {
                 call_user_func($route[2], ...array_slice($matches, 1));
