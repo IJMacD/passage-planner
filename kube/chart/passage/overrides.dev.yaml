@@ -1,0 +1,27 @@
+hostname: passage.localhost
+mariadb:
+  auth:
+    rootPassword: root-password
+    password: password
+  persistence:
+    enabled: false
+planner:
+  replicaCount: 1
+  repository:
+    image: k3d-registry.localhost:5111/ijmacd/passage-planner
+    tag: ""
+  ingress:
+    tls:
+      enabled: true
+  local:
+    enabled: true
+logbook:
+  replicaCount: 1
+  repository:
+    image: k3d-registry.localhost:5111/ijmacd/logbook
+    tag: ""
+  ingress:
+    tls:
+      enabled: true
+  local:
+    enabled: true

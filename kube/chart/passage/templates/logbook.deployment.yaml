@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-logbook"
+  labels:
+    app.kubernetes.io/name: "{{ .Chart.Name }}"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
+    app.kubernetes.io/component: logbook
+spec:
+  replicas: {{ .Values.logbook.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: logbook
+      app.kubernetes.io/instance: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: logbook
+        app.kubernetes.io/instance: "{{ .Release.Name }}"
+    spec:
+      containers:
+        - name: logbook
+          image: '{{ .Values.logbook.repository.image }}{{ if ne .Values.logbook.repository.tag "" }}:{{ .Values.logbook.repository.tag }}{{ end }}'
+          env:
+            - name: BASE_URL
+              value: {{ .Values.logbook.ingress.path }}
+            - name: DATABASE_DSN
+              value: mysql:host={{ .Release.Name }}-mariadb;dbname={{ .Values.mariadb.auth.database }}
+            - name: DATABASE_USER
+              value: {{ .Values.mariadb.auth.username }}
+            - name: DATABASE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mariadb
+                  key: mariadb-password
+          ports:
+            - name: web
+              containerPort: 80

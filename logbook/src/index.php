@@ -21,7 +21,7 @@ AccessControl::setMaxAge(60 * 60);
 
 Auth::maintenance();
 
-Router::setRoot($baseURL);
+Router::setRoot("/");
 
 Router::registerWithPrefix("/api/v1", [
     ["get",     "/logs/:hid.gpx",       ["API", "handleLogTrackGet"]],
@@ -54,7 +54,7 @@ Router::register([
 try {
     if (!Router::execute()) {
         header("HTTP/1.1 404 Not Found");
-        echo "Not Found";
+        include "include/Views/404.php";
     }
 } catch (PDOException $e) {
     header("HTTP/1.1 500 Server Error");

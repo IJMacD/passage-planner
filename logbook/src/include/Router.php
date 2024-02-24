@@ -2,12 +2,24 @@
 
 class Router
 {
-    private static $root = "/";
+    private static $root = "";
     private static $routes = [];
 
     static function setRoot($root)
     {
-        self::$root = $root;
+        // Root should start with slash
+        // (but should not end in a slash)
+
+        if ($root === "/") {
+            return;
+        }
+
+        $root = rtrim($root, "/");
+        if (!str_starts_with($root, "/")) {
+            self::$root = "/" . $root;
+        } else {
+            self::$root = $root;
+        }
     }
 
     /**

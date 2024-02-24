@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: '{{ .Release.Name }}-planner'
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: '{{ .Values.hostname }}'
+    http:
+      paths:
+      - path: '{{ .Values.planner.ingress.path }}'
+        pathType: Prefix
+        backend:
+          service:
+            name: '{{ .Release.Name }}-planner'
+            port:
+              name: web
+  {{- if .Values.planner.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - '{{ .Values.hostname }}'
+    secretName: {{ .Release.Name }}-cert
+  {{- end }}

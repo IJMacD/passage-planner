@@ -1,6 +1,6 @@
 <h1><?= $title ?></h1>
 <div id="map"></div>
-<script src="/static/vendor/passage-planner-lib.js"></script>
+<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.js"></script>
 <script>
     const bounds = [
         <?php

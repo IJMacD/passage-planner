@@ -4,10 +4,7 @@
 
 <head>
     <title><?= $title ?></title>
-    <?php if (isset($baseURL)) : ?>
-        <base href="<?= $baseURL ?>">
-    <?php endif; ?>
-    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="<?= $baseURL ?>/static/css/style.css" />
     <?php if (isset($description)) : ?>
         <meta name="description" content="<?= $description ?>">
     <?php endif; ?>
@@ -15,7 +12,7 @@
 
 <body>
     <nav>
-        <a class="brand" href="/">
+        <a class="brand" href="<?= $baseURL ?>/">
             <h1>Logbook</h1>
         </a>
     </nav>

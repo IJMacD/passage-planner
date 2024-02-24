@@ -7,14 +7,14 @@ foreach ($records as $record => $id) :
     <div style="display:inline-block; margin: 1em; padding: 0.5em 1em; border: 1px solid #333;text-align:center;">
         <span style="font-size: 5em;">🏆</span>
         <p><?= $record ?></p>
-        <p><a href="/<?= dechex($entry->id) ?>"><?= $entry->start->time->format("Y-m-d") ?></a></p>
+        <p><a href="<?= $baseURL ?>/<?= dechex($entry->id) ?>"><?= $entry->start->time->format("Y-m-d") ?></a></p>
     </div>
 
 <?php
 endforeach;
 ?>
 <div id="map"></div>
-<script src="/static/vendor/passage-planner-lib.js"></script>
+<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.js"></script>
 <script>
     const bounds = [
         <?php

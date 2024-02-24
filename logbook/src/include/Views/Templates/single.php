@@ -35,14 +35,14 @@
         ?></dd>
     <dd><?= round(calcBoundsArea($bounds), 2) ?> NM²</dd>
     <dt>Export</dt>
-    <dd><a href="/api/v1/logs/<?= dechex($entry->id) ?>/track">gpx</a></dd>
+    <dd><a href="<?= $baseURL ?>/api/v1/logs/<?= dechex($entry->id) ?>/track">gpx</a></dd>
 </dl>
 <div id="map"></div>
 <div id="polar-plot"></div>
-<script src="/static/js/util.js"></script>
-<script src="/static/vendor/passage-planner-lib.js"></script>
+<script src="<?= $baseURL ?>/static/js/util.js"></script>
+<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.js"></script>
 <script>
-    fetch("/api/v1/logs/<?= dechex($entry->id) ?>/track")
+    fetch("<?= $baseURL ?>/api/v1/logs/<?= dechex($entry->id) ?>/track")
         .then(r => r.text())
         .then(t => {
             passagePlanner.renderGPXTrack(document.getElementById("map"), t);

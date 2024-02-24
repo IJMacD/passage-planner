@@ -27,7 +27,7 @@ $records = getRecordSettingTracks();
             <th>Distance</th>
             <th>Duration</th>
             <th>Average Speed</th>
-            <th><a href="/records">Trophies</a></th>
+            <th><a href="<?= $baseURL ?>/records">Trophies</a></th>
         </tr>
     </thead>
     <tbody>
@@ -80,7 +80,7 @@ if (isset($years)) :
     <?php
     foreach ($years as $year) :
     ?>
-        <a href="/extract/<?= $year ?>"><?= $year ?></a>
+        <a href="<?= $baseURL ?>/extract/<?= $year ?>"><?= $year ?></a>
     <?php
     endforeach;
     ?>
@@ -93,11 +93,11 @@ if (isset($sub_year_groupings)) :
     <?php
     foreach ($sub_year_groupings as $date => $label) :
     ?>
-        <a href="/extract/<?= $date ?>"><?= $label ?></a>
+        <a href="<?= $baseURL ?>/extract/<?= $date ?>"><?= $label ?></a>
     <?php
     endforeach;
     ?>
 <?php
 endif;
 ?>
-<script src="/static/js/util.js"></script>
+<script src="<?= $baseURL ?>/static/js/util.js"></script>

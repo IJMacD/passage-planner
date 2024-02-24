@@ -40,7 +40,7 @@ $records = getRecordSettingTracks();
         ?>
             <tr>
                 <td>
-                    <a href="/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
+                    <a href="<?= $baseURL ?>/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
                 </td>
                 <td>
                     <?= $entry->start->name ?><br />
@@ -58,4 +58,4 @@ $records = getRecordSettingTracks();
         <?php endforeach; ?>
     </tbody>
 </table>
-<script src="/static/js/util.js"></script>
+<script src="<?= $baseURL ?>/static/js/util.js"></script>

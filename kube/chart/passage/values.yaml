@@ -1,0 +1,28 @@
+hostname: passage.ijmacd.com
+mariadb:
+  auth:
+    database: passage
+    username: passage_user
+  initdbScriptsConfigMap: logbook-mariadb-init
+planner:
+  replicaCount: 1
+  repository:
+    image: docker.io/ijmacd/passage-planner
+    tag: ""
+  ingress:
+    path: "/"
+    tls:
+      enabled: false
+  local:
+    enabled: false
+logbook:
+  replicaCount: 1
+  repository:
+    image: docker.io/ijmacd/logbook
+    tag: ""
+  ingress:
+    path: "/logbook"
+    tls:
+      enabled: false
+  local:
+    enabled: false
