@@ -1,9 +1,0 @@
-.TrackDetails {
-    overflow: hidden;
-}
-
-@media (min-width: 768px) {
-    .TrackDetails {
-        display: flex;
-    }
-}

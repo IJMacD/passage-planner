@@ -1,0 +1,10 @@
+services:
+  websockify:
+    image: efrecon/websockify
+    container_name: websockify
+    restart: "unless-stopped"
+    ports:
+      - 8080:80
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: "80 host.docker.internal:10110"
