@@ -25,3 +25,7 @@ logbook:
       enabled: true
   local:
     enabled: true
+websockify:
+  ingress:
+    tls:
+      enabled: true

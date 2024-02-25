@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-websockify"
+  labels:
+    app.kubernetes.io/name: websockify
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.websockify.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: websockify
+      app.kubernetes.io/instance: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: websockify
+        app.kubernetes.io/instance: "{{ .Release.Name }}"
+    spec:
+      containers:
+        - name: websockify
+          image: efrecon/websockify
+          args: ["80", "{{ .Release.Name }}-nmea-repeater:10110"]
+          ports:
+            - name: ws
+              containerPort: 80

@@ -1,20 +1,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: '{{ .Release.Name }}-planner'
+  name: '{{ .Release.Name }}-websockify'
 spec:
   rules:
   - host: '{{ .Values.hostname }}'
     http:
       paths:
-      - path: '{{ .Values.planner.ingress.path }}'
+      - path: '{{ .Values.websockify.ingress.path }}'
         pathType: Prefix
         backend:
           service:
-            name: '{{ .Release.Name }}-planner'
+            name: '{{ .Release.Name }}-websockify'
             port:
-              name: web
-  {{- if .Values.planner.ingress.tls.enabled }}
+              name: ws
+  {{- if .Values.websockify.ingress.tls.enabled }}
   tls:
   - hosts:
     - '{{ .Values.hostname }}'

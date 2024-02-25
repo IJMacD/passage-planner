@@ -3,7 +3,6 @@ kind: Ingress
 metadata:
   name: '{{ .Release.Name }}-logbook'
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
     traefik.ingress.kubernetes.io/router.middlewares: '{{ .Release.Namespace }}-strip-path-prefix@kubernetescrd'
 spec:
   rules:

@@ -26,3 +26,9 @@ logbook:
       enabled: false
   local:
     enabled: false
+websockify:
+  replicaCount: 1
+  ingress:
+    path: "/wsais"
+    tls:
+      enabled: false
