@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nmea-repeater
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nmea-repeater
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nmea-repeater
+  ports:
+    - protocol: TCP
+      name: nmea-tcp
+      port: 10110
+      targetPort: nmea-tcp
+    - protocol: UDP
+      name: nmea-udp
+      port: 10110
+      targetPort: nmea-udp
