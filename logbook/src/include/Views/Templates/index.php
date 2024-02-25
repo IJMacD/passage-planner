@@ -34,7 +34,7 @@ $records = getRecordSettingTracks();
         <?php foreach ($entries as $entry) : ?>
             <tr>
                 <td rowspan="2">
-                    <a href="/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
+                    <a href="<?= $baseURL ?>/<?= dechex($entry->id) ?>"><?= $count-- ?></a>
                 </td>
                 <td>
                     <?= $entry->start->name ?><br />
