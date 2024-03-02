@@ -4,7 +4,7 @@ WORKDIR /app/passage-planner
 RUN yarn && yarn build:library
 
 FROM php:8.3-apache
-RUN ["docker-php-ext-install", "pdo_mysql"]
 RUN ["a2enmod","rewrite"]
+RUN ["docker-php-ext-install", "pdo_mysql"]
 COPY src /var/www/html/
-COPY --from=build /app/dist/ /var/www/html/static/vendor/
+COPY --from=build /app/passage-planner/dist/ /var/www/html/static/vendor/

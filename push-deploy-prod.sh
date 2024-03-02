@@ -17,7 +17,7 @@ echo "Deploying version $GIT_TAG"
 # Override
 export KUBECONFIG=~/.kube/config.prod
 
-for project in "${PROJECTS}"; do
+for project in ${PROJECTS}; do
   docker push ${REGISTRY_NAME}/${REPO}/${project}:${GIT_TAG}
 done
 

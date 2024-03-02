@@ -32,3 +32,10 @@ spec:
             - name: nmea-udp
               containerPort: 10110
               protocol: UDP
+          resources:
+            requests:
+              memory: 1Mi
+              cpu:  2m
+            limits:
+              memory: 5Mi
+              cpu: 10m
