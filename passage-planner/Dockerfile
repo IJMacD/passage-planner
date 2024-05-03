@@ -5,7 +5,7 @@ RUN ["yarn", "install", "--frozen-lockfile"]
 COPY . /app/
 RUN ["yarn", "build"]
 
-FROM nginx:1.25.4
+FROM nginx:1.25.4 AS final
 RUN apt-get update && apt-get install -y \
     php8.2-curl \
     php8.2-fpm \
