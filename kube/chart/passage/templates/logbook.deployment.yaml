@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: logbook
-          image: '{{ .Values.logbook.repository.image }}{{ if ne .Values.logbook.repository.tag "" }}:{{ .Values.logbook.repository.tag }}{{ end }}'
+          image: '{{ .Values.logbook.repository.image }}:{{ .Values.appVersion | default .Chart.Version }}'
           env:
             - name: BASE_URL
               value: {{ .Values.logbook.ingress.path }}

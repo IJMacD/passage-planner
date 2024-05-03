@@ -12,10 +12,17 @@ fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source ${SCRIPT_DIR}/vars.sh
 
-echo "Deploying version $GIT_TAG"
+if ! grep -q "^version: $GIT_TAG\$" $SCRIPT_DIR/kube/chart/${APPNAME}/Chart.yaml; then
+  echo "Chart version does not match Git tag"
+  exit 1
+fi
 
 # Override
 export KUBECONFIG=~/.kube/config.prod
+
+CURRENT_CONTEXT=$(kubectl config current-context)
+
+echo "Deploying version $GIT_TAG to cluster $CURRENT_CONTEXT"
 
 for project in ${PROJECTS}; do
   docker push ${REGISTRY_NAME}/${REPO}/${project}:${GIT_TAG}
@@ -34,8 +41,6 @@ fi
 helm upgrade --install ${APPNAME} \
   $SCRIPT_DIR/kube/chart/${APPNAME}/ \
   --namespace ${APPNAME} --create-namespace \
-  --set planner.repository.tag=${GIT_TAG} \
-  --set logbook.repository.tag=${GIT_TAG} \
   --set mariadb.auth.rootPassword=$MARIADB_ROOT_PASSWORD \
   --set mariadb.auth.password=$MARIADB_PASSWORD \
   $@

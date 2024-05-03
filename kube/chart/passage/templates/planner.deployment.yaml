@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: planner
-          image: '{{ .Values.planner.repository.image }}{{ if ne .Values.planner.repository.tag "" }}:{{ .Values.planner.repository.tag }}{{ end }}'
+          image: "{{ .Values.planner.repository.image }}:{{ .Values.appVersion | default .Chart.Version }}"
           ports:
             - name: web
               containerPort: 80

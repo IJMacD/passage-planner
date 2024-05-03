@@ -16,7 +16,6 @@ planner:
   replicaCount: 1
   repository:
     image: docker.io/ijmacd/passage-planner
-    tag: ""
   ingress:
     path: "/"
     tls:
@@ -27,7 +26,6 @@ logbook:
   replicaCount: 1
   repository:
     image: docker.io/ijmacd/logbook
-    tag: ""
   ingress:
     path: "/logbook"
     tls:
