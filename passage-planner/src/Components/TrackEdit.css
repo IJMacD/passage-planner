@@ -1,3 +1,13 @@
+@media (min-width: 1024px) {
+    .TrackEdit--Main {
+        display: flex;
+    }
+
+    .TrackEdit--Main div:first-child {
+        width: 180px;
+    }
+}
+
 .TrackEdit--Table {
     width: 100%;
     border-collapse: collapse;

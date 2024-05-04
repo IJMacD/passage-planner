@@ -13,6 +13,10 @@ export const TILE_SIZE = 265;
 export function getTiles(centre, zoom, width, height, layer) {
     const tiles = [];
 
+    if (!isFinite(width) || !isFinite(height)) {
+        return tiles;
+    }
+
     if (layer && zoom >= +layer.minzoom && zoom <= +layer.maxzoom) {
         const tileCountX = Math.ceil(width / TILE_SIZE) + 2;
         const tileCountY = Math.ceil(height / TILE_SIZE) + 2;

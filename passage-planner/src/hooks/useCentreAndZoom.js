@@ -10,8 +10,8 @@ import { getBoundingBox } from "../util/geo.js";
  */
 export function useCentreAndZoom(track) {
     return useMemo(() => {
-        if (!track) {
-            return { centre: [0, 0], zoom: 0 };
+        if (!track || track.segments.length === 0) {
+            return { centre: [0, 0], zoom: 2 };
         }
 
         const trackPoints = track.segments.flat();
@@ -26,6 +26,10 @@ export function useCentreAndZoom(track) {
  */
 export function getCentreAndZoom(points) {
     const bbox = getBoundingBox(points);
+
+    if (bbox.some(n => !isFinite(n))) {
+        return { centre: [0, 0], zoom: 2 };
+    }
 
     /** @type {[number, number]} */
     const centre = [

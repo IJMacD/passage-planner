@@ -25,6 +25,10 @@ export function CanvasTileLayer({ layer }) {
 
             let overscale = 1;
 
+            if (zoom < 0) {
+                return;
+            }
+
             if (zoom < +layer.minzoom) {
                 overscale = 1 / Math.pow(2, +layer.minzoom - zoom);
                 zoom = +layer.minzoom;

@@ -19,9 +19,9 @@ import { useHistoricalWeather } from "../hooks/useHistoricalWeather.js";
 
 const colorFns = {
     rainbow: (_, i) => `hsl(${i % 360},100%,50%)`,
-    faded: (_, i, values) => `rgba(255, 0, 0, ${i/values.length})`,
+    faded: (_, i, values) => `rgba(255, 0, 0, ${i / values.length})`,
     heading: (value) => `hsl(${value[0]},100%,50%)`,
-    fadedRainbow: (_, i,values) => `hsla(${i % 360},100%,50%,${i/values.length})`,
+    fadedRainbow: (_, i, values) => `hsla(${i % 360},100%,50%,${i / values.length})`,
     rainbowWithOpacity: opacity => (_, i) => `hsla(${i % 360},100%,50%,${opacity})`,
 };
 
@@ -39,13 +39,13 @@ const playSpeed = 60; // 1 minute per second
  * @param {import("../util/gpx.js").Track} props.track
  * @param {import("../util/gpx.js").Track[]} [props.additionalTracks]
  */
-export function TrackDetails ({ track, additionalTracks }) {
+export function TrackDetails({ track, additionalTracks }) {
     const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
-    const [ centre, setCentre ] = useState(initialCentre);
-    const [ zoom, setZoom ] = useState(initialZoom);
-    const [ selectedTime, setSelectedTime ] = useState(0);
-    const [ isPlaying, setIsPlaying ] = useState(false);
-    const [ followPlayingCentre, setFollowPlayingCentre ] = useState(false);
+    const [centre, setCentre] = useState(initialCentre);
+    const [zoom, setZoom] = useState(initialZoom);
+    const [selectedTime, setSelectedTime] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [followPlayingCentre, setFollowPlayingCentre] = useState(false);
     /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
     const containerRef = useRef(null)
 
@@ -54,7 +54,7 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     const trackPoints = track.segments.flat();
     const startTime = +(trackPoints[0]?.time || 0);
-    const trackLength = +(trackPoints[trackPoints.length-1]?.time||0) - startTime;
+    const trackLength = +(trackPoints[trackPoints.length - 1]?.time || 0) - startTime;
 
     const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
     const selectedDate = new Date(selectedPoint?.time || Date.now());
@@ -63,6 +63,10 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     // If track changes then recentre
     useEffect(() => {
+        if (initialCentre[0] === 0 && initialCentre[1] === 0) {
+            return;
+        }
+
         setCentre(initialCentre);
         setZoom(initialZoom);
     }, [initialCentre, initialZoom]);
@@ -111,13 +115,13 @@ export function TrackDetails ({ track, additionalTracks }) {
 
     const paths = useMemo(() => {
         /** @type {import("../Layers/PathLayer.jsx").Path[]} */
-        const paths = additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4,4] })) || [];
+        const paths = additionalTracks?.map(t => ({ points: t.segments.flat(), color: "orange", lineDash: [4, 4] })) || [];
 
         const trackPoints = track ? track.segments.flat() : [];
         paths.push({ points: trackPoints });
 
         return paths;
-    }, [ track, additionalTracks ]);
+    }, [track, additionalTracks]);
 
     const historicalWeather = useHistoricalWeather(nearestWeatherStation, selectedDate);
 
@@ -127,6 +131,11 @@ export function TrackDetails ({ track, additionalTracks }) {
     // const selectedLeg = trackLegs[selectedPointIndex];
 
     const selectedLegIndex = findLegIndexByTime(trackLegs, startTime + selectedTime);
+    /**
+     * @typedef {import("../util/gpx.js").Point} Point
+     */
+
+    /** @type {{ from: Point, to: Point, distance: number, heading: number, duration: number}|null} */
     const selectedLeg = trackLegs[selectedLegIndex] || trackLegs[0];
 
     const markers = [];
@@ -145,7 +154,7 @@ export function TrackDetails ({ track, additionalTracks }) {
     const maxSpeedPlotData = makeCoursePlot(trackLegs, leg => leg.distance / leg.duration, plotDivisions, "max");
 
     /** @type {[number, number][]} */
-    const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading||0, leg.distance/leg.duration]);
+    const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading || 0, leg.distance / leg.duration]);
 
     const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
 
@@ -158,30 +167,30 @@ export function TrackDetails ({ track, additionalTracks }) {
                 <WorldLayer />
                 <HongKongMarineLayer />
                 {/* <DebugLayer /> */}
-                { tideVectors && <VectorFieldLayer field={tideVectors} />}
+                {tideVectors && <VectorFieldLayer field={tideVectors} />}
                 <PathLayer paths={paths} />
                 <MarkerLayer markers={markers} />
-                <ControlsLayer setCentre={followPlayingCentre?null:setCentre} setZoom={setZoom} />
+                <ControlsLayer setCentre={followPlayingCentre ? null : setCentre} setZoom={setZoom} />
             </StaticMap>
-            <div style={{flexBasis:500}}>
+            <div style={{ flexBasis: 500 }}>
                 <div>
-                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{width:400}} />
-                    <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying?"Pause":"Play"}</button>
-                    <label style={{display:"block"}}>
+                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{ width: 400 }} />
+                    <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying ? "Pause" : "Play"}</button>
+                    <label style={{ display: "block" }}>
                         <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
                         Follow
                     </label>
-                    <p>{selectedDate.toLocaleString()} {labelFns.speed(selectedLeg.distance / selectedLeg.duration)} {selectedLeg.heading.toFixed()}°</p>
-                    <p>Automatic Weather: {historicalWeather?.windSpeed} km/h {historicalWeather?.windDirection}° @ {nearestWeatherStation}</p>
+                    {selectedLeg && <p>{selectedDate.toLocaleString()} {labelFns.speed(selectedLeg.distance / selectedLeg.duration)} {selectedLeg.heading.toFixed()}°</p>}
+                    {historicalWeather && <p>Automatic Weather: {historicalWeather.windSpeed} km/h {historicalWeather.windDirection}° @ {nearestWeatherStation}</p>}
                 </div>
-                <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red"      labelFn={labelFns.distance} arrow={historicalWeather?.windDirection} />
-                <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue"     labelFn={labelFns.duration} arrow={historicalWeather?.windDirection} />
-                <PolarPlotSVG values={speedPlotData}    marker={selectedLeg?.heading} width={250} height={250} color="purple"   labelFn={labelFns.speed} arrow={historicalWeather?.windDirection} />
-                <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green"    labelFn={labelFns.speed} arrow={historicalWeather?.windDirection} />
+                <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red" labelFn={labelFns.distance} arrow={historicalWeather?.windDirection} />
+                <PolarPlotSVG values={durationPlotData} marker={selectedLeg?.heading} width={250} height={250} color="blue" labelFn={labelFns.duration} arrow={historicalWeather?.windDirection} />
+                <PolarPlotSVG values={speedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="purple" labelFn={labelFns.speed} arrow={historicalWeather?.windDirection} />
+                <PolarPlotSVG values={maxSpeedPlotData} marker={selectedLeg?.heading} width={250} height={250} color="green" labelFn={labelFns.speed} arrow={historicalWeather?.windDirection} />
                 <PolarPlotSVG
-                    values={selectedLegIndex > 0 ? instantSpeedHeadingData.slice(0, selectedLegIndex+1) : instantSpeedHeadingData}
+                    values={selectedLegIndex > 0 ? instantSpeedHeadingData.slice(0, selectedLegIndex + 1) : instantSpeedHeadingData}
                     marker={selectedLeg?.heading}
-                    markerValue={selectedLeg?.distance/selectedLeg?.duration}
+                    markerValue={selectedLeg?.distance / selectedLeg?.duration}
                     width={250}
                     height={250}
                     color={colorFns.rainbow}
@@ -231,12 +240,12 @@ function makeTrackLegs(trackPoints) {
  * @param {import("../util/gpx.js").Point[]} points
  * @param {number} time
  */
-function interpolatePoint (points, time) {
+function interpolatePoint(points, time) {
     let prev = points[0];
     for (const point of points) {
         if (point.time && +point.time > time) {
             if (prev && prev.time) {
-                const t = (time - +prev.time)/(+point.time - +prev.time);
+                const t = (time - +prev.time) / (+point.time - +prev.time);
 
                 return {
                     lon: prev.lon + (point.lon - prev.lon) * t,
@@ -255,6 +264,6 @@ function interpolatePoint (points, time) {
  * @param {TrackLeg[]} legs
  * @param {number} time
  */
-function findLegIndexByTime (legs, time) {
-    return legs.findIndex(leg => +(leg.from.time||0) <= time && +(leg.to.time||0) > time);
+function findLegIndexByTime(legs, time) {
+    return legs.findIndex(leg => +(leg.from.time || 0) <= time && +(leg.to.time || 0) > time);
 }

@@ -1,5 +1,4 @@
-.App {
-}
+.App {}
 
 .Live {
     display: flex;
@@ -35,4 +34,28 @@
     cursor: pointer;
     padding: 0;
     font-family: inherit;
+}
+
+.App--nav {
+    display: flex;
+    justify-content: center;
+}
+
+.App--nav button {
+    margin: 0.5em 1em;
+    padding: 0.5em 1em;
+    border: none;
+    border-radius: 15px;
+    background-color: transparent;
+    font-weight: bold;
+    transition: background-color 0.5s;
+}
+
+.App--nav button:disabled {
+    background-color: aquamarine;
+    color: #333;
+}
+
+.App--nav button:hover:not(:disabled) {
+    background-color: rgba(127, 255, 212, 0.5);
 }

@@ -19,11 +19,25 @@ export function ControlsLayer({ setCentre, setZoom }) {
       const tileY = lat2tile(lat, zoom);
 
       if (dx) {
-        lon = tile2long(tileX + dx, zoom);
+        // Hack to avoid bug where clicking control doesn't actually move map
+        const newLon = tile2long(tileX + dx, zoom);
+        if (newLon === lon) {
+          lon = tile2long(tileX + 2 * dx, zoom);
+        }
+        else {
+          lon = newLon;
+        }
       }
 
       if (dy) {
-        lat = tile2lat(tileY + dy, zoom);
+        // Hack to avoid bug where clicking control doesn't actually move map
+        const newLat = tile2lat(tileY + dy, zoom);
+        if (newLat === lat) {
+          lat = tile2lat(tileY + 2 * dy, zoom);
+        }
+        else {
+          lat = newLat;
+        }
       }
 
       return [lon, lat];

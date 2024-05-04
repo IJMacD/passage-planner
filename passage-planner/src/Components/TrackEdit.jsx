@@ -37,6 +37,9 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
 
     // If track changes then recentre
     useEffect(() => {
+        if (initialCentre[0] === 0 && initialCentre[1] === 0) {
+            return;
+        }
         setCentre(initialCentre);
         setZoom(initialZoom);
     }, [initialCentre, initialZoom]);
@@ -53,6 +56,10 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
         return null;
     }
 
+    /**
+     * @param {any} lon
+     * @param {any} lat
+     */
     function handleClick(lon, lat) {
         if (mode === "add-construction-line") {
             if (tempPoint) {
@@ -94,6 +101,40 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
         }));
     }
 
+    /**
+     *
+     * @param {number} index
+     * @param {import('react').ChangeEvent<HTMLInputElement>} event
+     * Duration in hours
+     */
+    function handleDurationUpdate(index, event) {
+        setNewTrackPoints(points => points.map((p, i) => {
+            const prevTime = points[i - 1]?.time;
+            if (i === index && prevTime) {
+                return { ...p, time: new Date(+prevTime + event.target.valueAsNumber * 3600000) };
+            }
+            return p;
+        }));
+    }
+
+    /**
+     *
+     * @param {number} index
+     * @param {import('react').ChangeEvent<HTMLInputElement>} event
+     * Speed in knots
+     */
+    function handleSpeedUpdate(index, event) {
+        setNewTrackPoints(points => points.map((p, i) => {
+            const prevTime = points[i - 1]?.time;
+            if (i === index && prevTime) {
+                const leg = getLegByIndex(points, i);
+                if (!leg) return p;
+                return { ...p, time: new Date(+prevTime + leg?.distance / event.target.valueAsNumber * 3600000) };
+            }
+            return p;
+        }));
+    }
+
     function handleSortSegments() {
         setSegments(segments => [...segments].sort((segA, segB) => {
             return +(segA[0].time || Number.POSITIVE_INFINITY) - +(segB[0].time || Number.POSITIVE_INFINITY);
@@ -121,28 +162,45 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
             newSegments.push(newTrackPoints);
         }
 
-        addTrack({ ...track, segments: newSegments })
+        addTrack({ ...track, name: `${track.name} (Edited)`, segments: newSegments })
+    }
+
+    /**
+     * @param {number} segmentIndex
+     * @param {number} factor
+     * @param {"first"|"last"|"avg-first-last"|"avg-all"} method
+     */
+    function handleDecimateSegment(segmentIndex, factor = 10, method = "first") {
+        setSegments(segments => {
+            return segments.map((s, i) => i === segmentIndex ? decimatePoints(s, factor, method) : s);
+        });
     }
 
     const l = trackPoints.length - 1;
 
     return (
-        <div>
-            <button onClick={() => setMode("add-construction-line")} disabled={mode === "add-construction-line"}>Add Construction Line</button>
-            <button onClick={() => setMode(mode === "draw-track" ? "rest" : "draw-track")}>{mode === "draw-track" ? "Finish" : "Draw Track"}</button>
-            {mode === "draw-track" && <button onClick={() => setNewTrackPoints(tp => tp.slice(0, -1))} disabled={newTrackPoints.length === 0}>Undo Point</button>}
-            <button onClick={handleSortSegments}>Sort Segments</button>
-            <button onClick={handleSave}>Save Track</button>
-            <div style={{ display: "flex" }}>
-                <StaticMap centre={centre} zoom={zoom} width={800} height={800} onClick={handleClick}>
-                    <WorldLayer />
-                    <HongKongMarineLayer />
-                    {/* <DebugLayer /> */}
-                    <PathLayer paths={[{ points: trackPoints }, ...lines, { points: newTrackPoints }]} />
-                    <MarkerLayer markers={markers} />
-                    <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
-                </StaticMap>
+        <>
+            <div className="TrackEdit--Main">
+                <div>
+                    <button onClick={() => setMode("add-construction-line")} disabled={mode === "add-construction-line"}>Add Construction Line</button>
+                    <button onClick={() => setMode(mode === "draw-track" ? "rest" : "draw-track")}>{mode === "draw-track" ? "Finish" : "Draw New Segment"}</button>
+                    {mode === "draw-track" && <button onClick={() => setNewTrackPoints(tp => tp.slice(0, -1))} disabled={newTrackPoints.length === 0}>Undo Point</button>}
+                    <button onClick={handleSortSegments}>Sort Segments</button>
+                    <button onClick={handleSave}>Save As Copy</button>
+                </div>
+
+                <div style={{ display: "flex" }}>
+                    <StaticMap centre={centre} zoom={zoom} width={800} height={800} onClick={handleClick}>
+                        <WorldLayer />
+                        <HongKongMarineLayer />
+                        {/* <DebugLayer /> */}
+                        <PathLayer paths={[{ points: trackPoints }, ...lines, { points: newTrackPoints }]} />
+                        <MarkerLayer markers={markers} />
+                        <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
+                    </StaticMap>
+                </div>
             </div>
+
             <table className="TrackEdit--Table">
                 <thead>
                     <tr>
@@ -154,6 +212,7 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                         <th>Heading</th>
                         <th>Duration</th>
                         <th>Speed</th>
+                        <th>Points</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -177,6 +236,7 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                                             <td>{leg && `${leg.heading.toFixed()}°`}</td>
                                             <td>{leg?.duration && `${(leg.duration / 3600000).toFixed(1)} hrs`}</td>
                                             <td>{leg?.duration && `${(leg.distance / (leg.duration / 3600000)).toFixed(1)} knots`}</td>
+                                            <td></td>
                                             <td>
                                                 {j < trkseg.length - 1 && <button onClick={() => handleSegmentSplit(i, j)}>Split After</button>}
                                                 {j === 0 && <button onClick={() => setExpandedSegments(s => s.filter(t => t !== i))}>Collapse</button>}
@@ -200,23 +260,32 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td>{trkseg.length}</td>
                                         <td>
                                             <button onClick={() => setExpandedSegments(s => [...s, i])}>Expand</button>
+                                            <button onClick={() => handleDecimateSegment(i)} disabled={trkseg.length < 11}>Decimate</button>
                                         </td>
                                     </tr>
-                                    <tr className="segment-end">
-                                        <td>Segment {i} End</td>
-                                        <td>{pointN.lon}</td>
-                                        <td>{pointN.lat}</td>
-                                        <td>{pointN.time?.toLocaleString()}</td>
-                                    </tr>
+                                    {pointN &&
+                                        <tr className="segment-end">
+                                            <td>Segment {i} End</td>
+                                            <td>{pointN.lon}</td>
+                                            <td>{pointN.lat}</td>
+                                            <td>{pointN.time?.toLocaleString()}</td>
+                                        </tr>
+                                    }
                                 </React.Fragment>
                             );
                         })
                     }
                     {
-                        newTrackPoints.map((p, i) => {
-                            const leg = getLegByIndex([trackPoints[l], ...newTrackPoints], i + 1);
+                        newTrackPoints.length > 1 && newTrackPoints.map((p, i) => {
+                            // TODO: Everything assumes the new track points are
+                            // at the end of other segments. Should make everything
+                            // more genereic
+                            const leg = trackPoints.length > 0 ?
+                                getLegByIndex([trackPoints[l], ...newTrackPoints], i + 1) :
+                                getLegByIndex(newTrackPoints, i);
 
                             const className = i === 0 ? "segment-start" :
                                 (i === newTrackPoints.length - 1 ? "segment-end" : "");
@@ -229,15 +298,17 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                                     <td><input type="datetime-local" value={inputDateTime(p.time)} onChange={e => handleDateUpdate(i, e)} /></td>
                                     <td>{leg && `${leg.distance.toFixed(2)} nm`}</td>
                                     <td>{leg && `${leg.heading.toFixed()}°`}</td>
-                                    <td>{leg?.duration && `${(leg.duration / 3600000).toFixed(1)} hrs`}</td>
-                                    <td>{leg?.duration && `${(leg.distance / (leg.duration / 3600000)).toFixed(1)} knots`}</td>
+                                    <td>{i > 0 && leg?.from.time && <><input type="number" step={0.1} style={{ width: 60 }} value={leg?.duration ? (leg.duration / 3600000).toFixed(1) : ""} onChange={e => handleDurationUpdate(i, e)} /> hrs</>}</td>
+                                    <td>{i > 0 && leg?.from.time && <><input type="number" step={0.1} style={{ width: 60 }} value={leg?.duration ? (leg.distance / (leg.duration / 3600000)).toFixed(1) : ""} onChange={e => handleSpeedUpdate(i, e)} /> knots</>}</td>
+                                    <td></td>
+                                    <td></td>
                                 </tr>
                             );
                         })
                     }
                 </tbody>
             </table>
-        </div>
+        </>
     );
 }
 
@@ -269,8 +340,62 @@ function getLegByIndex(points, index) {
     const to = points[index];
 
     return {
+        from,
+        to,
         distance: latlon2nm(from, to),
         heading: latlon2bearing(from, to),
         duration: to.time && from.time && +(to.time || 0) - +(from.time || 0),
     }
+}
+
+/**
+ * @param {import("../util/gpx.js").Point[]} points
+ * @param {number} factor
+ * @param {"first"|"last"|"avg-first-last"|"avg-all"} method
+ */
+function decimatePoints(points, factor, method) {
+
+    if (method === "first") {
+        const newPoints = [];
+        for (let i = 0; i < points.length; i += factor) {
+            newPoints.push(points[i]);
+        }
+        return newPoints;
+    }
+
+    if (method === "last") {
+        const newPoints = [];
+        for (let i = 0; i <= points.length; i += factor) {
+            i > 1 && newPoints.push(points[i - 1]);
+        }
+        return newPoints;
+    }
+
+    if (method === "avg-first-last") {
+        /** @type {import("../util/gpx.js").Point[]} */
+        const newPoints = [];
+        for (let i = 0; i <= points.length; i += factor) {
+            const pointA = points[i];
+            const pointB = points[i + factor - 1];
+
+            if (!pointB) {
+                newPoints.push(pointA);
+            }
+
+            const point = {
+                lon: (pointA.lon + pointB.lon) / 2,
+                lat: (pointA.lat + pointB.lat) / 2,
+            };
+
+            if (pointA.time && pointB.time) {
+                point.time = new Date((+pointA.time + +pointB.time) / 2);
+            }
+
+            newPoints.push(point);
+        }
+        return newPoints;
+    }
+
+    // Unrecognised methed
+    throw Error(`Method ${method} is not recognised`);
 }

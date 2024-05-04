@@ -29,11 +29,12 @@ function Tracks() {
     });
 
     const track = useMemo(() => {
-        if (selectedTrackID < 0) {
+        const trackSerialized = savedTracks[selectedTrackID];
+
+        if (!trackSerialized) {
             return null;
         }
 
-        const trackSerialized = savedTracks[selectedTrackID];
         const segments = deserializeTrack(trackSerialized).segments;
 
         return { ...trackSerialized, segments };
@@ -44,7 +45,7 @@ function Tracks() {
      */
     function removeTrack(index) {
         setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index + 1)]);
-        setSelectedTrackID(oldID => oldID === index ? -1 : oldID);
+        setSelectedTrackID(oldID => oldID === index ? -1 : (oldID < index ? oldID : oldID - 1));
     }
 
     /**
@@ -190,16 +191,33 @@ function Tracks() {
         }
     }
 
+    function handleNewTrack() {
+        const track = {
+            name: "New Track",
+            segments: [],
+        };
+        setSavedTracks(tracks => {
+            setSelectedTrackID(tracks.length);
+            return [...tracks, track];
+        });
+    }
+
     /** @type {Track[]} */
     // @ts-ignore
     const bgTracks = bgCheckboxes.map((c, i) => c ? deserializeTrack(savedTracks[i]) : null).filter(x => x);
 
     return (
         <div style={{ padding: "1em" }}>
-            <h1>Tracks</h1>
+            <h1 style={{ margin: 0 }}>Tracks</h1>
 
             <div>
                 <div>
+                    <button onClick={() => handleNewTrack()}>New</button>
+                    <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
+                    <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID < 0}>{editMode ? "View" : "Edit"}</button>
+                    <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
+                    <input type="file" onChange={handleFileLoad} />
+                    {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
                     <ul style={{ listStyle: "none", padding: 0 }}>
                         {
                             savedTracks.map((t, i) => (
@@ -214,18 +232,17 @@ function Tracks() {
                             )
                         }
                     </ul>
-                    <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
-                    <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID < 0}>{editMode ? "View" : "Edit"}</button>
-                    <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
-                    {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
-                    <br />
-                    <input type="file" onChange={handleFileLoad} />
-                    {/* <input value={track.name} onChange={e => setTrack(t => ({ ...t, name: e.target.value }))} /> */}
                 </div>
                 {
-                    editMode && track ?
-                        <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} /> :
-                        track && <TrackDetails track={track} additionalTracks={bgTracks} />
+                    editMode && track &&
+                    <>
+                        <h2 style={{ margin: 0 }}>Edit Track: {track.name}</h2>
+                        <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} />
+                    </>
+                }
+                {
+                    !editMode && track &&
+                    <TrackDetails track={track} additionalTracks={bgTracks} />
                 }
             </div>
 
