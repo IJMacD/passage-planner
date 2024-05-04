@@ -66,32 +66,39 @@ try {
 
 function handleIndex()
 {
+    global $db;
     include "include/Views/LogbookIndex.php";
 }
 
 function handleExtract($dateSpec)
 {
+    global $db;
     include "include/Views/LogbookExtract.php";
 }
 
 function handleRecords()
 {
+    global $db;
     include "include/Views/LogbookRecords.php";
 }
 
 function handleStats()
 {
+    global $db;
     include "include/Views/LogbookStats.php";
 }
 
 function handleAllTracks()
 {
+    global $db;
     include "include/Views/LogbookAllTracks.php";
 }
 
 function handleLogEntry($id)
 {
-    $entry = getEntry($id);
+    global $db;
+
+    $entry = getEntry($db, $id);
 
     if (!$entry) {
         header("HTTP/1.1 404 Not Found");

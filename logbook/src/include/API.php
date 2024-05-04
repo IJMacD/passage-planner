@@ -10,9 +10,11 @@ class API
 
     static function handleLogsGet()
     {
+        global $db;
+
         $params = $_GET;
 
-        $entries = getAllEntries($params);
+        $entries = getAllEntries($db, $params);
 
         header("Content-Type: application/json");
         echo json_encode($entries);
@@ -78,7 +80,9 @@ class API
 
     static function handleLogEntryGet($id)
     {
-        $entry = getEntry(hexdec($id));
+        global $db;
+
+        $entry = getEntry($db, hexdec($id));
 
         if (!$entry) {
             header("HTTP/1.1 404 Not Found");
@@ -126,7 +130,9 @@ class API
 
     static function handleLogEntryBounds($id)
     {
-        $bounds = getTrackBounds(hexdec($id));
+        global $db;
+
+        $bounds = getTrackBounds($db, hexdec($id));
 
         if ($bounds) {
             header("Content-Type: application/json");
@@ -204,7 +210,7 @@ class API
         $stmt->execute(["id" => hexdec($id), "gpx" => $gpx]);
 
         // Pre-calculate bounds
-        calculateTrackBounds(hexdec($id));
+        calculateTrackBounds($db, hexdec($id));
 
         header("Content-Type: application/json");
         echo json_encode(["result" => "OK"]);

@@ -3,10 +3,8 @@
 /**
  * @return LogbookEntry[]
  */
-function getAllEntries($params = [])
+function getAllEntries($db, $params = [])
 {
-    global $db;
-
     $where = "";
     $sql_params = [];
 
@@ -27,6 +25,7 @@ function getAllEntries($params = [])
 
     $sql = "SELECT
         id,
+        name,
         total_distance,
         start_location,
         start_time,
@@ -47,11 +46,10 @@ function getAllEntries($params = [])
     return $stmt->fetchAll(PDO::FETCH_CLASS, "LogbookEntry");
 }
 
-function getEntry($id)
+function getEntry($db, $id)
 {
-    global $db;
 
-    $stmt = $db->prepare("SELECT id, total_distance, start_location, start_time, 'Asia/Hong_Kong' AS start_timezone, end_location, end_time, 'Asia/Hong_Kong' AS end_timezone, weather, comments FROM logbook WHERE `id` = :id");
+    $stmt = $db->prepare("SELECT id, name, total_distance, start_location, start_time, 'Asia/Hong_Kong' AS start_timezone, end_location, end_time, 'Asia/Hong_Kong' AS end_timezone, weather, comments FROM logbook WHERE `id` = :id");
 
     $stmt->execute(["id" => $id]);
 
@@ -67,9 +65,8 @@ function getEntry($id)
 /**
  * @return float[]|false
  */
-function getTrackBounds($id)
+function getTrackBounds($db, $id)
 {
-    global $db;
 
     $stmt = $db->prepare("SELECT bounds_W AS minLon, bounds_S AS minLat, bounds_E AS maxLon, bounds_N AS maxLat FROM logbook_tracks WHERE `logbook_id` = :id ORDER BY uploaded_date DESC LIMIT 1");
 
@@ -78,7 +75,7 @@ function getTrackBounds($id)
     $result = $stmt->fetch();
 
     if ($stmt->rowCount() === 0 || $result['minLon'] === null) {
-        if (calculateTrackBounds($id)) {
+        if (calculateTrackBounds($db, $id)) {
             $stmt->execute(["id" => $id]);
             return $stmt->fetch();
         } else {
@@ -89,9 +86,8 @@ function getTrackBounds($id)
     return $result;
 }
 
-function getTrackPoints($id): \DOMNodeList
+function getTrackPoints($db, $id): \DOMNodeList
 {
-    global $db;
 
     $stmt = $db->prepare("SELECT gpx FROM logbook_tracks WHERE logbook_id = :id AND gpx IS NOT NULL");
 
@@ -111,11 +107,10 @@ function getTrackPoints($id): \DOMNodeList
     return $points;
 }
 
-function calculateTrackBounds($id)
+function calculateTrackBounds($db, $id)
 {
-    global $db;
 
-    $points = getTrackPoints($id);
+    $points = getTrackPoints($db, $id);
 
     $minLon = INF;
     $minLat = INF;
@@ -145,9 +140,8 @@ function calculateTrackBounds($id)
     ]);
 }
 
-function getOverallBounds()
+function getOverallBounds($db)
 {
-    global $db;
 
     $stmt = $db->prepare(
         "SELECT
@@ -165,9 +159,8 @@ function getOverallBounds()
     return $stmt->fetch();
 }
 
-function getTrophies($id)
+function getTrophies($db, $id)
 {
-    global $db;
 
     $stmt = $db->prepare(
         "WITH Records AS (
@@ -201,9 +194,8 @@ function getTrophies($id)
     return $stmt->fetch();
 }
 
-function getRecordSettingTracks()
+function getRecordSettingTracks($db)
 {
-    global $db;
 
     $stmt = $db->prepare(
         "WITH Records AS (
@@ -219,25 +211,28 @@ function getRecordSettingTracks()
         )
         SELECT
             -- *,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_W = minLon) AS Westernmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_S = minLat) AS Southernmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_E = maxLon) AS Easternmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_N = maxLat) AS Northernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_W = minLon LIMIT 1) AS Westernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_S = minLat LIMIT 1) AS Southernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_E = maxLon LIMIT 1) AS Easternmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_N = maxLat LIMIT 1) AS Northernmost,
             (
                 SELECT logbook_id
                 FROM logbook_entry_track AS t
                 WHERE t.total_distance = maxDistance
+                LIMIT 1
             ) AS Farthest,
             (
                 SELECT logbook_id
                 FROM logbook_entry_track AS t
                 WHERE TIMESTAMPDIFF(SECOND, t.start_time, t.end_time) = maxDuration
+                LIMIT 1
             ) AS Longest,
             (
                 SELECT logbook_id
                 FROM logbook_entry_track AS t
                 WHERE
                     (total_distance / TIMESTAMPDIFF(SECOND, t.start_time, t.end_time)) = maxSpeed
+                    LIMIT 1
             ) AS Fastest
         FROM Records
     "
@@ -248,14 +243,36 @@ function getRecordSettingTracks()
     return $stmt->fetch();
 }
 
-function getAllEntryYears()
+function getAllEntryYears($db)
 {
     $entry_years = [];
-    foreach (getAllEntries() as $entry) {
+    foreach (getAllEntries($db) as $entry) {
         $y = $entry->start->time->format("Y");
         if (!in_array($y, $entry_years)) {
             $entry_years[] = $y;
         }
     }
     return $entry_years;
+}
+
+function getStartPoint($db, $id): array
+{
+    $points = getTrackPoints($db, $id);
+    $point = $points->item(0);
+
+    $lat = $point->attributes->getNamedItem("lat")->nodeValue;
+    $lon = $point->attributes->getNamedItem("lon")->nodeValue;
+
+    return ["lat" => $lat, "lon" => $lon];
+}
+
+function getEndPoint($db, $id): array
+{
+    $points = getTrackPoints($db, $id);
+    $point = $points->item($points->count() - 1);
+
+    $lat = $point->attributes->getNamedItem("lat")->nodeValue;
+    $lon = $point->attributes->getNamedItem("lon")->nodeValue;
+
+    return ["lat" => $lat, "lon" => $lon];
 }

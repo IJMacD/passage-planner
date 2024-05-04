@@ -1,12 +1,12 @@
 <?php
 
 $title = "Logbook Records";
-$records = getRecordSettingTracks();
+$records = getRecordSettingTracks($db);
 $content = include_contents("Templates/records.php", [
     "title" => $title,
     "records" => $records,
-    "bounds" => getOverallBounds(),
-    "tracks" => getAllEntries(),
+    "bounds" => getOverallBounds($db),
+    "tracks" => getAllEntries($db),
 ]);
 
 require("Templates/layout.php");

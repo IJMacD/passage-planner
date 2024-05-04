@@ -3,7 +3,7 @@
 /** @var LogbookEntry $entry */
 /** @var float[] $bounds */
 ?>
-<h1><?= $entry->start->time->format("Y-m-d") ?></h1>
+<h1><?= $entry->name ?> <?= $entry->start->time->format("Y-m-d") ?></h1>
 <dl>
     <dt>From</dt>
     <dd><?= $entry->start->name ?></dd>
@@ -19,12 +19,12 @@
     <dd><?= round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2) ?> knots</dd>
     <dt>Trophies</dt>
     <dd><?php
-        $trophies = getTrophies($entry->id);
-        if ($trophies) view_trophies($trophies, $entry->id, getRecordSettingTracks());
+        $trophies = getTrophies($db, $entry->id);
+        if ($trophies) view_trophies($trophies, $entry->id, getRecordSettingTracks($db));
         ?></dd>
     <dt>Bounding Box</dt>
     <dd><?php
-        $bounds = $entry->getBounds();
+        $bounds = getTrackBounds($db, $entry->id);
         $minLat = round(abs($bounds['minLat']), 3) . "° " . ($bounds['minLat'] < 0 ? "S" : "N");
         $maxLat = round(abs($bounds['maxLat']), 3) . "° " . ($bounds['maxLat'] < 0 ? "S" : "N");
         $minLon = round(abs($bounds['minLon']), 3) . "° " . ($bounds['minLon'] < 0 ? "W" : "E");

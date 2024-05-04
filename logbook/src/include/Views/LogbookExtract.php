@@ -1,8 +1,8 @@
 <?php
 
 $title = "Logbook Extract - $dateSpec";
-$entries = getAllEntries(["dateSpec" => $dateSpec]);
-$entry_years = getAllEntryYears();
+$entries = getAllEntries($db, ["dateSpec" => $dateSpec]);
+$entry_years = getAllEntryYears($db);
 
 $sub_year_groupings = [];
 if (preg_match("/^\d{4}/", $dateSpec)) {

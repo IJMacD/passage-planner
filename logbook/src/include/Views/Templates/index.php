@@ -12,7 +12,7 @@ $total_duration_seconds = $init_dt->getTimestamp() - $curr_dt->getTimestamp();
 $total_avg_speed = $total_duration_seconds > 0 ?
     $total_distance / $total_duration_seconds * 3600 :
     0;
-$records = getRecordSettingTracks();
+$records = getRecordSettingTracks($db);
 ?>
 <?php if (isset($heading)) : ?>
     <h1><?= $heading ?></h1>
@@ -49,7 +49,7 @@ $records = getRecordSettingTracks();
                 <td rowspan="2"><?= round($entry->total_distance / getDurationSeconds($entry->total_duration) * 3600, 2) ?> knots</td>
                 <td rowspan="2">
                     <?php
-                    $trophies = getTrophies($entry->id);
+                    $trophies = getTrophies($db, $entry->id);
                     if ($trophies) view_trophies($trophies, $entry->id, $records);
                     ?>
                 </td>

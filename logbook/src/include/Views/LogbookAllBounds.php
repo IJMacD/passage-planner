@@ -1,7 +1,7 @@
 <?php
 
 $title = "Logbook Bounds";
-$tracks = getAllEntries();
+$tracks = getAllEntries($db);
 $content = include_contents("Templates/all_bounds.php", [
     "title" => $title,
     "tracks" => $tracks

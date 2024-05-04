@@ -8,6 +8,7 @@
 class LogbookEntry implements JsonSerializable
 {
     var $id;
+    var $name;
     /** @var float $total_distance Nautical Miles */
     var $total_distance;
     private $start_location;
@@ -51,33 +52,6 @@ class LogbookEntry implements JsonSerializable
         }
     }
 
-    function getBounds()
-    {
-        return getTrackBounds($this->id);
-    }
-
-    function getStartPoint(): array
-    {
-        $points = getTrackPoints($this->id);
-        $point = $points->item(0);
-
-        $lat = $point->attributes->getNamedItem("lat")->nodeValue;
-        $lon = $point->attributes->getNamedItem("lon")->nodeValue;
-
-        return ["lat" => $lat, "lon" => $lon];
-    }
-
-    function getEndPoint(): array
-    {
-        $points = getTrackPoints($this->id);
-        $point = $points->item($points->count() - 1);
-
-        $lat = $point->attributes->getNamedItem("lat")->nodeValue;
-        $lon = $point->attributes->getNamedItem("lon")->nodeValue;
-
-        return ["lat" => $lat, "lon" => $lon];
-    }
-
     function jsonSerialize(): mixed
     {
         $start = $this->start;
@@ -88,6 +62,7 @@ class LogbookEntry implements JsonSerializable
 
         return [
             "id" => dechex($this->id),
+            "name" => $this->name,
             "totalDistance" => $this->total_distance,
             "totalDuration" => formatDuration($this->total_duration),
             "start" => $start,
