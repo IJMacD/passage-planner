@@ -87,7 +87,6 @@ export function getNearestStations(centre, count = 1) {
  * @param {string} loc
  */
 export function getForecastURLByStation(loc) {
-    // return `https://passage.ijmacd.com/weather/ocf/dat/${loc}.xml`;
     return `/weather_forecast.php?location=${loc}`;
 }
 

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { formatDateTimeCompact } from "../util/date.js";
 import { useFetch } from "./useFetch.js";
 
-const tidesJsonURL = `https://passage.ijmacd.com/tides/data/static_geojson.php?mode=S&time=`
+const tidesJsonURL = `/tides/data/static_geojson.php?mode=S&time=`
 
 /**
  * @param {Date} time

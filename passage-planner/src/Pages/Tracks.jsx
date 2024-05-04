@@ -24,7 +24,7 @@ function Tracks() {
     const [selectedTrackID, setSelectedTrackID] = useState(-1);
 
     const authFetch = useAuthFetch({
-        exchangeURL: "https://passage.ijmacd.com/logbook/api/v1/auth/exchange",
+        exchangeURL: "/logbook/api/v1/auth/exchange",
         refreshToken,
     });
 
@@ -81,7 +81,7 @@ function Tracks() {
         body.set("weather", "");
         body.set("comments", "");
 
-        authFetch("https://passage.ijmacd.com/logbook/api/v1/logs", {
+        authFetch("/logbook/api/v1/logs", {
             method: "post",
             body,
         })
@@ -96,7 +96,7 @@ function Tracks() {
 
                 body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
 
-                authFetch(`https://passage.ijmacd.com/logbook/api/v1/logs/${id}/track`, {
+                authFetch(`/logbook/api/v1/logs/${id}/track`, {
                     method: "post",
                     body,
                 })
@@ -176,19 +176,11 @@ function Tracks() {
     }
 
     async function handleLogin() {
-        const pass = prompt("Token Generation Password");
-        if (pass) {
-            const body = new FormData();
-            body.set("user", "auth_user");
-            body.set("pass", pass);
+        const token = await fetch("/logbook/api/v1/auth/generate")
+            .then(r => r.json())
+            .then(d => d.token);
 
-            const token = await fetch("https://passage.ijmacd.com/logbook/api/v1/auth/generate", {
-                method: "post",
-                body
-            }).then(r => r.json()).then(d => d.token);
-
-            setRefreshToken(token);
-        }
+        setRefreshToken(token);
     }
 
     function handleNewTrack() {

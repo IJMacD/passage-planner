@@ -25,6 +25,12 @@ spec:
           ports:
             - name: web
               containerPort: 80
+          {{- if .Values.planner.local.enabled }}
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html/index.html
+              name: index-dev
+              subPath: index.html
+          {{- end }}
           resources:
             requests:
               memory: 32Mi
@@ -32,3 +38,9 @@ spec:
             limits:
               memory: 64Mi
               cpu: 50m
+      {{- if .Values.planner.local.enabled }}
+      volumes:
+        - name: index-dev
+          configMap:
+            name: {{.Release.Name }}-planner-index-dev
+      {{- end }}

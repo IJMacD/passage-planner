@@ -5,7 +5,8 @@ export default defineConfig({
     server: {
         watch: {
             usePolling: true
-        }
+        },
+        origin: 'http://127.0.0.1:5173',
     },
     plugins: [react()],
 });

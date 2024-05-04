@@ -1,0 +1,12 @@
+{{ if .Values.planner.local.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name }}-planner-index-dev
+data:
+  {{- $files := .Files }}
+  {{- range tuple "data/index.html" }}
+  {{ base . }}: |
+{{ $files.Get . | indent 4 }}
+  {{- end }}
+{{- end }}

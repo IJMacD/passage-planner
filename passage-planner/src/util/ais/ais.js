@@ -28,9 +28,6 @@
  * @property {string} [destination]
  */
 
-// const AIS_API_ROOT = "https://data.aishub.net";
-// const AIS_API_ROOT = "http://localhost:8010/proxy";
-const AIS_API_ROOT = "https://passage.ijmacd.com/ais";
 const USERNAME = "AH_2974_8FB18DDD";
 
 /**
@@ -41,30 +38,30 @@ const USERNAME = "AH_2974_8FB18DDD";
  * @param {string} url
  * @returns {Promise<[status: any, vessels: VesselReport[]]>}
  */
-export async function fetchAIS (url) {
+export async function fetchAIS(url) {
     const r = await fetch(url);
     const d = await r.json();
     if (d[0].ERROR) return d;
-    return [ d[0], d[1].map(v => ({ mmsi: v.MMSI, name: v.NAME, navigationStatus: v.NAVSTAT, longitude: v.LONGITUDE, latitude: v.LATITUDE, speedOverGround: v.SOG === 102.3 ? undefined : v.SOG, courseOverGround: v.COG, trueHeading: v.HEADING === 511 ? undefined : v.HEADING, lastUpdate: +new Date(v.TIME), shipType: v.TYPE })) ];
+    return [d[0], d[1].map(v => ({ mmsi: v.MMSI, name: v.NAME, navigationStatus: v.NAVSTAT, longitude: v.LONGITUDE, latitude: v.LATITUDE, speedOverGround: v.SOG === 102.3 ? undefined : v.SOG, courseOverGround: v.COG, trueHeading: v.HEADING === 511 ? undefined : v.HEADING, lastUpdate: +new Date(v.TIME), shipType: v.TYPE }))];
 }
 
 /**
  * @param {[minLon: number, minLat: number, maxLon: number, maxLat: number]} bounds
  */
-export function getAISURL (bounds) {
+export function getAISURL(bounds) {
     let [minLon, minLat, maxLon, maxLat] = bounds;
     minLon = Math.floor(minLon * 10) / 10;
     minLat = Math.floor(minLat * 10) / 10;
     maxLon = Math.ceil(maxLon * 10) / 10;
     maxLat = Math.ceil(maxLat * 10) / 10;
-    return `${AIS_API_ROOT}/ws.php?username=${USERNAME}&format=1&output=json&latmin=${minLat}&latmax=${maxLat}&lonmin=${minLon}&lonmax=${maxLon}`;
+    return `/ais/ws.php?username=${USERNAME}&format=1&output=json&latmin=${minLat}&latmax=${maxLat}&lonmin=${minLon}&lonmax=${maxLon}`;
 }
 
 /**
  *
  * @param {VesselReport[][]} sets
  */
-export function combineAIS (sets) {
+export function combineAIS(sets) {
     /** @type {Map<number, VesselReport>} */
     const map = new Map();
 
