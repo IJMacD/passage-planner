@@ -28,6 +28,7 @@ logbook:
     image: ijmacd/logbook
   ingress:
     path: "/logbook"
+    class: nginx
     tls:
       enabled: false
   local:

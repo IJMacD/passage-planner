@@ -19,6 +19,7 @@ logbook:
   repository:
     image: k3d-registry.localhost:5111/ijmacd/logbook
   ingress:
+    class: traefik
     tls:
       enabled: true
   local:

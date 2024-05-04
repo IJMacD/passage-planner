@@ -1,17 +1,28 @@
+{{ if .Values.logbook.ingress.class }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: '{{ .Release.Name }}-logbook'
   annotations:
+  {{- if eq .Values.logbook.ingress.class "traefik" }}
+    traefik.ingress.kubernetes.io/router.middlewares: '{{ .Release.Namespace }}-strip-path-prefix@kubernetescrd'
+  {{- else if eq .Values.logbook.ingress.class "nginx" }}
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+  {{- end }}
 spec:
+  ingressClassName: {{ .Values.logbook.ingress.class }}
   rules:
   - host: '{{ .Values.hostname }}'
     http:
       paths:
+      {{- if eq .Values.logbook.ingress.class "nginx" }}
       - path: '{{ .Values.logbook.ingress.path }}(/|$)(.*)'
         pathType: ImplementationSpecific
+      {{- else }}
+      - path: '{{ .Values.logbook.ingress.path }}'
+        pathType: Prefix
+      {{- end }}
         backend:
           service:
             name: '{{ .Release.Name }}-logbook'
@@ -23,3 +34,4 @@ spec:
     - '{{ .Values.hostname }}'
     secretName: {{ .Release.Name }}-cert
   {{- end }}
+{{ end }}
