@@ -42,6 +42,11 @@ spec:
           ports:
             - name: web
               containerPort: 80
+          {{- if .Values.logbook.local.enabled }}
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: src
+          {{- end }}
           resources:
             requests:
               memory: 32Mi
@@ -49,3 +54,10 @@ spec:
             limits:
               memory: 64Mi
               cpu: 50m
+      {{- if .Values.logbook.local.enabled }}
+      volumes:
+        - name: src
+          hostPath:
+            path: /ijmacd/passage/logbook/src
+      {{- end }}
+
