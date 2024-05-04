@@ -1,3 +1,4 @@
+{{ if .Values.websockify.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +21,7 @@ spec:
     spec:
       containers:
         - name: websockify
-          image: efrecon/websockify
+          image: {{ .Values.websockify.repository.image }}{{ if .Values.websockify.repository.tag }}:{{ .Values.websockify.repository.tag }}{{ end }}
           args: ["80", "{{ .Release.Name }}-nmea-repeater:10110"]
           ports:
             - name: ws
@@ -32,3 +33,4 @@ spec:
             limits:
               memory: 64Mi
               cpu: 50m
+{{ end }}

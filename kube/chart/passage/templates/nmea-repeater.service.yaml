@@ -1,3 +1,4 @@
+{{ if .Values.nmeaRepeater.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -19,3 +20,4 @@ spec:
       name: nmea-udp
       port: 10110
       targetPort: nmea-udp
+{{ end }}

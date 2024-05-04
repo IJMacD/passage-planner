@@ -1,3 +1,4 @@
+{{ if .Values.nmeaRepeater.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -17,14 +18,13 @@ spec:
       app.kubernetes.io/name: nmea-repeater
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/name: nmea-repeater
     spec:
       containers:
         - name: nmea-repeater
-          image: docker.io/ijmacd/nmea-repeater:1.0.0
+          image: {{ .Values.nmeaRepeater.repository.image }}{{ if .Values.nmeaRepeater.repository.tag }}:{{ .Values.nmeaRepeater.repository.tag }}{{ end }}
           ports:
             - name: nmea-tcp
               containerPort: 10110
@@ -39,3 +39,4 @@ spec:
             limits:
               memory: 5Mi
               cpu: 10m
+{{ end }}
