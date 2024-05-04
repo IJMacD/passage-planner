@@ -30,6 +30,7 @@ done
 
 export MARIADB_ROOT_PASSWORD=$(kubectl get secret --namespace "$APPNAME" $APPNAME-mariadb -o jsonpath="{.data.mariadb-root-password}" 2>/dev/null | base64 -d)
 export MARIADB_PASSWORD=$(kubectl get secret --namespace "$APPNAME" $APPNAME-mariadb -o jsonpath="{.data.mariadb-password}" 2>/dev/null | base64 -d)
+export LOGBOOK_PASSWORD=$(kubectl get secret --namespace "$APPNAME" $APPNAME-logbook -o jsonpath="{.data.auth-pass}" 2>/dev/null | base64 -d)
 
 if [ -z "$MARIADB_ROOT_PASSWORD" ]; then
     export MARIADB_ROOT_PASSWORD=$(openssl rand -base64 18)
@@ -37,10 +38,14 @@ fi
 if [ -z "$MARIADB_PASSWORD" ]; then
     export MARIADB_PASSWORD=$(openssl rand -base64 18)
 fi
+if [ -z "$LOGBOOK_PASSWORD" ]; then
+    export LOGBOOK_PASSWORD=$(openssl rand -base64 18)
+fi
 
 helm upgrade --install ${APPNAME} \
   $SCRIPT_DIR/kube/chart/${APPNAME}/ \
   --namespace ${APPNAME} --create-namespace \
   --set mariadb.auth.rootPassword=$MARIADB_ROOT_PASSWORD \
   --set mariadb.auth.password=$MARIADB_PASSWORD \
+  --set logbook.auth.password=$LOGBOOK_PASSWORD \
   $@

@@ -23,6 +23,8 @@ logbook:
       enabled: true
   local:
     enabled: true
+  auth:
+    password: password
 websockify:
   ingress:
     tls:

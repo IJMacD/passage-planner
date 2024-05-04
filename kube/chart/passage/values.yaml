@@ -32,6 +32,8 @@ logbook:
       enabled: false
   local:
     enabled: false
+  auth:
+    password: ""
 websockify:
   enabled: true
   replicaCount: 1

@@ -1,27 +1,34 @@
 <?php
 
-class Auth {
-    private static $auth_pass = "EXgCQzjpqFCpXinTquoCVfSFTsiFhU";
-
-    static function handleGenerate () {
+class Auth
+{
+    static function handleGenerate()
+    {
         $user = "";
         $pass = "";
 
+        $auth_pass = getenv("API_AUTH_PASS", "");
+
+        if ($auth_pass === "") {
+            header("HTTP/1.1 500 Server Error");
+            echo "AUth pass not set in env var";
+            exit;
+        }
+
         if (isset($_SERVER['HTTP_AUTHORIZATION']) && strpos($_SERVER['HTTP_AUTHORIZATION'], "Basic ") === 0) {
             $decoded = base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6));
-            list ($user, $pass) = explode(":", $decoded);
-        }
-        else if (isset($_POST['user']) && isset($_POST['pass'])) {
+            list($user, $pass) = explode(":", $decoded);
+        } else if (isset($_POST['user']) && isset($_POST['pass'])) {
             $user = $_POST['user'];
             $pass = $_POST['pass'];
-        }
-        else {
+        } else {
             header("HTTP/1.1 401 Unauthorized");
             header("WWW-Authenticate: Basic realm=logbook");
             exit;
         }
 
-        if ($user !== "auth_user" || $pass !== self::$auth_pass) {
+        // Ignore username, only consider password
+        if ($pass !== $auth_pass) {
             header("HTTP/1.1 403 Forbidden");
             exit;
         }
@@ -47,7 +54,8 @@ class Auth {
         echo json_encode($result);
     }
 
-    static function handleExchange () {
+    static function handleExchange()
+    {
         if (!isset($_POST['token'])) {
             header("HTTP/1.1 400 Bad Request");
             exit;
@@ -83,10 +91,10 @@ class Auth {
 
         header("Content-Type: application/json");
         echo json_encode($result);
-
     }
 
-    static function handleVerify () {
+    static function handleVerify()
+    {
         if (!isset($_POST['token'])) {
             header("HTTP/1.1 400 Bad Request");
             exit;
@@ -98,7 +106,8 @@ class Auth {
         echo json_encode($result);
     }
 
-    static function verifyHeader () {
+    static function verifyHeader()
+    {
         if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
             header("HTTP/1.1 401 Unauthorized");
             header("WWW-Authenticate: Bearer");
@@ -114,7 +123,8 @@ class Auth {
         return self::verifyToken(substr($_SERVER['HTTP_AUTHORIZATION'], 7));
     }
 
-    static function verifyToken ($token) {
+    static function verifyToken($token)
+    {
         global $db;
 
         $stmt = $db->prepare("SELECT `user`, `type`, `expires` FROM api_keys WHERE `token` = :token AND `expires` > NOW()");
@@ -128,7 +138,8 @@ class Auth {
         return $stmt->fetch();
     }
 
-    static function maintenance () {
+    static function maintenance()
+    {
         global $db;
 
         $db->exec("DELETE FROM api_keys WHERE expires < NOW()");
@@ -160,7 +171,7 @@ function random_str(
     $pieces = [];
     $max = mb_strlen($keyspace, '8bit') - 1;
     for ($i = 0; $i < $length; ++$i) {
-        $pieces []= $keyspace[random_int(0, $max)];
+        $pieces[] = $keyspace[random_int(0, $max)];
     }
     return implode('', $pieces);
 }
