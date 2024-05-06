@@ -24,7 +24,9 @@ k3d cluster stop --all
 # delete the entire cluster first (if it exists) so we can start from scratch
 k3d cluster delete ${APPNAME}
 
-k3d cluster create ${APPNAME} --config ${SCRIPT_DIR}/k3d-config.yml \
+k3d cluster create ${APPNAME} \
+  --config ${SCRIPT_DIR}/k3d-config.yml \
+  --registry-config ${SCRIPT_DIR}/k3d-registries.yml \
   --volume ${SCRIPT_DIR}/../../:/${REPO}/${APPNAME}@all
 
 # for i in "mariadb:11.1"; do
