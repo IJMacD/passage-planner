@@ -2,7 +2,9 @@
 <?php
 
 foreach ($records as $record => $id) :
-    $entry = getEntry($id);
+    $entry = getEntry($db, $id);
+
+    if ($entry == null) continue;
 ?>
     <div style="display:inline-block; margin: 1em; padding: 0.5em 1em; border: 1px solid #333;text-align:center;">
         <span style="font-size: 5em;">🏆</span>
@@ -19,7 +21,7 @@ endforeach;
     const bounds = [
         <?php
         foreach ($tracks as $track) {
-            echo json_encode($track->getBounds(), JSON_NUMERIC_CHECK) . ",\n";
+            echo json_encode(getTrackBounds($db, $track->id), JSON_NUMERIC_CHECK) . ",\n";
         }
         ?>
     ];

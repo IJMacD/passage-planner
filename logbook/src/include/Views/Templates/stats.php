@@ -16,7 +16,7 @@ $total_duration_seconds = $init_dt->getTimestamp() - $curr_dt->getTimestamp();
 $total_avg_speed = $total_duration_seconds > 0 ?
     $total_distance / $total_duration_seconds * 3600 :
     0;
-$records = getRecordSettingTracks();
+$records = getRecordSettingTracks($db);
 ?>
 <?php if (isset($heading)) : ?>
     <h1><?= $heading ?></h1>
@@ -36,7 +36,7 @@ $records = getRecordSettingTracks();
     </thead>
     <tbody>
         <?php foreach ($entries as $entry) :
-            $displacement = latlon2nm($entry->getStartPoint(), $entry->getEndPoint());
+            $displacement = latlon2nm(getStartPoint($db, $entry->id), getEndPoint($db, $entry->id));
         ?>
             <tr>
                 <td>
@@ -53,7 +53,7 @@ $records = getRecordSettingTracks();
                 <td><?= $entry->total_distance ?> NM</td>
                 <td><?= round($displacement, 3) ?> NM</td>
                 <td><?= round($displacement / $entry->total_distance * 100) ?>%</td>
-                <td><?= round(calcBoundsArea($entry->getBounds()), 2) ?> NM²</td>
+                <td><?= round(calcBoundsArea(getTrackBounds($db, $entry->id)), 2) ?> NM²</td>
             </tr>
         <?php endforeach; ?>
     </tbody>

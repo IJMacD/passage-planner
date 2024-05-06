@@ -5,7 +5,7 @@
     const bounds = [
         <?php
         foreach ($tracks as $track) {
-            echo json_encode($track->getBounds(), JSON_NUMERIC_CHECK) . ",\n";
+            echo json_encode(getTrackBounds($db, $track->id), JSON_NUMERIC_CHECK) . ",\n";
         }
         ?>
     ];

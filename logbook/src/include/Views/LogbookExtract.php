@@ -22,6 +22,7 @@ if (preg_match("/^\d{4}/", $dateSpec)) {
 }
 
 $content = include_contents("Templates/index.php", [
+    "db" => $db,
     "entries" => $entries,
     "years" => $entry_years,
     "sub_year_groupings" => $sub_year_groupings,

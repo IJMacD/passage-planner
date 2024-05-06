@@ -14,9 +14,6 @@ source ${SCRIPT_DIR}/vars.sh
 
 [[ ! -z $(k3d cluster list ${APPNAME} | grep '0/1') ]] && k3d cluster stop --all && k3d cluster start ${APPNAME}
 
-# Delete the images on the node - not the registry!
-docker exec k3d-${APPNAME}-server-0 sh -c 'ctr image rm $(ctr image list -q)'
-
 for project in $PROJECTS; do
   docker build ${SCRIPT_DIR}/${project} -f ${SCRIPT_DIR}/${project}/Dockerfile \
     -t ${REGISTRY_NAME}/${REPO}/${project}:${GIT_TAG} -t ${LOCAL_REGISTRY}/${REPO}/${project}:${GIT_TAG}
