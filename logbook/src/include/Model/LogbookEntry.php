@@ -9,7 +9,7 @@ class LogbookEntry implements JsonSerializable
 {
     var $id;
     var $name;
-    /** @var float $total_distance Nautical Miles */
+    /** @deprecated @var float $total_distance Nautical Miles */
     var $total_distance;
     private $start_location;
     private $start_time;
@@ -24,7 +24,11 @@ class LogbookEntry implements JsonSerializable
 
     function __get($name)
     {
-        if ($name === "total_duration") {
+        if ($name === "distance") {
+            return $this->total_distance;
+        }
+
+        if ($name === "total_duration" || $name === "duration") {
             $end = new DateTime($this->end_time);
             $start = new DateTime($this->start_time);
 

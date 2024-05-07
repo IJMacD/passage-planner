@@ -39,7 +39,7 @@ k3d cluster create ${APPNAME} \
 helm dependency build $SCRIPT_DIR/../chart/${APPNAME}/
 
 mkdir -p ~/.kube
-k3d kubeconfig merge ${APPNAME} --output ${KUBECONFIG}
+k3d kubeconfig merge ${APPNAME} --output ${LOCAL_KUBECONFIG}
 
 # Apply local secrets
 

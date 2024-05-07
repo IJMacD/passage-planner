@@ -17,8 +17,6 @@ if ! grep -q "^version: $GIT_TAG\$" $SCRIPT_DIR/kube/chart/${APPNAME}/Chart.yaml
   exit 1
 fi
 
-# Override
-export KUBECONFIG=~/.kube/config.prod
 
 CURRENT_CONTEXT=$(kubectl config current-context)
 

@@ -21,7 +21,10 @@ endforeach;
     const bounds = [
         <?php
         foreach ($tracks as $track) {
-            echo json_encode(getTrackBounds($db, $track->id), JSON_NUMERIC_CHECK) . ",\n";
+            $bounds = getTrackBounds($db, $track->id);
+            if ($bounds) {
+                echo json_encode($bounds, JSON_NUMERIC_CHECK) . ",\n";
+            }
         }
         ?>
     ];

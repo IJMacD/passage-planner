@@ -76,6 +76,15 @@ $records = getRecordSettingTracks($db);
 <?php
 if (isset($years)) :
 ?>
+    <h2>View calendar for year:</h2>
+    <?php
+    foreach ($years as $year) :
+    ?>
+        <a href="<?= $baseURL ?>/calendar/<?= $year ?>"><?= $year ?></a>
+    <?php
+    endforeach;
+    ?>
+
     <h2>View extract for year:</h2>
     <?php
     foreach ($years as $year) :

@@ -181,6 +181,7 @@ export function TrackDetails({ track, additionalTracks }) {
                         Follow
                     </label>
                     {selectedLeg && <p>{selectedDate.toLocaleString()} {labelFns.speed(selectedLeg.distance / selectedLeg.duration)} {selectedLeg.heading.toFixed()}°</p>}
+                    {selectedLeg && <p>{selectedLeg.from.lat}, {selectedLeg.from.lon}</p>}
                     {historicalWeather && <p>Automatic Weather: {historicalWeather.windSpeed} km/h {historicalWeather.windDirection}° @ {nearestWeatherStation}</p>}
                 </div>
                 <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red" labelFn={labelFns.distance} arrow={historicalWeather?.windDirection} />

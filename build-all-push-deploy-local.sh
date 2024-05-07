@@ -14,6 +14,11 @@ source ${SCRIPT_DIR}/vars.sh
 
 [[ ! -z $(k3d cluster list ${APPNAME} | grep '0/1') ]] && k3d cluster stop --all && k3d cluster start ${APPNAME}
 
+# Override
+export KUBECONFIG=$LOCAL_KUBECONFIG
+
+kubectl config use-context k3d-${APPNAME}
+
 for project in $PROJECTS; do
   docker build ${SCRIPT_DIR}/${project} -f ${SCRIPT_DIR}/${project}/Dockerfile \
     -t ${REGISTRY_NAME}/${REPO}/${project}:${GIT_TAG} -t ${LOCAL_REGISTRY}/${REPO}/${project}:${GIT_TAG}
@@ -21,6 +26,7 @@ for project in $PROJECTS; do
 done;
 
 # helm dependency build --skip-refresh $SCRIPT_DIR/kube/chart/${APPNAME}/
+
 
 helm upgrade --install ${APPNAME} \
   $SCRIPT_DIR/kube/chart/${APPNAME}/ \

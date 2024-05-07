@@ -42,6 +42,8 @@ Router::registerWithPrefix("/api/v1/auth", [
 ]);
 Router::register([
     ["get",     "/records",         fn () => handleRecords()],
+    ["get",     "/calendar",        fn () => handleCalendar()],
+    ["get",     "/calendar/:year",  fn ($year) => handleCalendar($year)],
     ["get",     "/stats",           fn () => handleStats()],
     ["get",     "/all",             fn () => handleAllTracks()],
     ["get",     "/extract/:date",   fn ($date) => handleExtract($date)],
@@ -80,6 +82,13 @@ function handleRecords()
 {
     global $db;
     include "include/Views/LogbookRecords.php";
+}
+
+
+function handleCalendar($year = "")
+{
+    global $db;
+    include "include/Views/LogbookCalendar.php";
 }
 
 function handleStats()

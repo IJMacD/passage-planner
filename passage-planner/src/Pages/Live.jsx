@@ -48,6 +48,7 @@ const layers = [
 const defaultSelected = ["world", "wsais"];
 
 const osmTileJSON = "https://raw.githubusercontent.com/mapbox/tilejson-spec/master/2.2.0/example/osm.layer";
+const seaMapTileJSON = "https://ijmacd.com/tiles/openseamap/tiles.json";
 
 export default function Live() {
   const [selectedLayers, setSelectedLayers] = useSavedState("passagePlanner.selectedLayers", defaultSelected);
@@ -67,9 +68,9 @@ export default function Live() {
   const vesselsWS = useWebsocketVessels(isWSAISActive);
   // const vessels = combineAIS([vesselsAH, vesselsWS]);
 
-  const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON]);
+  const [tileLayerURLs, setTileLayerURLs] = useSavedState("passagePlanner.tileLayers", [osmTileJSON, seaMapTileJSON]);
   const tileLayers = useTileJSONList(tileLayerURLs);
-  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON]);
+  const [selectedTileLayers, setSelectedTileLayers] = useSavedState("passagePlanner.selectedTileLayers", [osmTileJSON, seaMapTileJSON]);
 
   const [showVesselNames, setShowVesselNames] = useSavedState("passagePlanner.showNames", false);
   const [showVesselTrack, setShowVesselTrack] = useSavedState("passagePlanner.showTrack", false);

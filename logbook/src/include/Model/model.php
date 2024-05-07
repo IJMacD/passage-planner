@@ -159,6 +159,10 @@ function getOverallBounds($db)
     return $stmt->fetch();
 }
 
+/**
+ * Gets trophies acquired at time of start
+ * i.e. still includes trophies that were subsequenctly lost
+ */
 function getTrophies($db, $id)
 {
 
@@ -211,20 +215,22 @@ function getRecordSettingTracks($db)
         )
         SELECT
             -- *,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_W = minLon LIMIT 1) AS Westernmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_S = minLat LIMIT 1) AS Southernmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_E = maxLon LIMIT 1) AS Easternmost,
-            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_N = maxLat LIMIT 1) AS Northernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_W = minLon ORDER BY start_time, uploaded_date LIMIT 1) AS Westernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_S = minLat ORDER BY start_time, uploaded_date LIMIT 1) AS Southernmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_E = maxLon ORDER BY start_time, uploaded_date LIMIT 1) AS Easternmost,
+            (SELECT logbook_id FROM logbook_entry_track WHERE bounds_N = maxLat ORDER BY start_time, uploaded_date LIMIT 1) AS Northernmost,
             (
                 SELECT logbook_id
                 FROM logbook_entry_track AS t
                 WHERE t.total_distance = maxDistance
+                ORDER BY start_time, uploaded_date
                 LIMIT 1
             ) AS Farthest,
             (
                 SELECT logbook_id
                 FROM logbook_entry_track AS t
                 WHERE TIMESTAMPDIFF(SECOND, t.start_time, t.end_time) = maxDuration
+                ORDER BY start_time, uploaded_date
                 LIMIT 1
             ) AS Longest,
             (
@@ -232,7 +238,8 @@ function getRecordSettingTracks($db)
                 FROM logbook_entry_track AS t
                 WHERE
                     (total_distance / TIMESTAMPDIFF(SECOND, t.start_time, t.end_time)) = maxSpeed
-                    LIMIT 1
+                ORDER BY start_time, uploaded_date
+                LIMIT 1
             ) AS Fastest
         FROM Records
     "

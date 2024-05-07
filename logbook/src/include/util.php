@@ -363,3 +363,27 @@ function formatDurationToHours(DateInterval $duration): string
 {
     return $duration->format("%a") * 24 + $duration->format("%H") . $duration->format(":%I:%S");
 }
+
+
+function formatSecondsToHours(int $seconds): string
+{
+    $h = floor($seconds / 3600);
+    $m = floor(($seconds % 3600) / 60);
+    $s = $seconds % 60;
+
+    return $h . ":" . str_pad($m, 2, "0", STR_PAD_LEFT) . ":" . str_pad($s, 2, "0", STR_PAD_LEFT);
+}
+
+function isotojd($date)
+{
+    $parts = explode("-", $date);
+    return gregoriantojd($parts[1], $parts[2], $parts[0]);
+}
+
+
+function jdtoiso($jd)
+{
+    $unix = jdtounix($jd);
+    $date = new DateTime("@" . $unix);
+    return substr($date->format(DateTime::ISO8601), 0, 10);
+}

@@ -14,14 +14,14 @@ import { parseGPXDocument, toGPXDocument } from "../util/gpx.js";
 
 function Tracks() {
     const [savedTracks, setSavedTracks] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
-
-    const [bgCheckboxes, setBgCheckboxes] = useState(() => savedTracks.map(() => false));
-
-    const [editMode, setEditMode] = useState(false);
-
     const [refreshToken, setRefreshToken] = useSavedState('logbook.refreshToken', "");
 
+    const [bgCheckboxes, setBgCheckboxes] = useState(() => savedTracks.map(() => false));
+    const [editMode, setEditMode] = useState(false);
     const [selectedTrackID, setSelectedTrackID] = useState(-1);
+    const [isUploading, setIsUploading] = useState(false);
+    const [error, setError] = useState(/** @type {Error|null} */(null));
+
 
     const authFetch = useAuthFetch({
         exchangeURL: "/logbook/api/v1/auth/exchange",
@@ -60,52 +60,66 @@ function Tracks() {
      * @param {Track} track
      */
     function uploadTrack(track) {
-        const trackPoints = track ? track.segments.flat() : [];
-        const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i - 1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to) }));
-        const totalDistance = trackLegs.reduce((total, leg) => total + leg.distance, 0);
+        try {
+            // Deserialise just in case track hasn't been viewed yet.
+            track = deserializeTrack(track);
 
-        const l = trackPoints.length - 1;
-        const startTime = trackPoints[0].time;
-        const endTime = trackPoints[l].time;
+            const trackPoints = track ? track.segments.flat() : [];
+            const trackLegs = trackPoints.map((p, i, a) => ({ from: a[i - 1], to: p })).slice(1).map(l => ({ ...l, distance: latlon2nm(l.from, l.to), heading: latlon2bearing(l.from, l.to) }));
+            const totalDistance = trackLegs.reduce((total, leg) => total + leg.distance, 0);
 
-        if (l < 0 || !startTime || !endTime) {
-            return;
-        }
+            const l = trackPoints.length - 1;
+            const startTime = trackPoints[0].time;
+            const endTime = trackPoints[l].time;
 
-        const body = new FormData();
-        body.set("total_distance", totalDistance.toFixed(3));
-        body.set("start_location", "Hong Kong");
-        body.set("start_time", startTime.toISOString());
-        body.set("end_location", "Hong Kong");
-        body.set("end_time", endTime.toISOString());
-        body.set("weather", "");
-        body.set("comments", "");
+            if (l < 0 || !startTime || !endTime) {
+                return;
+            }
 
-        authFetch("/logbook/api/v1/logs", {
-            method: "post",
-            body,
-        })
-            .then(r => r.json())
-            .then(result => {
-                const { id } = result;
+            const body = new FormData();
+            body.set("total_distance", totalDistance.toFixed(3));
+            body.set("start_location", "Hong Kong");
+            body.set("start_time", startTime.toISOString());
+            body.set("end_location", "Hong Kong");
+            body.set("end_time", endTime.toISOString());
+            body.set("weather", "");
+            body.set("comments", "");
 
-                const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
-                const serializer = new XMLSerializer();
+            setIsUploading(true);
 
-                const body = new FormData();
+            authFetch("/logbook/api/v1/logs", {
+                method: "post",
+                body,
+            })
+                .then(r => r.json())
+                .then(result => {
+                    const { id } = result;
 
-                body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
+                    const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
+                    const serializer = new XMLSerializer();
 
-                authFetch(`/logbook/api/v1/logs/${id}/track`, {
-                    method: "post",
-                    body,
+                    const body = new FormData();
+
+                    body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
+
+                    return authFetch(`/logbook/api/v1/logs/${id}/track`, {
+                        method: "post",
+                        body,
+                    })
+                        .then(r => r.json())
+                        .then(d => {
+                            console.log(d);
+                            alert("Uploaded");
+                        });
                 })
-                    .then(r => r.json())
-                    .then(d => {
-                        console.log(d);
-                        alert("Uploaded");
-                    });
-            });
+                .catch(setError)
+                .finally(() => {
+                    setIsUploading(false);
+                });
+        }
+        catch (e) {
+            setError(e);
+        }
     }
 
     /**
@@ -210,6 +224,7 @@ function Tracks() {
                     <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
                     <input type="file" onChange={handleFileLoad} />
                     {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
+                    {error && <p style={{ color: "red" }}>{error.message}</p>}
                     <ul style={{ listStyle: "none", padding: 0 }}>
                         {
                             savedTracks.map((t, i) => (
@@ -218,7 +233,7 @@ function Tracks() {
                                     <input type="checkbox" checked={bgCheckboxes[i] || false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
                                     <label htmlFor={`saved-track-select-${i}`}>{t.name || <span style={{ fontStyle: "italic", color: "grey" }}>No name</span>}</label>{' '}
                                     <button onClick={() => renameTrack(i)}>Rename</button>{' '}
-                                    <button onClick={() => uploadTrack(t)} disabled={!refreshToken}>Upload</button>{' '}
+                                    <button onClick={() => uploadTrack(t)} disabled={!refreshToken || isUploading}>Upload</button>{' '}
                                     <button onClick={() => removeTrack(i)}>Remove</button>{' '}
                                 </li>)
                             )
@@ -244,6 +259,11 @@ function Tracks() {
 
 export default Tracks;
 
+/**
+ * Inflate dates from string to Date objects
+ * @param {Track} trackSerialized
+ * @returns
+ */
 function deserializeTrack(trackSerialized) {
     return {
         ...trackSerialized,
