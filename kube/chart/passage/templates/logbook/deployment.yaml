@@ -49,11 +49,10 @@ spec:
           {{- end }}
           resources:
             requests:
-              memory: 32Mi
+              memory: 48Mi
               cpu: 10m
             limits:
               memory: 64Mi
-              cpu: 50m
       {{- if .Values.logbook.local.enabled }}
       volumes:
         - name: src
