@@ -30,7 +30,7 @@ k3d cluster create ${APPNAME} \
   --volume ${SCRIPT_DIR}/../../:/${REPO}/${APPNAME}@all
 
 # Bootstrap the helm dependencies
-helm dependency build $SCRIPT_DIR/../chart/${APPNAME}/
+helm dependency build --skip-refresh $SCRIPT_DIR/../chart/${APPNAME}/
 
 # Preload library images into local registry
 library_images=(

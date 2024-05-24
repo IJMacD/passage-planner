@@ -25,9 +25,6 @@ for project in $PROJECTS; do
   docker push ${LOCAL_REGISTRY}/${REPO}/${project}:${GIT_TAG}
 done;
 
-# helm dependency build --skip-refresh $SCRIPT_DIR/kube/chart/${APPNAME}/
-
-
 helm upgrade --install ${APPNAME} \
   $SCRIPT_DIR/kube/chart/${APPNAME}/ \
   --namespace ${APPNAME} --create-namespace \
