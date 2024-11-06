@@ -1,8 +1,6 @@
-import React from "react";
 import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
 import { useSeaMask } from "../hooks/useSeaMask.js";
 import { GradientFieldLayer } from "./GradientFieldLayer.jsx";
-import { DebugMaskLayer } from "./DebugMaskLayer.jsx";
 
 /**
  *

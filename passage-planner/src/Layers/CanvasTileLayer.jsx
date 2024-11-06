@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { getTiles } from "../util/getTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";

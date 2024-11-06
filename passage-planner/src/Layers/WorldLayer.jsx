@@ -1,4 +1,3 @@
-import React from "react";
 import { ImageLayer } from "./ImageLayer.jsx";
 import { useImage } from "../hooks/useImage.js";
 import worldImageSrc from "../img/world.png";

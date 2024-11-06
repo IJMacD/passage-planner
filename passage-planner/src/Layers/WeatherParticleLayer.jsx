@@ -1,4 +1,3 @@
-import React from "react";
 import { ParticleFieldLayer } from "./ParticleFieldLayer.jsx";
 import { useWeatherFieldVectors } from "../hooks/useWeatherFieldVectors.js";
 

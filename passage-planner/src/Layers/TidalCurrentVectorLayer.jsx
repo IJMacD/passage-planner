@@ -1,4 +1,3 @@
-import React from "react";
 import { useTidalCurrents } from "../hooks/useTidalCurrents";
 import { VectorFieldLayer } from "./VectorFieldLayer";
 

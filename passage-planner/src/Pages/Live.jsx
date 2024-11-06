@@ -332,7 +332,15 @@ export default function Live() {
         <AISKey vesselStyle={vesselStyle} />
       </div>
       <div style={{ flex: 1 }}>
-        <StaticMap centre={centre} zoom={zoom} onDragEnd={(lon, lat) => { setCentre([lon, lat]); setTrackVesselMMSI(NaN); }} onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(z => z + 1); setTrackVesselMMSI(NaN) }} width="100%" height={768}>
+        <StaticMap
+          centre={centre}
+          zoom={zoom}
+          onDragEnd={(lon, lat) => { setCentre([lon, lat]); setTrackVesselMMSI(NaN); }}
+          onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(z => z + 1); setTrackVesselMMSI(NaN) }}
+          width="100%"
+          height={768}
+          fullscreenButton
+        >
           <WorldLayer />
           {
             tileLayerURLs.map((url, i) => selectedTileLayers.includes(url) && tileLayers[i] && <CanvasTileLayer key={i} layer={tileLayers[i]} />)

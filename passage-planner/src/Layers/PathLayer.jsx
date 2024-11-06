@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { useContext, useEffect, useRef } from "react";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { renderPathLayer } from "../canvas-renderers/renderPathLayer.js";
 
 /**

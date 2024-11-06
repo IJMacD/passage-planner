@@ -1,10 +1,6 @@
-import React from "react";
 import { ParticleFieldLayer } from "./ParticleFieldLayer.jsx";
 import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
 import { useSeaMask } from "../hooks/useSeaMask.js";
-import { useTileJSON } from "../hooks/useTileJSON.js";
-import { useInitRef } from "../hooks/useInitRef.js";
-
 /**
  *
  * @param {object} props

@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { useContext } from "react";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 import { useTides } from "../hooks/useTides.js";
 

@@ -1,7 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { lonLat2XY } from "../util/projection.js";
-import React from "react";
 
 /**
  * @typedef PolarFieldPoint

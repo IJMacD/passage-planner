@@ -1,4 +1,3 @@
-import React from "react";
 import { useTileJSON } from "../hooks/useTileJSON.js";
 import { CanvasTileLayer } from "./CanvasTileLayer.jsx";
 
