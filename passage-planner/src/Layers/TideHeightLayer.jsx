@@ -50,7 +50,7 @@ function TideMarker({ height, left, top, title = "", dHeight = NaN }) {
         <div style={{ boxSizing: "border-box", border: border + "px solid black", background: "white", position: "absolute", left: left - outerWidth / 2, top: top - outerHeight, width: outerWidth, height: outerHeight }} title={title}>
             <div style={{ boxSizing: "border-box", background: "red", position: "absolute", bottom: padding, left: padding, width: innerWidth, height: innerHeight }} />
             <p style={{ color: "red", fontSize: "0.8rem", fontWeight: "bold", position: "absolute", left: -outerWidth / 2, top: outerHeight - 5, width: "max-content" }}>{height > 0 && `${height} m`}</p>
-            <p style={{ color: "red", fontSize: "0.8rem", fontWeight: "bold", position: "absolute", left: -outerWidth / 2 - (dHeight < 0 ? 5 : 0), top: outerHeight + 5, width: "max-content" }}>{!isNaN(dHeight) && `${dHeight.toFixed(2)} m/h`}</p>
+            <p style={{ color: "red", fontSize: "0.8rem", fontWeight: "bold", position: "absolute", left: -outerWidth / 2 - 10, top: outerHeight + 5, width: "max-content" }}>{!isNaN(dHeight) && `${dHeight >= 0 ? "+" : "-"}${Math.abs(dHeight).toFixed(2)} m/h`}</p>
         </div>
     );
 }

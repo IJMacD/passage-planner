@@ -1,6 +1,8 @@
 import { useState, CSSProperties } from "react";
 import { StaticMap } from "../Components/StaticMap";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
+import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
+import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
 
 type Longitude = number;
 type Latitude = number;
@@ -31,22 +33,6 @@ export function Planner() {
     flexWrap: "wrap",
   };
 
-  const panelStyle: CSSProperties = {
-    border: "1px solid #666",
-    margin: 8,
-  }
-
-  const timeStyle: CSSProperties = {
-    fontSize: "0.8em",
-    fontWeight: "bold",
-  };
-
-  const pinnedLocationStyle: CSSProperties = {
-    cursor: "pointer",
-  };
-
-  const timeFormatter = Intl.DateTimeFormat([], { timeStyle: "medium" });
-
   return (
     <div style={plannerStyle}>
       <aside style={sidebarStyle}>
@@ -63,73 +49,91 @@ export function Planner() {
       </aside>
       <main style={mainStyle}>
         {Array.from({ length: panelCount }).map((_, i) => {
-          const { centre, zoom, index } = findLast(locations, l => l.index <= i);
+          const location = findLast(locations, l => l.index <= i);
           const time = new Date(+new Date(startTime) + i * panelDelta);
 
-          function handleDragEnd(lon: Longitude, lat: Latitude) {
+          function setLocation(location?: { centre: Point, zoom: number }) {
             setLocations(locations => {
               const before = locations.filter(l => l.index < i);
               const after = locations.filter(l => l.index > i);
 
-              return [
+              return location ? [
                 ...before,
-                { index: i, centre: [lon, lat], zoom },
+                { index: i, ...location },
+                ...after
+              ] : [
+                ...before,
                 ...after
               ];
             });
           }
 
-          function handleDoubleClick(lon: Longitude, lat: Latitude, e: React.MouseEvent) {
-            setLocations(locations => {
-              const before = locations.filter(l => l.index < i);
-              const after = locations.filter(l => l.index > i);
-
-              return [
-                ...before,
-                { index: i, centre, zoom: (e.ctrlKey || e.metaKey) ? zoom - 1 : zoom + 1 },
-                ...after
-              ];
-            });
-          }
-
-          function handlePinnedClick() {
+          function clearLocation() {
             if (i === 0) {
               // We can never remove the first point
               return;
             }
 
-            setLocations(locations => {
-              const before = locations.filter(l => l.index < i);
-              const after = locations.filter(l => l.index > i);
-
-              return [
-                ...before,
-                ...after
-              ];
-            });
-
+            setLocation();
           }
 
-          return (
-            <section style={panelStyle} key={i}>
-              <span style={timeStyle}>{timeFormatter.format(time)}</span>
-              {index === i && <span style={pinnedLocationStyle} onClick={handlePinnedClick}>•</span>}
-              <StaticMap
-                centre={centre}
-                zoom={zoom}
-                width={400}
-                height={300}
-                onDragEnd={handleDragEnd}
-                onDoubleClick={handleDoubleClick}
-              >
-                <HongKongMarineLayer />
-              </StaticMap>
-            </section>
-          );
+          return <MapPanel key={i} location={location} time={time} setLocation={setLocation} clearLocation={(i === 0 || i === location.index) && clearLocation} />
         })}
       </main>
     </div>
   )
+}
+
+function MapPanel({ location, time, setLocation, clearLocation }: {
+  location: { centre: Point, zoom: number },
+  time: Date,
+  setLocation: (location: { centre: Point, zoom: number }) => void,
+  clearLocation: () => void
+}) {
+  const { centre, zoom } = location;
+
+  const panelStyle: CSSProperties = {
+    border: "1px solid #666",
+    margin: 8,
+  }
+
+  const timeStyle: CSSProperties = {
+    fontSize: "0.8em",
+    fontWeight: "bold",
+  };
+
+  const pinnedLocationStyle: CSSProperties = {
+    cursor: "pointer",
+  };
+
+  const timeFormatter = Intl.DateTimeFormat([], { timeStyle: "medium" });
+
+  function handleDragEnd(lon: Longitude, lat: Latitude) {
+    setLocation({ centre: [lon, lat], zoom });
+  }
+
+  function handleDoubleClick(lon: Longitude, lat: Latitude, e: React.MouseEvent) {
+    setLocation({ centre, zoom: (e.ctrlKey || e.metaKey) ? zoom - 1 : zoom + 1 });
+  }
+
+  return (
+    <section style={panelStyle}>
+      <span style={timeStyle}>{timeFormatter.format(time)}</span>
+      {clearLocation && <span style={pinnedLocationStyle} onClick={clearLocation}>•</span>}
+      <StaticMap
+        centre={centre}
+        zoom={zoom}
+        width={400}
+        height={300}
+        onDragEnd={handleDragEnd}
+        onDoubleClick={handleDoubleClick}
+      >
+        <HongKongMarineLayer />
+        <TidalCurrentVectorLayer time={time} />
+        <TideHeightLayer time={time} />
+      </StaticMap>
+    </section>
+  );
 }
 
 function p2(n: number) {
