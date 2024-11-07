@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * @template T
  * @param {string} key
- * @param {T} initialValue
+ * @param {T | () => T} initialValue
  * @returns {[ T, (newValue: T|((oldState: T) => T)) => void ]}
  */
 export function useSavedState (key, initialValue) {
@@ -15,24 +15,12 @@ export function useSavedState (key, initialValue) {
             } catch (e) {}
         }
 
-        return initialValue;
+        return initialValue instanceof Function ? initialValue() : initialValue;
     });
 
-    const setSavedState = useCallback(newValue => {
-        if (newValue instanceof Function) {
-            setState(oldValue => {
-                const nv = newValue(oldValue);
-
-                localStorage.setItem(key, JSON.stringify(nv));
-
-                return nv;
-            });
-        } else {
-            setState(newValue);
-
-            localStorage.setItem(key, JSON.stringify(newValue));
-        }
-    }, [key, setState]);
+    useEffect(() => {
+        localStorage.setItem(key, JSON.stringify(state));
+    }, [state]);
 
     useEffect(() => {
         const callback = e => setState(e.newValue || initialValue);
@@ -42,5 +30,5 @@ export function useSavedState (key, initialValue) {
         return () => window.removeEventListener("storage", callback);
     }, [initialValue]);
 
-    return [ state, setSavedState ];
+    return [state, setState];
 }

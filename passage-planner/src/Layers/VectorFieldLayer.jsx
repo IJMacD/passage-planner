@@ -23,9 +23,11 @@ import { lonLat2XY } from "../util/projection.js";
  * @param {object} props
  * @param {Field} props.field
  * @param {number} [props.scale]
+ * @param {boolean} [props.outline]
+ * @param {boolean} [props.showMagnitude]
  * @returns
  */
-export function VectorFieldLayer({ field, scale = 10 }) {
+export function VectorFieldLayer({ field, scale = 10, outline = false, showMagnitude = false, }) {
     const context = useContext(StaticMapContext);
 
     const [left, top] = useContext(DragContext);
@@ -81,17 +83,29 @@ export function VectorFieldLayer({ field, scale = 10 }) {
                 ctx.moveTo(r, 0);
                 ctx.lineTo(0, r);
                 ctx.lineTo(-r, 0);
-                ctx.strokeStyle = getColour(value);
                 ctx.lineCap = "round";
+
+                if (outline) {
+                    ctx.strokeStyle = "#000";
+                    ctx.lineWidth = 2 * t;
+                    ctx.stroke();
+                }
+
+                ctx.strokeStyle = getColour(value);
                 ctx.lineWidth = t;
+
                 ctx.stroke();
 
                 ctx.resetTransform();
+
+                if (showMagnitude) {
+                    ctx.fillText(magnitude, x * devicePixelRatio, y * devicePixelRatio);
+                }
             }
         }
 
 
-    }, [context, pxWidth, pxHeight, field, scale]);
+    }, [context, pxWidth, pxHeight, field, scale, outline, showMagnitude]);
 
     return <canvas ref={canvasRef} width={pxWidth} height={pxHeight} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

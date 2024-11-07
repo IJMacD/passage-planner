@@ -3,6 +3,8 @@ import { StaticMap } from "../Components/StaticMap";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
+import { VectorFieldLayer } from "../Layers/VectorFieldLayer";
+import { useSavedState } from "../hooks/useSavedState";
 
 type Longitude = number;
 type Latitude = number;
@@ -11,11 +13,23 @@ type ISOLocalDateString = string;
 
 const ONE_HOUR = 60 * 60 * 1000;
 
+const keyField = [
+  { lon: -0.015, lat: 0.011, magnitude: 0.1, direction: 0 },
+  { lon: -0.015, lat: 0.009, magnitude: 0.2, direction: 0 },
+  { lon: -0.015, lat: 0.006, magnitude: 0.3, direction: 0 },
+  { lon: -0.015, lat: 0.002, magnitude: 0.5, direction: 0 },
+  { lon: -0.015, lat: -0.002, magnitude: 0.7, direction: 0 },
+  { lon: -0.015, lat: -0.006, magnitude: 0.9, direction: 0 },
+  { lon: -0.015, lat: -0.010, magnitude: 1.1, direction: 0 },
+];
+
 export function Planner() {
-  const [locations, setLocations] = useState([{ index: 0, centre: [114.2, 22.3] as Point, zoom: 14 }]);
-  const [panelCount, setPanelCount] = useState(3);
-  const [startTime, setStartTime] = useState(() => isoLocalDateTime());
-  const [panelDelta, setPanelDelta] = useState(3 * ONE_HOUR);
+  const [locations, setLocations] = useSavedState("planner.locations", [{ index: 0, centre: [114.2, 22.3] as Point, zoom: 14 }]);
+  const [panelCount, setPanelCount] = useSavedState("planner.panelCount", 3);
+  const [startTime, setStartTime] = useSavedState("planner.startTime", () => isoLocalDateTime());
+  const [panelDelta, setPanelDelta] = useSavedState("planner.panelDelta", 3 * ONE_HOUR);
+  const [desaturate, setDesaturate] = useState(false);
+  const [showKey, setShowKey] = useState(false);
 
   const plannerStyle: CSSProperties = {
     display: "flex",
@@ -46,6 +60,14 @@ export function Planner() {
           <option value={4 * ONE_HOUR}>4 Hours</option>
           <option value={5 * ONE_HOUR}>5 Hours</option>
         </select>
+        <label>
+          Desaturate
+          <input type="checkbox" checked={desaturate} onChange={e => setDesaturate(e.target.checked)} />
+        </label>
+        <label>
+          Show Key
+          <input type="checkbox" checked={showKey} onChange={e => setShowKey(e.target.checked)} />
+        </label>
       </aside>
       <main style={mainStyle}>
         {Array.from({ length: panelCount }).map((_, i) => {
@@ -77,19 +99,44 @@ export function Planner() {
             setLocation();
           }
 
-          return <MapPanel key={i} location={location} time={time} setLocation={setLocation} clearLocation={(i === 0 || i === location.index) && clearLocation} />
+          return <MapPanel
+            key={i}
+            location={location}
+            time={time}
+            setLocation={setLocation}
+            clearLocation={(i === 0 || i === location.index) && clearLocation}
+            desaturate={desaturate}
+          />
         })}
+        {showKey &&
+          <section style={{ border: "1px solid #666", margin: 8 }}>
+            <span style={{ fontSize: "0.8em", fontWeight: "bold", }}> Key</span>
+            <StaticMap
+              centre={[0, 0]}
+              zoom={14}
+              width={400}
+              height={300}
+            >
+              <VectorFieldLayer field={keyField} outline />
+            </StaticMap>
+          </section>
+        }
       </main>
     </div>
   )
 }
 
-function MapPanel({ location, time, setLocation, clearLocation }: {
+function MapPanel({ location, time, setLocation, clearLocation, desaturate = false }: {
   location: { centre: Point, zoom: number },
   time: Date,
   setLocation: (location: { centre: Point, zoom: number }) => void,
-  clearLocation: () => void
+  clearLocation: () => void,
+  desaturate?: boolean,
 }) {
+  if (isNaN(+time)) {
+    return null;
+  }
+
   const { centre, zoom } = location;
 
   const panelStyle: CSSProperties = {
@@ -128,8 +175,8 @@ function MapPanel({ location, time, setLocation, clearLocation }: {
         onDragEnd={handleDragEnd}
         onDoubleClick={handleDoubleClick}
       >
-        <HongKongMarineLayer />
-        <TidalCurrentVectorLayer time={time} />
+        <HongKongMarineLayer style={{ filter: desaturate ? "saturate(0.5)" : "" }} />
+        <TidalCurrentVectorLayer time={time} outline />
         <TideHeightLayer time={time} />
       </StaticMap>
     </section>
