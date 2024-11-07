@@ -30,6 +30,7 @@ export function Planner() {
   const [panelDelta, setPanelDelta] = useSavedState("planner.panelDelta", 3 * ONE_HOUR);
   const [saturation, setSaturation] = useState(1);
   const [showKey, setShowKey] = useState(false);
+  const [interpolate, setInterpolate] = useState(false);
 
   const plannerStyle: CSSProperties = {
     display: "flex",
@@ -90,11 +91,17 @@ export function Planner() {
           Show Key
           <input type="checkbox" checked={showKey} onChange={e => setShowKey(e.target.checked)} />
         </label>
+        <label style={labelStyle}>
+          Interpolate locations
+          <input type="checkbox" checked={interpolate} onChange={e => setInterpolate(e.target.checked)} />
+        </label>
       </aside>
       <main style={mainStyle}>
         {Array.from({ length: panelCount }).map((_, i) => {
-          const location = findLast(locations, l => l.index <= i);
           const time = new Date(+new Date(startTime) + i * panelDelta);
+          const location = interpolate ?
+            interpolateLocation(locations, i) :
+            findLast(locations, l => l.index <= i);
 
           function setLocation(location?: { centre: Point, zoom: number }) {
             setLocations(locations => {
@@ -228,4 +235,34 @@ function findLast<T>(array: T[], callback: (element: T) => boolean) {
   }
 
   return undefined;
+}
+
+function interpolateLocation (locations: { index: number; centre: Point; zoom: number; }[], index: number) {
+  const found = locations.find(l => l.index === index);
+  if (found) {
+    return found;
+  }
+
+  const prevLocation = findLast(locations, l => l.index < index);
+  const nextLocation = locations.find(l => l.index > index);
+
+  if (!nextLocation) {
+    return prevLocation;
+  }
+
+  const fraction = (index - prevLocation.index) / (nextLocation.index - prevLocation.index);
+
+  const lon0 = prevLocation.centre[0];
+  const lat0 = prevLocation.centre[1];
+  const zoom0 = prevLocation.zoom;
+
+  const dLon = nextLocation.centre[0] - lon0;
+  const dLat = nextLocation.centre[1] - lat0;
+  const dZoom = nextLocation.zoom - zoom0;
+
+  const lon = lon0 + fraction * dLon;
+  const lat = lat0 + fraction * dLat;
+  const zoom = zoom0 + fraction * dZoom;
+
+  return { centre: [lon, lat], zoom };
 }
