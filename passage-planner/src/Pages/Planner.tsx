@@ -28,7 +28,7 @@ export function Planner() {
   const [panelCount, setPanelCount] = useSavedState("planner.panelCount", 3);
   const [startTime, setStartTime] = useSavedState("planner.startTime", () => isoLocalDateTime());
   const [panelDelta, setPanelDelta] = useSavedState("planner.panelDelta", 3 * ONE_HOUR);
-  const [desaturate, setDesaturate] = useState(false);
+  const [saturation, setSaturation] = useState(1);
   const [showKey, setShowKey] = useState(false);
 
   const plannerStyle: CSSProperties = {
@@ -38,8 +38,16 @@ export function Planner() {
   };
 
   const sidebarStyle: CSSProperties = {
-    maxWidth: 280,
+    width: 280,
+    display: "flex",
+    flexDirection: "column",
   };
+
+  const labelStyle: CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    fontWeight: "bold",
+  }
 
   const mainStyle: CSSProperties = {
     flex: 1,
@@ -50,21 +58,35 @@ export function Planner() {
   return (
     <div style={plannerStyle}>
       <aside style={sidebarStyle}>
-        <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
-        <input type="number" value={panelCount} onChange={e => setPanelCount(e.target.valueAsNumber)} />
-        <select value={panelDelta} onChange={e => setPanelDelta(+e.target.value)}>
-          <option value={0.5 * ONE_HOUR}>½ Hour</option>
-          <option value={1 * ONE_HOUR}>1 Hour</option>
-          <option value={2 * ONE_HOUR}>2 Hours</option>
-          <option value={3 * ONE_HOUR}>3 Hours</option>
-          <option value={4 * ONE_HOUR}>4 Hours</option>
-          <option value={5 * ONE_HOUR}>5 Hours</option>
-        </select>
-        <label>
-          Desaturate
-          <input type="checkbox" checked={desaturate} onChange={e => setDesaturate(e.target.checked)} />
+        <label style={labelStyle}>
+          Start Date
+          <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
         </label>
-        <label>
+        <label style={labelStyle}>
+          Number of Panels
+          <input type="number" value={panelCount} onChange={e => setPanelCount(e.target.valueAsNumber)} />
+        </label>
+        <label style={labelStyle}>
+          Gap between Panels
+          <select value={panelDelta} onChange={e => setPanelDelta(+e.target.value)}>
+            <option value={0.5 * ONE_HOUR}>½ Hour</option>
+            <option value={1 * ONE_HOUR}>1 Hour</option>
+            <option value={2 * ONE_HOUR}>2 Hours</option>
+            <option value={3 * ONE_HOUR}>3 Hours</option>
+            <option value={4 * ONE_HOUR}>4 Hours</option>
+            <option value={5 * ONE_HOUR}>5 Hours</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
+          Base Map Saturation
+          <select value={saturation} onChange={e => setSaturation(+e.target.value)}>
+            <option value="2">Oversaturate</option>
+            <option value="1">Normal</option>
+            <option value="0.5">Desaturate</option>
+            <option value="0">Greyscale</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
           Show Key
           <input type="checkbox" checked={showKey} onChange={e => setShowKey(e.target.checked)} />
         </label>
@@ -105,7 +127,7 @@ export function Planner() {
             time={time}
             setLocation={setLocation}
             clearLocation={(i === 0 || i === location.index) && clearLocation}
-            desaturate={desaturate}
+            saturation={saturation}
           />
         })}
         {showKey &&
@@ -126,12 +148,12 @@ export function Planner() {
   )
 }
 
-function MapPanel({ location, time, setLocation, clearLocation, desaturate = false }: {
+function MapPanel({ location, time, setLocation, clearLocation, saturation = 1 }: {
   location: { centre: Point, zoom: number },
   time: Date,
   setLocation: (location: { centre: Point, zoom: number }) => void,
   clearLocation: () => void,
-  desaturate?: boolean,
+  saturation?: number,
 }) {
   if (isNaN(+time)) {
     return null;
@@ -142,6 +164,7 @@ function MapPanel({ location, time, setLocation, clearLocation, desaturate = fal
   const panelStyle: CSSProperties = {
     border: "1px solid #666",
     margin: 8,
+    lineHeight: 1,
   }
 
   const timeStyle: CSSProperties = {
@@ -175,7 +198,7 @@ function MapPanel({ location, time, setLocation, clearLocation, desaturate = fal
         onDragEnd={handleDragEnd}
         onDoubleClick={handleDoubleClick}
       >
-        <HongKongMarineLayer style={{ filter: desaturate ? "saturate(0.5)" : "" }} />
+        <HongKongMarineLayer style={{ filter: saturation === 1 ? "" : `saturate(${saturation})` }} />
         <TidalCurrentVectorLayer time={time} outline />
         <TideHeightLayer time={time} />
       </StaticMap>
