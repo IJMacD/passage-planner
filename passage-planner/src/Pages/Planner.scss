@@ -1,0 +1,29 @@
+@media print {
+    nav.App--nav {
+        display: none;
+    }
+}
+
+.Planner {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    aside {
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+
+        @media print {
+            display: none;
+        }
+    }
+
+    main {
+        flex: 1 1 0%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+    }
+}

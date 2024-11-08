@@ -37,10 +37,10 @@ export const ALL_TIDE_STATIONS_INFO = {
 /**
  * @typedef HourlyForecast
  * @prop {string} ForecastHour
- * @prop {number} ForecastTemperature
- * @prop {number} ForecastRelativeHumidity
- * @prop {number} ForecastWindSpeed
- * @prop {number} ForecastWindDirection
+ * @prop {number} ForecastTemperature °c
+ * @prop {number} ForecastRelativeHumidity %
+ * @prop {number} ForecastWindSpeed km/h
+ * @prop {number} ForecastWindDirection °
  */
 
 /**

@@ -5,6 +5,9 @@ import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
 import { VectorFieldLayer } from "../Layers/VectorFieldLayer";
 import { useSavedState } from "../hooks/useSavedState";
+import { WeatherBarbLayer } from "../Layers/WeatherBarbLayer";
+
+import "./Planner.scss";
 
 type Longitude = number;
 type Latitude = number;
@@ -32,33 +35,21 @@ export function Planner() {
   const [showKey, setShowKey] = useState(false);
   const [interpolate, setInterpolate] = useState(false);
 
-  const plannerStyle: CSSProperties = {
-    display: "flex",
-    maxWidth: 1200,
-    margin: "0 auto",
-  };
-
-  const sidebarStyle: CSSProperties = {
-    width: 280,
-    display: "flex",
-    flexDirection: "column",
-  };
-
   const labelStyle: CSSProperties = {
     display: "flex",
     flexDirection: "column",
     fontWeight: "bold",
-  }
+    marginBottom: 8,
+  };
 
-  const mainStyle: CSSProperties = {
-    flex: 1,
-    display: "flex",
-    flexWrap: "wrap",
+  const miniLabelStyle: CSSProperties = {
+    ...labelStyle,
+    display: "block",
   };
 
   return (
-    <div style={plannerStyle}>
-      <aside style={sidebarStyle}>
+    <div className="Planner">
+      <aside>
         <label style={labelStyle}>
           Start Date
           <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
@@ -87,16 +78,16 @@ export function Planner() {
             <option value="0">Greyscale</option>
           </select>
         </label>
-        <label style={labelStyle}>
-          Show Key
+        <label style={miniLabelStyle}>
           <input type="checkbox" checked={showKey} onChange={e => setShowKey(e.target.checked)} />
+          Show Key
         </label>
-        <label style={labelStyle}>
-          Interpolate locations
+        <label style={miniLabelStyle}>
           <input type="checkbox" checked={interpolate} onChange={e => setInterpolate(e.target.checked)} />
+          Interpolate locations
         </label>
       </aside>
-      <main style={mainStyle}>
+      <main>
         {Array.from({ length: panelCount }).map((_, i) => {
           const time = new Date(+new Date(startTime) + i * panelDelta);
           const location = interpolate ?
@@ -207,6 +198,7 @@ function MapPanel({ location, time, setLocation, clearLocation, saturation = 1 }
       >
         <HongKongMarineLayer style={{ filter: saturation === 1 ? "" : `saturate(${saturation})` }} />
         <TidalCurrentVectorLayer time={time} outline />
+        <WeatherBarbLayer time={time} outline />
         <TideHeightLayer time={time} />
       </StaticMap>
     </section>

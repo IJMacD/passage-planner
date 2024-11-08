@@ -21,10 +21,10 @@ const debugMask = false;
  * nearby points on a vector field.
  * @param {object} props
  * @param {import("./VectorFieldLayer.js").Field} props.field
- * @param {string} [props.particleFill]
  * @param {number} [props.rangeLimit] In nautical miles. Default = 1 nm
  * @param {number} [props.speed] Arbitrary units. 1 is slow. 10 is fast.
  * @param {number} [props.density] Arbitrary units. 1 is few. 10 is many.
+ * @param {string} [props.particleFill]
  * @param {number} [props.particleSize]
  * @param {"rod"|"dot"|"bar"} [props.particleStyle]
  * @param {number} [props.particleLifetime] Lifetime in seconds
