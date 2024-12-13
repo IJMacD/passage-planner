@@ -1,5 +1,5 @@
 import { useState, CSSProperties } from "react";
-import { StaticMap } from "../Components/StaticMap";
+import { StaticMap } from "../Components/StaticMap.jsx";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
@@ -90,7 +90,7 @@ export function Planner() {
       <main>
         {Array.from({ length: panelCount }).map((_, i) => {
           const time = new Date(+new Date(startTime) + i * panelDelta);
-          const location = interpolate ?
+          const location: { centre: Point, zoom: number, index?: number }|undefined = interpolate ?
             interpolateLocation(locations, i) :
             findLast(locations, l => l.index <= i);
 
@@ -119,12 +119,16 @@ export function Planner() {
             setLocation();
           }
 
+          if (!location) {
+            return null;
+          }
+
           return <MapPanel
             key={i}
             location={location}
             time={time}
             setLocation={setLocation}
-            clearLocation={(i === 0 || i === location.index) && clearLocation}
+            clearLocation={(i === 0 || i === location.index) ? clearLocation : () => void 0}
             saturation={saturation}
           />
         })}
@@ -180,7 +184,7 @@ function MapPanel({ location, time, setLocation, clearLocation, saturation = 1 }
     setLocation({ centre: [lon, lat], zoom });
   }
 
-  function handleDoubleClick(lon: Longitude, lat: Latitude, e: React.MouseEvent) {
+  function handleDoubleClick(_lon: Longitude, _lat: Latitude, e: React.MouseEvent) {
     setLocation({ centre, zoom: (e.ctrlKey || e.metaKey) ? zoom - 1 : zoom + 1 });
   }
 
@@ -229,7 +233,10 @@ function findLast<T>(array: T[], callback: (element: T) => boolean) {
   return undefined;
 }
 
-function interpolateLocation (locations: { index: number; centre: Point; zoom: number; }[], index: number) {
+function interpolateLocation (locations: { index: number; centre: Point; zoom: number; }[], index: number): {
+  centre: Point,
+  zoom: number
+} | undefined {
   const found = locations.find(l => l.index === index);
   if (found) {
     return found;
@@ -237,6 +244,10 @@ function interpolateLocation (locations: { index: number; centre: Point; zoom: n
 
   const prevLocation = findLast(locations, l => l.index < index);
   const nextLocation = locations.find(l => l.index > index);
+
+  if (!prevLocation) {
+    return;
+  }
 
   if (!nextLocation) {
     return prevLocation;
