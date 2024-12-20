@@ -1,4 +1,4 @@
-FROM node:21 as build
+FROM node:21 AS build
 RUN ["git", "clone", "https://github.com/IJMacD/passage-planner.git", "/app"]
 WORKDIR /app/passage-planner
 RUN yarn && yarn build:library

@@ -1,6 +1,6 @@
 import React from "react";
 import { VesselShape } from "./VesselShapeByType.jsx";
-import { getVesselColours } from "./getVesselColours.jsx";
+import { getVesselColours } from "../util/getVesselColours.js";
 
 /**
  *

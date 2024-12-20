@@ -6,6 +6,7 @@ import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
 import { VectorFieldLayer } from "../Layers/VectorFieldLayer";
 import { useSavedState } from "../hooks/useSavedState";
 import { WeatherBarbLayer } from "../Layers/WeatherBarbLayer";
+import { CurrentGradientLayer } from "../Layers/CurrentGradientLayer.jsx";
 
 import "./Planner.scss";
 
@@ -34,6 +35,7 @@ export function Planner() {
   const [saturation, setSaturation] = useState(1);
   const [showKey, setShowKey] = useState(false);
   const [interpolate, setInterpolate] = useState(false);
+  const [showCurrentGradientLayer, setShowCurrentGradientLayer] = useState(false);
 
   const labelStyle: CSSProperties = {
     display: "flex",
@@ -86,6 +88,10 @@ export function Planner() {
           <input type="checkbox" checked={interpolate} onChange={e => setInterpolate(e.target.checked)} />
           Interpolate locations
         </label>
+        <label style={miniLabelStyle}>
+          <input type="checkbox" checked={showCurrentGradientLayer} onChange={e => setShowCurrentGradientLayer(e.target.checked)} />
+          Show Current Gradient
+        </label>
       </aside>
       <main>
         {Array.from({ length: panelCount }).map((_, i) => {
@@ -130,6 +136,7 @@ export function Planner() {
             setLocation={setLocation}
             clearLocation={(i === 0 || i === location.index) ? clearLocation : () => void 0}
             saturation={saturation}
+            showCurrentGradientLayer={showCurrentGradientLayer}
           />
         })}
         {showKey &&
@@ -150,12 +157,20 @@ export function Planner() {
   )
 }
 
-function MapPanel({ location, time, setLocation, clearLocation, saturation = 1 }: {
+function MapPanel({
+  location,
+  time,
+  setLocation,
+  clearLocation,
+  saturation = 1,
+  showCurrentGradientLayer = false
+}: {
   location: { centre: Point, zoom: number },
   time: Date,
   setLocation: (location: { centre: Point, zoom: number }) => void,
   clearLocation: () => void,
   saturation?: number,
+  showCurrentGradientLayer?: boolean,
 }) {
   if (isNaN(+time)) {
     return null;
@@ -201,6 +216,7 @@ function MapPanel({ location, time, setLocation, clearLocation, saturation = 1 }
         onDoubleClick={handleDoubleClick}
       >
         <HongKongMarineLayer style={{ filter: saturation === 1 ? "" : `saturate(${saturation})` }} />
+        {showCurrentGradientLayer && <CurrentGradientLayer time={time} /> }
         <TidalCurrentVectorLayer time={time} outline />
         <WeatherBarbLayer time={time} outline />
         <TideHeightLayer time={time} />
