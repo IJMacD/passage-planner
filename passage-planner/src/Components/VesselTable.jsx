@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import { latlon2nm as latLon2nm } from '../util/geo.js';
 import { useAnimation } from '../hooks/useAnimation.js';
 import { VesselShape } from "../Components/VesselShapeByType.jsx";
-import { getVesselColours } from "./getVesselColours.jsx";
+import { getVesselColours } from "../util/getVesselColours.js";
 import { isMoving } from '../util/isMoving.js';
 
 const baseStation = { lon: 114.173162, lat: 22.303057 };

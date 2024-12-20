@@ -6,7 +6,6 @@ import React from "react";
  * @param {import("../util/ais/ais.js").Vessel} [props.vessel]
  * @param {number} [props.size]
  * @param {"arrows"|"houses"} [props.vesselStyle]
- * @param {...any} [props.otherProps]
  * @returns
  */
 export function VesselShape ({ vessel, size = 5, vesselStyle, ...otherProps }) {

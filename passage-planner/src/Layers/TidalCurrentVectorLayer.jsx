@@ -1,8 +1,7 @@
-import React from "react";
 import { useTidalCurrents } from "../hooks/useTidalCurrents";
 import { VectorFieldLayer } from "./VectorFieldLayer";
 
-export function TidalCurrentVectorLayer ({ time }) {
+export function TidalCurrentVectorLayer({ time, ...otherProps }) {
     const tideVectors = useTidalCurrents(time);
-    return tideVectors && <VectorFieldLayer field={tideVectors} />;
+    return tideVectors && <VectorFieldLayer field={tideVectors} {...otherProps} />;
 }

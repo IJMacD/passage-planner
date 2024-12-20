@@ -27,7 +27,7 @@ import { lonLat2XY } from "../util/projection.js";
  * @param {boolean} [props.showMagnitude]
  * @returns
  */
-export function VectorFieldLayer({ field, scale = 10, outline = false, showMagnitude = false, }) {
+export function BarbFieldLayer({ field, scale = 10, outline = false, showMagnitude = false, }) {
     const context = useContext(StaticMapContext);
 
     const [left, top] = useContext(DragContext);
@@ -65,41 +65,68 @@ export function VectorFieldLayer({ field, scale = 10, outline = false, showMagni
                 }
                 else {
                     const [x, y] = point.vector;
+
                     direction = Math.atan2(y, x);
                     magnitude = Math.sqrt(x * x + y * y);
                 }
 
-                const value = scale * magnitude;
+                if (magnitude === 0) {
+                    continue;
+                }
 
-                const r = value * devicePixelRatio;
-                const t = r / 5;
+                const t = 2 * devicePixelRatio;
 
                 ctx.translate(x * devicePixelRatio, y * devicePixelRatio);
                 ctx.rotate(direction + Math.PI);
 
                 ctx.beginPath();
-                ctx.moveTo(0, -2 * r);
-                ctx.lineTo(0, r);
-                ctx.moveTo(r, 0);
-                ctx.lineTo(0, r);
-                ctx.lineTo(-r, 0);
-                ctx.lineCap = "round";
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.moveTo(10, 0);
+                ctx.lineTo(100, 0);
+
+                // Magnitude is in km/h
+                const knots = magnitude * 0.539957;
+
+                const halfBarbs = Math.round(knots / 5);
+                const barbParity = halfBarbs % 2;
+
+                if (halfBarbs === 1) { // Rounds to 5
+                    const bx = 90;
+                    ctx.moveTo(bx, 0);
+                    ctx.lineTo(bx + 5, 10);
+                }
+                else {
+                    let bx = 100;
+
+                    for (let i = 0; i < Math.floor(halfBarbs / 2); i++) {
+                        ctx.moveTo(bx, 0);
+                        ctx.lineTo(bx + 10, 20);
+                        bx -= 10;
+                    }
+
+                    if (barbParity) {
+                        ctx.moveTo(bx, 0);
+                        ctx.lineTo(bx + 5, 10);
+                    }
+                }
 
                 if (outline) {
-                    ctx.strokeStyle = "#000";
+                    ctx.strokeStyle = "#FFF";
                     ctx.lineWidth = 2 * t;
                     ctx.stroke();
                 }
 
-                ctx.strokeStyle = getColour(value);
+                ctx.strokeStyle = "#000";
                 ctx.lineWidth = t;
+                ctx.lineCap = "round";
 
                 ctx.stroke();
 
                 ctx.resetTransform();
 
                 if (showMagnitude) {
-                    ctx.fillText(magnitude, x * devicePixelRatio, y * devicePixelRatio);
+                    ctx.font = `${10 * devicePixelRatio}px sans-serif`;
+                    ctx.fillText(knots.toFixed(1), x * devicePixelRatio, (y + 16) * devicePixelRatio);
                 }
             }
         }

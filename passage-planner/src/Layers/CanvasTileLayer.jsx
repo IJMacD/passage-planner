@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { getTiles } from "../util/getTiles.js";
 import { renderCanvasTileLayer } from "../canvas-renderers/renderCanvasTileLayer.js";
 import { loadImage } from "../util/loadImage.js";
@@ -8,9 +8,10 @@ import { loadImage } from "../util/loadImage.js";
  *
  * @param {object} props
  * @param {import("./TileMapLayer.jsx").TileJSON} props.layer
+ * @param {import("react").CSSProperties} [props.style]
  * @returns
  */
-export function CanvasTileLayer({ layer }) {
+export function CanvasTileLayer({ layer, style = {} }) {
     const context = useContext(StaticMapContext);
 
     const [left, top] = useContext(DragContext);
@@ -61,5 +62,5 @@ export function CanvasTileLayer({ layer }) {
         }
     }, [context]);
 
-    return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", position: "absolute", top, left }} />;
+    return <canvas ref={canvasRef} style={{ ...style, width: "100%", height: "100%", position: "absolute", top, left }} />;
 }

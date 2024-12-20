@@ -1,8 +1,7 @@
 import { useContext } from "react";
-import React from "react";
 import { LightFlasher } from "../Components/LightFlasher.jsx";
 import { useLights } from "../hooks/useLights.js";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { getBounds, lonLat2XY } from "../util/projection.js";
 
 /**

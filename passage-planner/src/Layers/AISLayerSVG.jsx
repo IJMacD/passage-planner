@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext } from "react";
 import { VesselShape } from "../Components/VesselShapeByType.jsx";
-import { getVesselColours } from "../Components/getVesselColours.jsx";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { getVesselColours } from "../util/getVesselColours.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { lonLat2XY } from "../util/projection.js";
 import { useAnimation } from "../hooks/useAnimation.js";
 import { isMoving } from "../util/isMoving.js";

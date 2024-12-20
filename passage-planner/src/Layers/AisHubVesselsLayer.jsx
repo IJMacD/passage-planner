@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { AISLayerSVG } from "./AISLayerSVG.jsx";
-import { StaticMapContext } from "../Components/StaticMapContext.js";
+import { StaticMapContext } from "../Components/StaticMap.jsx";
 import { useAisHubVessels } from "../hooks/useAisHubVessels.js";
 
 /**

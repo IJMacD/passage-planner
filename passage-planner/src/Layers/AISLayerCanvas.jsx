@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
-import { getVesselColours } from "../Components/getVesselColours.jsx";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { getVesselColours } from "../util/getVesselColours.js";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { lonLat2XY } from "../util/projection.js";
 import React from "react";
 

@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
 import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
-import React from "react";
 import gradientFieldWorker from '../workers/gradientFieldWorker.js?worker'
 
 /**

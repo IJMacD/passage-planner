@@ -1,4 +1,3 @@
-import React from "react";
 import { GradientFieldLayer } from "./GradientFieldLayer.jsx";
 import { useWeatherFieldVectors } from "../hooks/useWeatherFieldVectors.js";
 

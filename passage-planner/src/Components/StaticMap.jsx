@@ -2,7 +2,27 @@ import React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { lonLat2XY, xy2LonLat } from "../util/projection.js";
 import { useFullscreen } from "../hooks/useFullscreen.js";
-import { DragContext, StaticMapContext } from "./StaticMapContext.js";
+
+/**
+ * @typedef StaticMapContextValue
+ * @prop {[number, number]} centre
+ * @prop {number} zoom
+ * @prop {number} width
+ * @prop {number} height
+ */
+
+export const StaticMapContext = React.createContext({
+    centre: /** @type {[number, number]} */ ([0, 0]),
+    zoom: 8,
+    width: 1024,
+    height: 1024,
+});
+/**
+ * @typedef {[dx: number, dy: number]} DragContextValue
+ */
+
+export const DragContext = React.createContext(/** @type {DragContextValue} */([0, 0]));
+
 
 /**
  *
@@ -11,13 +31,14 @@ import { DragContext, StaticMapContext } from "./StaticMapContext.js";
  * @param {number} props.zoom
  * @param {number|string} [props.width]
  * @param {number} [props.height]
+ * @param {boolean} [props.fullscreenButton]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onClick]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onDoubleClick]
  * @param {(lon: number, lat: number, e: import('react').MouseEvent) => void} [props.onDragEnd]
  * @param {React.ReactNode} [props.children]
  * @returns
  */
-export function StaticMap({ centre, zoom, width = 1024, height = 1024, onClick, onDoubleClick, onDragEnd, children }) {
+export function StaticMap({ centre, zoom, width = 1024, height = 1024, onClick, onDoubleClick, onDragEnd, fullscreenButton = false, children }) {
 
     const [actualWidth, setActualWidth] = useState(typeof width === "number" ? width : 1024);
     const [actualHeight, setActualHeight] = useState(height);
@@ -151,7 +172,7 @@ export function StaticMap({ centre, zoom, width = 1024, height = 1024, onClick, 
                 </StaticMapContext.Provider>
             </DragContext.Provider>
             {/* dragOffset && <p style={{position:"absolute"}}>dx: {dragOffset[0]} dy: {dragOffset[1]}</p> */}
-            <button style={{ position: "absolute", right: 10, bottom: 10 }} onClick={toggleFullscreen}>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</button>
+            { fullscreenButton && <button style={{ position: "absolute", right: 10, bottom: 10 }} onClick={toggleFullscreen}>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</button> }
         </div>
     );
 }

@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import { StaticMapContext } from "../Components/StaticMapContext.js";
-import React from "react";
+import { StaticMapContext } from "../Components/StaticMap.jsx";
 
 /**
  * @typedef Particle

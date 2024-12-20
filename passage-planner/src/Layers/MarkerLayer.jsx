@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMapContext.js";
+import { useContext } from "react";
+import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
 import { lonLat2XY } from "../util/projection.js";
 import { Marker } from "../Components/Marker.jsx";
 
