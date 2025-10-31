@@ -91,7 +91,7 @@ export function VectorFieldLayer({ field, scale = 10, outline = false, showMagni
                     ctx.stroke();
                 }
 
-                ctx.strokeStyle = getColour(value);
+                ctx.strokeStyle = getTidalColour(magnitude);
                 ctx.lineWidth = t;
 
                 ctx.stroke();
@@ -117,4 +117,13 @@ function getColour(value) {
     if (value < 8) return "#fa8a20";
     if (value < 10) return "#9934fd";
     return "#ff2d2d";
+}
+
+function getTidalColour(value) {
+    if (value < 0.5) return "rgb(1 147 211)";
+    if (value < 1.0) return "rgb(5 200 1)";
+    if (value < 1.5) return "rgb(238 239 0)";
+    if (value < 2.0) return "rgb(250 138 32)";
+    if (value < 2.5) return "rgb(154 52 253)";
+    return "rgb(255 45 46)";
 }

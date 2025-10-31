@@ -1,5 +1,5 @@
-import { useState, CSSProperties } from "react";
-import { StaticMap } from "../Components/StaticMap.jsx";
+import { useState, CSSProperties, useContext } from "react";
+import { StaticMap, StaticMapContext } from "../Components/StaticMap.jsx";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
@@ -9,6 +9,7 @@ import { WeatherBarbLayer } from "../Layers/WeatherBarbLayer";
 import { CurrentGradientLayer } from "../Layers/CurrentGradientLayer.jsx";
 
 import "./Planner.scss";
+import { lonLat2XY } from "../util/projection.js";
 
 type Longitude = number;
 type Latitude = number;
@@ -18,13 +19,21 @@ type ISOLocalDateString = string;
 const ONE_HOUR = 60 * 60 * 1000;
 
 const keyField = [
-  { lon: -0.015, lat: 0.011, magnitude: 0.1, direction: 0 },
-  { lon: -0.015, lat: 0.009, magnitude: 0.2, direction: 0 },
-  { lon: -0.015, lat: 0.006, magnitude: 0.3, direction: 0 },
-  { lon: -0.015, lat: 0.002, magnitude: 0.5, direction: 0 },
-  { lon: -0.015, lat: -0.002, magnitude: 0.7, direction: 0 },
-  { lon: -0.015, lat: -0.006, magnitude: 0.9, direction: 0 },
-  { lon: -0.015, lat: -0.010, magnitude: 1.1, direction: 0 },
+  { lon: -0.015, lat: 0.011, magnitude: 0.49, direction: 0 },
+  { lon: -0.015, lat: 0.009, magnitude: 0.66, direction: 0 },
+  { lon: -0.015, lat: 0.006, magnitude: 1.01, direction: 0 },
+  { lon: -0.015, lat: 0.0025, magnitude: 1.51, direction: 0 },
+  { lon: -0.015, lat: -0.002, magnitude: 2.01, direction: 0 },
+  { lon: -0.015, lat: -0.008, magnitude: 2.51, direction: 0 },
+];
+
+const textLabels = [
+  { lon: -0.010, lat: 0.011, text: "< 0.5 kn" },
+  { lon: -0.010, lat: 0.009, text: "< 1.0 kn" },
+  { lon: -0.010, lat: 0.006, text: "< 1.5 kn" },
+  { lon: -0.010, lat: 0.0025, text: "< 2.0 kn" },
+  { lon: -0.010, lat: -0.002, text: "< 2.5 kn" },
+  { lon: -0.010, lat: -0.008, text: ">= 2.5 kn" },
 ];
 
 export function Planner() {
@@ -134,9 +143,10 @@ export function Planner() {
             location={location}
             time={time}
             setLocation={setLocation}
-            clearLocation={(i === 0 || i === location.index) ? clearLocation : () => void 0}
+            clearLocation={(i === 0 || i === location.index) ? clearLocation : undefined}
             saturation={saturation}
             showCurrentGradientLayer={showCurrentGradientLayer}
+            showDate={i === 0}
           />
         })}
         {showKey &&
@@ -148,6 +158,10 @@ export function Planner() {
               width={400}
               height={300}
             >
+              <TextLayer
+                texts={textLabels}
+                outline
+              />
               <VectorFieldLayer field={keyField} outline />
             </StaticMap>
           </section>
@@ -157,21 +171,31 @@ export function Planner() {
   )
 }
 
+interface MapPanelProps {
+  location: {
+    centre: Point;
+    zoom: number;
+  };
+  time: Date;
+  showDate?: boolean;
+  setLocation: (location: {
+    centre: Point;
+    zoom: number;
+  }) => void;
+  clearLocation?: () => void;
+  saturation?: number;
+  showCurrentGradientLayer?: boolean;
+}
+
 function MapPanel({
   location,
   time,
   setLocation,
   clearLocation,
   saturation = 1,
-  showCurrentGradientLayer = false
-}: {
-  location: { centre: Point, zoom: number },
-  time: Date,
-  setLocation: (location: { centre: Point, zoom: number }) => void,
-  clearLocation: () => void,
-  saturation?: number,
-  showCurrentGradientLayer?: boolean,
-}) {
+  showCurrentGradientLayer = false,
+  showDate = false,
+}: MapPanelProps) {
   if (isNaN(+time)) {
     return null;
   }
@@ -193,7 +217,7 @@ function MapPanel({
     cursor: "pointer",
   };
 
-  const timeFormatter = Intl.DateTimeFormat([], { timeStyle: "medium" });
+  const timeFormatter = Intl.DateTimeFormat([], { timeStyle: "medium", dateStyle: showDate ? "short" : undefined });
 
   function handleDragEnd(lon: Longitude, lat: Latitude) {
     setLocation({ centre: [lon, lat], zoom });
@@ -284,4 +308,44 @@ function interpolateLocation (locations: { index: number; centre: Point; zoom: n
   const zoom = zoom0 + fraction * dZoom;
 
   return { centre: [lon, lat], zoom };
+}
+
+function TextLayer({
+  texts,
+  outline = false,
+}: {
+  texts: { lon: number; lat: number; text: string }[];
+  outline?: boolean;
+}) {
+  const context = useContext(StaticMapContext);
+  const { width, height } = context;
+
+  const projection = lonLat2XY(context);
+
+  return (
+    <svg width={width} height={height} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
+      {texts.map(({ lon, lat, text }, i) => {
+        const [x, y] = projection(lon, lat);
+        return (
+          <text
+            key={i}
+            x={x}
+            y={y}
+            style={{
+              fontSize: 14,
+              fontWeight: "bold",
+              textAnchor: "start",
+              dominantBaseline: "central",
+              fill: "#000",
+              stroke: outline ? "#fff" : "none",
+              strokeWidth: outline ? 3 : 0,
+              paintOrder: outline ? "stroke fill" : undefined,
+            }}
+          >
+            {text}
+          </text>
+        );
+      })}
+    </svg>
+  );
 }
