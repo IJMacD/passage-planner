@@ -16,7 +16,7 @@ foreach ($records as $record => $id) :
 endforeach;
 ?>
 <div id="map"></div>
-<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.js"></script>
+<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.umd.cjs"></script>
 <script>
     const bounds = [
         <?php

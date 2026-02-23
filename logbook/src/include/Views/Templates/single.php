@@ -40,7 +40,7 @@
 <div id="map"></div>
 <div id="polar-plot"></div>
 <script src="<?= $baseURL ?>/static/js/util.js"></script>
-<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.js"></script>
+<script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.umd.cjs"></script>
 <script>
     fetch("<?= $baseURL ?>/api/v1/logs/<?= dechex($entry->id) ?>/track")
         .then(r => r.text())
