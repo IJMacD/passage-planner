@@ -29,7 +29,8 @@ class Auth
 
         // Ignore username, only consider password
         if ($pass !== $auth_pass) {
-            header("HTTP/1.1 403 Forbidden");
+            header("HTTP/1.1 401 Unauthorized");
+            header("WWW-Authenticate: Basic realm=logbook");
             exit;
         }
 
