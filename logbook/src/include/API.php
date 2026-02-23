@@ -168,10 +168,35 @@ class API
     {
         global $db;
 
-        $stmt = $db->prepare("SELECT gpx FROM logbook_tracks WHERE logbook_id = :id ORDER BY uploaded_date DESC LIMIT 1");
+        $stmt = $db->prepare("SELECT uploaded_date FROM logbook_tracks WHERE logbook_id = :id ORDER BY uploaded_date DESC LIMIT 1");
 
         $stmt->execute(["id" => hexdec($id)]);
 
+        $uploaded_date = $stmt->fetchColumn();
+        if (!$uploaded_date) {
+            header("HTTP/1.1 404 Not Found");
+            echo "Track not found";
+            exit;
+        }
+        // Convert from YYYY-MM-DD hh:mm:ss to time
+        $uploadedTime = strtotime($uploaded_date);
+
+        $ifModifiedHeader = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) : false;
+        if ($ifModifiedHeader) {
+
+            if ($uploadedTime <= $ifModifiedHeader) {
+                header("HTTP/1.1 304 Not Modified");
+                header("Content-Type: application/gpx+xml");
+                exit;
+            }
+        }
+
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s", $uploadedTime) . " GMT");
+        header("Cache-Control: no-cache");
+
+        $stmt = $db->prepare("SELECT gpx FROM logbook_tracks WHERE logbook_id = :id ORDER BY uploaded_date DESC LIMIT 1");
+
+        $stmt->execute(["id" => hexdec($id)]);
         header("Content-Type: application/gpx+xml");
 
         if (!isAJAXRequest()) {
