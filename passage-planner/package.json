@@ -16,8 +16,8 @@
     "start": "vite",
     "build": "tsc && vite build",
     "proxy": "lcp --proxyUrl https://data.aishub.net",
-    "build:library": "vite --config vite.config.lib.js build",
-    "deploy:library": "wsl rsync -av dist/ ../logbook/static/vendor/"
+    "build:library": "tsc && vite --config vite.config.lib.js build",
+    "deploy:library": "mkdir -p ../logbook/src/static/vendor && rsync -av dist/ ../logbook/src/static/vendor/"
   },
   "browserslist": {
     "production": [

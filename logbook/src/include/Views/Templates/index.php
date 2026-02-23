@@ -74,6 +74,12 @@ $records = getRecordSettingTracks($db);
     </tfoot>
 </table>
 <?php
+if (isset($dateSpec)):
+?>
+    <p><a href="<?= $baseURL ?>/all?date=<?= $dateSpec ?>">View All</a></p>
+<?php
+endif;
+
 if (isset($years)) :
 ?>
     <h2>View calendar for year:</h2>

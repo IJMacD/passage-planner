@@ -27,6 +27,7 @@ $content = include_contents("Templates/index.php", [
     "years" => $entry_years,
     "sub_year_groupings" => $sub_year_groupings,
     "heading" => getDateLabel($dateSpec),
+    "dateSpec" => $dateSpec,
 ]);
 
 require("Templates/layout.php");

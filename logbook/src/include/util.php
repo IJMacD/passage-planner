@@ -181,6 +181,8 @@ function iso8601($dateSpec): array|null
             $y2 . "-" . str_pad($m2, 2, "0", STR_PAD_LEFT) . "-" . str_pad($d2, 2, "0", STR_PAD_LEFT),
         ];
     }
+
+    return null;
 }
 
 function subYearGrouping(int $year, int $grouping)
@@ -317,6 +319,8 @@ function getDateLabel($dateSpec): string
 
         return "The " . $od . $ord . " day of " . $y1;
     }
+
+    return "Unknown";
 }
 
 function subYearGroupingLabel(int $year, int $grouping): string
@@ -357,6 +361,8 @@ function subYearGroupingLabel(int $year, int $grouping): string
         case 41:
             return "Second Half " . $year;
     }
+
+    return "Unknown";
 }
 
 function formatDurationToHours(DateInterval $duration): string
@@ -385,5 +391,5 @@ function jdtoiso($jd)
 {
     $unix = jdtounix($jd);
     $date = new DateTime("@" . $unix);
-    return substr($date->format(DateTime::ISO8601), 0, 10);
+    return substr($date->format(DateTime::ATOM), 0, 10);
 }
