@@ -1,5 +1,7 @@
 hostname: passage.ijmacd.com
 mariadb:
+  image:
+    repository: bitnamilegacy/mariadb
   auth:
     database: passage
     username: passage_user

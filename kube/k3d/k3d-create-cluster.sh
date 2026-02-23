@@ -30,18 +30,18 @@ k3d cluster create ${APPNAME} \
   --volume ${SCRIPT_DIR}/../../:/${REPO}/${APPNAME}@all
 
 # Bootstrap the helm dependencies
-helm dependency build --skip-refresh $SCRIPT_DIR/../chart/${APPNAME}/
+# helm dependency build --skip-refresh $SCRIPT_DIR/../chart/${APPNAME}/
 
-# Preload library images into local registry
-library_images=(
-  "bitnami/mariadb:11.1.3-debian-11-r0"
-)
+# # Preload library images into local registry
+# library_images=(
+#   "bitnami/mariadb:11.1.3-debian-11-r0"
+# )
 
-for i in "${library_images[@]}"; do
-  docker pull docker.io/${i}
-  docker tag docker.io/${i} ${LOCAL_REGISTRY}/${i}
-  docker push ${LOCAL_REGISTRY}/${i}
-done
+# for i in "${library_images[@]}"; do
+#   docker pull docker.io/${i}
+#   docker tag docker.io/${i} ${LOCAL_REGISTRY}/${i}
+#   docker push ${LOCAL_REGISTRY}/${i}
+# done
 
 mkdir -p ~/.kube
 k3d kubeconfig merge ${APPNAME} --output ${LOCAL_KUBECONFIG}
