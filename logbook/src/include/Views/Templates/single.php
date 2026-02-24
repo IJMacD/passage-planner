@@ -47,6 +47,6 @@
         .then(r => r.text())
         .then(t => {
             passagePlanner.renderGPXTrack(document.getElementById("map"), t);
-            passagePlanner.renderExportGPXTrack(document.getElementById("export-video"), t);
+            passagePlanner.renderExportGPXAnimation(document.getElementById("export-video"), t);
         });
 </script>
