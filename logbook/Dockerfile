@@ -1,7 +1,7 @@
 FROM node:21 AS build
 RUN git clone https://github.com/IJMacD/passage-planner.git /app && \
     cd /app && \
-    git checkout ce7faaf5779166e3522c5c977648e35154013924
+    git checkout 770f7afca758ff6019072bd8747948bff75fc89c
 WORKDIR /app/passage-planner
 RUN yarn && yarn build:library
 

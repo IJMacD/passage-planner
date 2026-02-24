@@ -39,6 +39,7 @@
 </dl>
 <div id="map"></div>
 <div id="polar-plot"></div>
+<div id="export-video"></div>
 <script src="<?= $baseURL ?>/static/js/util.js"></script>
 <script src="<?= $baseURL ?>/static/vendor/passage-planner-lib.umd.cjs"></script>
 <script>
@@ -46,5 +47,6 @@
         .then(r => r.text())
         .then(t => {
             passagePlanner.renderGPXTrack(document.getElementById("map"), t);
+            passagePlanner.renderExportGPXTrack(document.getElementById("export-video"), t);
         });
 </script>
