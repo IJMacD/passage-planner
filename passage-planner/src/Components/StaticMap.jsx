@@ -1,28 +1,8 @@
-import React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { lonLat2XY, xy2LonLat } from "../util/projection.js";
 import { useFullscreen } from "../hooks/useFullscreen.js";
-
-/**
- * @typedef StaticMapContextValue
- * @prop {[number, number]} centre
- * @prop {number} zoom
- * @prop {number} width
- * @prop {number} height
- */
-
-export const StaticMapContext = React.createContext({
-    centre: /** @type {[number, number]} */ ([0, 0]),
-    zoom: 8,
-    width: 1024,
-    height: 1024,
-});
-/**
- * @typedef {[dx: number, dy: number]} DragContextValue
- */
-
-export const DragContext = React.createContext(/** @type {DragContextValue} */([0, 0]));
-
+import { StaticMapContext } from "./StaticMapContext.js";
+import { DragContext } from "./DragContext.js";
 
 /**
  *

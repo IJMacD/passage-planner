@@ -7,7 +7,7 @@
  */
 
 /**
- * @typedef {{name: string?;segments: Point[][];}} Track
+ * @typedef {{name: string?; segments: Point[][];}} Track
  */
 
 /**

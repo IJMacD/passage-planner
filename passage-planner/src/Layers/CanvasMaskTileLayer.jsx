@@ -1,5 +1,5 @@
 import { useContext, useRef } from "react";
-import { DragContext } from "../Components/StaticMap.jsx";
+import { DragContext } from "../Components/DragContext.js";
 import { useLandMask } from "../hooks/useLandMask.js";
 
 /**

@@ -22,9 +22,10 @@ export function useCentreAndZoom(track) {
 
 /**
  * @param {import("../util/gpx.js").Point[]} points
+ * @param {{ width: number; height: number }} [canvas]
  * @returns {CentreAndZoom}
  */
-export function getCentreAndZoom(points) {
+export function getCentreAndZoom(points, canvas = { width: 1024, height: 1024 }) {
     const bbox = getBoundingBox(points);
 
     if (bbox.some(n => !isFinite(n))) {
@@ -40,8 +41,8 @@ export function getCentreAndZoom(points) {
     const lonRange = bbox[2] - bbox[0];
     const latRange = bbox[3] - bbox[1];
 
-    const maxRange = Math.max(lonRange, latRange);
-    const zoom = Math.ceil(Math.log2(360 / maxRange));
+    const maxRange = Math.max(lonRange * 1024 / canvas.width, latRange * 1024 / canvas.height);
+    const zoom = Math.ceil(Math.log2(666 / maxRange));
 
     return { centre, zoom };
 }

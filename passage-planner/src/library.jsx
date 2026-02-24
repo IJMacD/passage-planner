@@ -11,6 +11,7 @@ import { latlon2bearing, latlon2nm } from "./util/geo.js";
 import { parseGPXDocument } from "./util/gpx.js";
 import { makeCoursePlot } from "./util/makeCoursePlot.js";
 import { ControlsLayer } from "./Layers/ControlsLayer.jsx";
+import ExportVideo from "./Components/ExportVideo.tsx";
 
 export * as gpx from "./util/gpx.js";
 
@@ -111,4 +112,16 @@ export function renderGPXTracks(domNode, gpxStrings) {
         return gpx.tracks[0];
     });
     renderTrackMap(domNode, gpxList);
+}
+
+export function renderExportGPXAnimation(domNode, gpxString, filename = "track_animation") {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(gpxString, "text/xml");
+    const gpx = parseGPXDocument(doc);
+    const track = gpx.tracks[0];
+
+    ReactDOM.render(
+        <ExportVideo track={track} filename={filename} />,
+        domNode
+    );
 }

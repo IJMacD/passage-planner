@@ -28,11 +28,12 @@ export function renderCanvasTileLayer(canvas, context, tiles, images, overscale)
 
         const [x, y] = projection(tile.x * overscale, tile.y * overscale);
 
+        // Avoid visible gaps between images by always drawing on exact pixel values
         ctx.drawImage(img,
-            x * devicePixelRatio,
-            y * devicePixelRatio,
-            TILE_SIZE * devicePixelRatio * overscale,
-            TILE_SIZE * devicePixelRatio * overscale
+            Math.floor(x * devicePixelRatio),
+            Math.floor(y * devicePixelRatio),
+            Math.ceil(TILE_SIZE * devicePixelRatio * overscale),
+            Math.ceil(TILE_SIZE * devicePixelRatio * overscale)
         );
 
         if (DEBUG) {

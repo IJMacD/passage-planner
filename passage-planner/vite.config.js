@@ -7,6 +7,12 @@ export default defineConfig({
       usePolling: true,
     },
     origin: "http://127.0.0.1:5173",
+    proxy: {
+      "/logbook": {
+        target: "https://passage.ijmacd.com",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react()],
 });

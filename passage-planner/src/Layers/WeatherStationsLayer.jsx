@@ -1,5 +1,5 @@
 import { useContext, useMemo } from "react";
-import { StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import { useWeatherField } from "../hooks/useWeatherField.js";
 import { findFieldForecast } from "../util/weather.js";
 import { dateFormat } from "../util/dateFormat.js";

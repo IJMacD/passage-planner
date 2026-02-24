@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
-import { DragContext, StaticMapContext } from "../Components/StaticMap.jsx";
+import { DragContext } from "../Components/DragContext.js";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import React from "react";
 import { calculateGradient } from "../util/calculateGradient.js";
 

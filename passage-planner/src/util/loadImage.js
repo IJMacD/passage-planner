@@ -6,7 +6,7 @@ const imageCache = [];
 const CACHE_SIZE = 100;
 
 /**
- *
+ * Loads an image and returns a promise that resolves when it's loaded. Caches the image and any pending promises to avoid duplicate loads.
  * @param {string} src
  * @returns {Promise<HTMLImageElement>}
  */

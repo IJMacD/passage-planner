@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { lat2tile, lon2tile } from "../util/geo.js";
-import { StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import { tileXY2CanvasXY } from "../util/projection.js";
 import { formatTileURL } from "../util/getTiles.js";
 

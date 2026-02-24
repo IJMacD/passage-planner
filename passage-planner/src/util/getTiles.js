@@ -3,11 +3,13 @@ import { lat2tile, lon2tile } from "./geo.js";
 export const TILE_SIZE = 265;
 
 /**
+ * Generate a list of tiles to cover the given viewport for the specified layer. Only returns tiles that intersect with the layer's bounds.
  * @param {[number, number]} centre
  * @param {number} zoom
  * @param {number} width
  * @param {number} height
  * @param {import("../Layers/TileMapLayer.jsx").TileJSON|null} layer
+ * @returns {Array<{x: number, y: number, url: string}>}
  */
 
 export function getTiles(centre, zoom, width, height, layer) {

@@ -1,5 +1,6 @@
 import { useState, CSSProperties, useContext } from "react";
-import { StaticMap, StaticMapContext } from "../Components/StaticMap.jsx";
+import { StaticMap } from "../Components/StaticMap.jsx";
+import { StaticMapContext } from "../Components/StaticMapContext.js";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer";
 import { TideHeightLayer } from '../Layers/TideHeightLayer.jsx';
 import { TidalCurrentVectorLayer } from "../Layers/TidalCurrentVectorLayer";
