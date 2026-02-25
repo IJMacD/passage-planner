@@ -46,6 +46,13 @@ export default function ExportVideo({ track, showPreview = false, filename = "tr
 
     const [progress, setProgress] = useState(0);
 
+    useEffect(() => {
+        // If the canvas and layers are available, render the initial frame for the preview
+        if (canvasRef.current && layers.length > 0 && showPreview) {
+            renderLayers(canvasRef.current, context, layers).catch(err => console.error("Error rendering layers:", err));
+        }
+    }, [context, layers, showPreview]);
+
     async function generateAnimation() {
         if (!canvasRef.current || layers.length === 0 || !track) {
             console.error("Canvas or layer or track not available for animation");
