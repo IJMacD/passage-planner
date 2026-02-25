@@ -160,11 +160,12 @@ async function renderZoomToPoint(canvas: HTMLCanvasElement, context: { height: n
 
             await renderLayers(canvas, { ...context, zoom: animationZoom, centre: animationCentre }, layers);
             videoSource.add((frameStart + frame)/frameRate, 1/frameRate);
+
+            frame++;
+
             if (onProgress) {
                 onProgress(frame / frameCount);
             }
-
-            frame++;
 
             if (frame < frameCount) {
                 setTimeout(renderFrame, 1000 / frameRate);
