@@ -46,18 +46,13 @@ export default function ExportVideo({ track, showPreview = false, filename = "tr
 
     const [progress, setProgress] = useState(0);
 
-    useEffect(() => {
-        if (canvasRef.current && layers.length > 0) {
-            renderLayers(canvasRef.current, context, layers).catch(err => console.error("Error rendering layers:", err));
-        }
-    }, [context, layers]);
-
     async function generateAnimation() {
         if (!canvasRef.current || layers.length === 0 || !track) {
             console.error("Canvas or layer or track not available for animation");
             return;
         }
 
+        setIsPlaying(true);
         setDownloadUrl(null);
 
         const output = new Output({
@@ -83,26 +78,21 @@ export default function ExportVideo({ track, showPreview = false, filename = "tr
 
         let frame = 0;
 
-        frame += await renderZoomToPoint(canvasRef.current, context, layers, videoSource, zoom, trackZoom, centre, trackStart, frame, animationFrameRate);
-        
-        // Pause for a moment at the end of the zoom
-        const pauseDuration = 0.5; // seconds
-        for (let i = 0; i < animationFrameRate * pauseDuration; i++) { // 0.5 second pause
-            videoSource.add((frame + i)/animationFrameRate, 1/animationFrameRate);
-        }
-        frame += animationFrameRate * pauseDuration;
+        await renderLayers(canvasRef.current, context, layers);
 
-        frame += await renderTracePath(canvasRef.current, context, layers, videoSource, track, frame, animationFrameRate, setProgress);
+        frame += pause(videoSource, frame, 0.5, animationFrameRate); // Pause for a moment at the start
 
-        // Pause for a moment before the zoom out
-        for (let i = 0; i < animationFrameRate * pauseDuration; i++) { // 0.5 second pause
-            videoSource.add((frame + i)/animationFrameRate, 1/animationFrameRate);
-        }
-        frame += animationFrameRate * pauseDuration;
+        frame += await renderZoomToPoint(canvasRef.current, context, layers, videoSource, zoom, trackZoom, centre, trackStart, frame, animationFrameRate, (x) => setProgress(x * 0.1));
 
-        frame += await renderZoomToPoint(canvasRef.current, context, layers, videoSource, trackZoom, zoom, trackEnd, centre, frame, animationFrameRate);
+        frame += pause(videoSource, frame, 0.5, animationFrameRate); // Pause for a moment at the end of the zoom
 
-        setIsPlaying(false);
+        frame += await renderTracePath(canvasRef.current, context, layers, videoSource, track, frame, animationFrameRate, (x) => setProgress(0.1 + x * 0.8));
+
+        frame += pause(videoSource, frame, 0.5, animationFrameRate); // Pause for a moment before the zoom out
+
+        frame += await renderZoomToPoint(canvasRef.current, context, layers, videoSource, trackZoom, zoom, trackEnd, centre, frame, animationFrameRate, (x) => setProgress(0.9 + x * 0.1));
+
+        frame += pause(videoSource, frame, 0.5, animationFrameRate); // Pause for a moment at the end
 
         await output.finalize();
 
@@ -112,20 +102,15 @@ export default function ExportVideo({ track, showPreview = false, filename = "tr
             const url = URL.createObjectURL(mp4Blob);
             setDownloadUrl(url);
         }
+
+        setIsPlaying(false);
     }
-
-    useEffect(() => {
-        if (isPlaying) {
-            generateAnimation();
-        }
-    }, [isPlaying]);
-
 
     return (
         <div className="App" style={{ padding: "2em" }}>
             <canvas width={width} height={height} ref={canvasRef} style={{background: "black", border: "1px solid black", width, height, display: showPreview ? "block" : "none" }}></canvas>
             <div>
-                <button onClick={() => setIsPlaying(true)} disabled={isPlaying} style={{ marginTop: "1em" }}>Generate Animation</button>
+                <button onClick={() => generateAnimation()} disabled={isPlaying} style={{ marginTop: "1em" }}>Generate Animation</button>
             </div>
             {isPlaying && <div style={{ marginTop: "0.5em" }}>Progress: {(progress * 100).toFixed(1)}%</div>}
             {downloadUrl && (
@@ -147,7 +132,7 @@ export default function ExportVideo({ track, showPreview = false, filename = "tr
     );
 }
 
-async function renderZoomToPoint(canvas: HTMLCanvasElement, context: { height: number, width: number, centre: [number, number], zoom: number }, layers: Layer[], videoSource: CanvasSource, startZoom: number, endZoom: number, startCentre: [number, number], endCentre: [number, number], frameStart: number = 0, frameRate: number = 25): Promise<number> {
+async function renderZoomToPoint(canvas: HTMLCanvasElement, context: { height: number, width: number, centre: [number, number], zoom: number }, layers: Layer[], videoSource: CanvasSource, startZoom: number, endZoom: number, startCentre: [number, number], endCentre: [number, number], frameStart: number = 0, frameRate: number = 25, onProgress?: (progress: number) => void): Promise<number> {
     return new Promise<number>(resolve => {
         
         let frame = 0;
@@ -175,6 +160,9 @@ async function renderZoomToPoint(canvas: HTMLCanvasElement, context: { height: n
 
             await renderLayers(canvas, { ...context, zoom: animationZoom, centre: animationCentre }, layers);
             videoSource.add((frameStart + frame)/frameRate, 1/frameRate);
+            if (onProgress) {
+                onProgress(frame / frameCount);
+            }
 
             frame++;
 
@@ -248,4 +236,9 @@ async function renderTracePath(canvas: HTMLCanvasElement, context: { height: num
     });
 }
 
-
+function pause(videoSource: CanvasSource, frame: number, durationSeconds: number, frameRate: number): number {
+    for (let i = 0; i < frameRate * durationSeconds; i++) { // 0.5 second pause
+        videoSource.add((frame + i) / frameRate, 1 / frameRate);
+    }
+    return frameRate * durationSeconds;
+}

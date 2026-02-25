@@ -14,6 +14,7 @@ export default function App() {
     const [track, setTrack] = useState<Track | null>(null);
 
     useEffect(() => {
+        if (!trackId) return;
         fetch(`/logbook/api/v1/logs/${trackId}/track`)
             .then(r => r.text())
             .then(gpxString => {
