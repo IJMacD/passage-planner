@@ -1,4 +1,4 @@
-FROM node:21 AS build
+FROM node:24.14 AS build
 RUN git clone https://github.com/IJMacD/passage-planner.git /app && \
     cd /app && \
     git checkout b27e16227e988510cbaf4b9f900c1575775a1077

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.4
 
-FROM node:21 AS build
+FROM node:24.14 AS build
 WORKDIR /app
 COPY package.json yarn.lock /app/
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,uid=1000,gid=1000 ["yarn", "install", "--frozen-lockfile"]
