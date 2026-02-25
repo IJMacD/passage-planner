@@ -6,7 +6,13 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source ${SCRIPT_DIR}/../../vars.sh
 
 echo '---'
-kubectl create namespace ${APPNAME}
+# Check if the namespace exists
+if ! kubectl get namespace "${APPNAME}" > /dev/null 2>&1; then
+    echo "Namespace ${APPNAME} does not exist, creating it..."
+    kubectl create namespace "${APPNAME}"
+else
+    echo "Namespace ${APPNAME} already exists, skipping creation."
+fi
 
 export LOCALHOST_NAME=${APPNAME}.localhost
 export TLS_SECRET_NAME=${APPNAME}-cert

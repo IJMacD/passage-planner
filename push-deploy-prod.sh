@@ -34,7 +34,7 @@ if [ -z "$LOGBOOK_PASSWORD" ]; then
     export LOGBOOK_PASSWORD=$(openssl rand -base64 18)
 fi
 
-helm package ${SCRIPT_DIR}/kube/chart/${APPNAME} --version $GIT_TAG --app-version $GIT_TAG -d ${SCRIPT_DIR}/kube/charts
+helm package ${SCRIPT_DIR}/kube/chart/${APPNAME} --version $GIT_TAG --app-version $GIT_TAG -d ${SCRIPT_DIR}/kube/chart/charts
 
 helm \
   upgrade \
@@ -42,7 +42,7 @@ helm \
   --namespace ${APPNAME} \
   --create-namespace \
   ${APPNAME} \
-  ${SCRIPT_DIR}/kube/charts/${APPNAME}-${GIT_TAG}.tgz \
+  ${SCRIPT_DIR}/kube/chart/charts/${APPNAME}-${GIT_TAG}.tgz \
   --set mariadb.auth.rootPassword=$MARIADB_ROOT_PASSWORD \
   --set mariadb.auth.password=$MARIADB_PASSWORD \
   --set logbook.auth.password=$LOGBOOK_PASSWORD \
