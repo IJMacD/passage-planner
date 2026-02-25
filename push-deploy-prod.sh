@@ -12,12 +12,6 @@ fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source ${SCRIPT_DIR}/vars.sh
 
-if ! grep -q "^version: $GIT_TAG\$" $SCRIPT_DIR/kube/chart/${APPNAME}/Chart.yaml; then
-  echo "Chart version does not match Git tag"
-  exit 1
-fi
-
-
 CURRENT_CONTEXT=$(kubectl config current-context)
 
 echo "Deploying version $GIT_TAG to cluster $CURRENT_CONTEXT"
@@ -40,9 +34,15 @@ if [ -z "$LOGBOOK_PASSWORD" ]; then
     export LOGBOOK_PASSWORD=$(openssl rand -base64 18)
 fi
 
-helm upgrade --install ${APPNAME} \
-  $SCRIPT_DIR/kube/chart/${APPNAME}/ \
-  --namespace ${APPNAME} --create-namespace \
+helm package ${SCRIPT_DIR}/kube/chart/${APPNAME} --version $GIT_TAG --app-version $GIT_TAG -d ${SCRIPT_DIR}/kube/charts
+
+helm \
+  upgrade \
+  --install \
+  --namespace ${APPNAME} \
+  --create-namespace \
+  ${APPNAME} \
+  ${SCRIPT_DIR}/kube/charts/${APPNAME}-${GIT_TAG}.tgz \
   --set mariadb.auth.rootPassword=$MARIADB_ROOT_PASSWORD \
   --set mariadb.auth.password=$MARIADB_PASSWORD \
   --set logbook.auth.password=$LOGBOOK_PASSWORD \
