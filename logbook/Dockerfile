@@ -1,9 +1,9 @@
 FROM node:21 AS build
 RUN git clone https://github.com/IJMacD/passage-planner.git /app && \
     cd /app && \
-    git checkout 97726058016110e571ede083f3c2100334fdd6da
+    git checkout b27e16227e988510cbaf4b9f900c1575775a1077
 WORKDIR /app/passage-planner
-RUN yarn && yarn build:library
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,uid=1000,gid=1000 yarn && yarn build:library
 
 FROM php:8.3-apache AS final
 RUN ["a2enmod","rewrite"]

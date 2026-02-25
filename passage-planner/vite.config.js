@@ -8,8 +8,9 @@ export default defineConfig({
     },
     proxy: {
       "/logbook": {
-        target: "https://passage.ijmacd.com",
+        target: "https://passage.localhost",
         changeOrigin: true,
+        secure: false,
       },
       "/weather_forecast.php": {
         target: "https://passage.ijmacd.com",

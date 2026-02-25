@@ -31,7 +31,8 @@ class API
         }
         header("X-User: " . $auth['user']);
 
-        $fields = ["total_distance", "start_location", "start_time", "end_location", "end_time", "weather", "comments"];
+        $fields = ["name", "total_distance", "start_location", "start_time", "end_location", "end_time", "weather", "comments"];
+        $required_fields = ["total_distance", "start_location", "start_time", "end_location", "end_time"];
         $params = [];
 
         if (isset($_POST["id"])) {
@@ -41,13 +42,13 @@ class API
         }
 
         foreach ($fields as $field) {
-            if (!isset($_POST[$field])) {
+            if (!isset($_POST[$field]) && in_array($field, $required_fields, true)) {
                 header("HTTP/1.1 400 Bad Request");
                 echo "$field not found in post data";
                 exit;
             }
 
-            $value = $_POST[$field];
+            $value = $_POST[$field] ?? null;
 
             if ($field === "start_time" || $field === "end_time") {
                 $value = (new DateTime($value))->format(FORMAT_SQL_DATE);
@@ -58,7 +59,7 @@ class API
 
         global $db;
 
-        $stmt = $db->prepare("INSERT INTO logbook (id, total_distance, start_location, start_time, end_location, end_time, weather, comments) VALUES (:id, :total_distance, :start_location, :start_time, :end_location, :end_time, :weather, :comments)");
+        $stmt = $db->prepare("INSERT INTO logbook (id, name, total_distance, start_location, start_time, end_location, end_time, weather, comments) VALUES (:id, :name, :total_distance, :start_location, :start_time, :end_location, :end_time, :weather, :comments)");
 
         try {
 
@@ -104,7 +105,7 @@ class API
         }
         header("X-User: " . $auth['user']);
 
-        $fields = ["total_distance", "start_location", "start_time", "end_location", "end_time", "weather", "comments"];
+        $fields = ["name", "total_distance", "start_location", "start_time", "end_location", "end_time", "weather", "comments"];
         $set_list = [];
         foreach ($params as $key => $value) {
             if (in_array($key, $fields, true)) {
