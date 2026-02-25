@@ -38,7 +38,7 @@ export function renderTrackMap(domNode, track, { width = 1024, height = 1024 } =
 
     const allPoints = paths.map(p => p.points).flat();
 
-    let { centre, zoom } = getCentreAndZoom(allPoints);
+    let { centre, zoom } = getCentreAndZoom(allPoints, { width, height });
 
     function setCentre(c) {
         if (c instanceof Function) {

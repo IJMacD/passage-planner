@@ -6,9 +6,10 @@ import { getBoundingBox } from "../util/geo.js";
  */
 /**
  * @param {import("../util/gpx.js").Track | null} track
+ * @param {{ width: number; height: number }} [canvas]
  * @returns {CentreAndZoom}
  */
-export function useCentreAndZoom(track) {
+export function useCentreAndZoom(track, canvas = { width: 1024, height: 1024 }) {
     return useMemo(() => {
         if (!track || track.segments.length === 0) {
             return { centre: [0, 0], zoom: 2 };
@@ -16,8 +17,8 @@ export function useCentreAndZoom(track) {
 
         const trackPoints = track.segments.flat();
 
-        return getCentreAndZoom(trackPoints);
-    }, [track]);
+        return getCentreAndZoom(trackPoints, canvas);
+    }, [track, canvas.width, canvas.height]);
 }
 
 /**

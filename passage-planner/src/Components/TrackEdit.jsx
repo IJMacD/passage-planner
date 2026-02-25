@@ -21,7 +21,8 @@ import "./TrackEdit.css";
  * @param {import("../util/gpx.js").Track[]} [props.additionalTracks]
  */
 export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
-    const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
+    const size = 800;
+    const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track, { width: size, height: size });
     const [centre, setCentre] = useState(initialCentre);
     const [zoom, setZoom] = useState(initialZoom);
     const [mode, setMode] = useState("rest");
@@ -190,7 +191,7 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                 </div>
 
                 <div style={{ display: "flex" }}>
-                    <StaticMap centre={centre} zoom={zoom} width={800} height={800} onClick={handleClick}>
+                    <StaticMap centre={centre} zoom={zoom} width={size} height={size} onClick={handleClick}>
                         <WorldLayer />
                         <HongKongMarineLayer />
                         {/* <DebugLayer /> */}

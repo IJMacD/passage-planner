@@ -40,14 +40,15 @@ const playSpeed = 60; // 1 minute per second
  * @param {import("../util/gpx.js").Track[]} [props.additionalTracks]
  */
 export function TrackDetails({ track, additionalTracks }) {
-    const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track);
+    /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
+    const containerRef = useRef(null)
+    const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
+    const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track, { width: size, height: size });
     const [centre, setCentre] = useState(initialCentre);
     const [zoom, setZoom] = useState(initialZoom);
     const [selectedTime, setSelectedTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [followPlayingCentre, setFollowPlayingCentre] = useState(false);
-    /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
-    const containerRef = useRef(null)
 
     // const [ startPlaceName, setStartPlaceName ] = useState("");
     // const [ endPlaceName, setEndPlaceName ] = useState("");
@@ -155,8 +156,6 @@ export function TrackDetails({ track, additionalTracks }) {
 
     /** @type {[number, number][]} */
     const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading || 0, leg.distance / leg.duration]);
-
-    const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
 
     // const startPoint = trackPoints[0];
     // const endPoint = trackPoints[trackPoints.length - 1];
