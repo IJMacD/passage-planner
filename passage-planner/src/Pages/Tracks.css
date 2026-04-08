@@ -1,0 +1,32 @@
+.Tracks-Body {
+    display: flex;
+    gap: 1em;
+}
+
+.Tracks-Nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.Tracks-Nav-Item {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.25em 0.5em;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.Tracks-Nav-Item.selected, .Tracks-Nav-Item.selected:hover {
+    border: 1px solid #007bff;
+}
+
+.Tracks-Nav-Item:hover {
+    border: 1px solid #ccc;
+}
+
+.Tracks-Nav-Item span {
+    flex-grow: 1;
+}

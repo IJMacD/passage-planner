@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.jsx";
+import { OpenStreetMapLayer } from "../Layers/OpenStreetMapLayer.jsx";
 import { MarkerLayer } from "../Layers/MarkerLayer.jsx";
 import { PathLayer } from "../Layers/PathLayer.jsx";
 import { WorldLayer } from "../Layers/WorldLayer.jsx";
@@ -40,7 +41,7 @@ const playSpeed = 60; // 1 minute per second
  * @param {import("../util/gpx.js").Track[]} [props.additionalTracks]
  */
 export function TrackDetails({ track, additionalTracks }) {
-    /** @type {import("react").MutableRefObject<HTMLDivElement?>} */
+    /** @type {import("react").RefObject<HTMLDivElement?>} */
     const containerRef = useRef(null)
     const size = Math.min(containerRef.current?.clientWidth || Number.POSITIVE_INFINITY, 800);
     const { centre: initialCentre, zoom: initialZoom } = useCentreAndZoom(track, { width: size, height: size });
@@ -162,8 +163,16 @@ export function TrackDetails({ track, additionalTracks }) {
 
     return (
         <div className="TrackDetails" ref={containerRef}>
-            <StaticMap centre={centre} zoom={zoom} width={size} height={size}>
+            <StaticMap
+                centre={centre}
+                zoom={zoom}
+                onDragEnd={(lon, lat) => { setCentre([lon, lat]); setFollowPlayingCentre(false); }}
+                onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(zoom + 1); setFollowPlayingCentre(false); }}
+                width={size}
+                height={size}
+            >
                 <WorldLayer />
+                <OpenStreetMapLayer />
                 <HongKongMarineLayer />
                 {/* <DebugLayer /> */}
                 {tideVectors && <VectorFieldLayer field={tideVectors} />}

@@ -5,6 +5,7 @@ import { useAuthFetch } from "../hooks/useAuthFetch.js";
 import { useSavedState } from "../hooks/useSavedState.js";
 import { latlon2bearing, latlon2nm } from "../util/geo.js";
 import { parseGPXDocument, toGPXDocument } from "../util/gpx.js";
+import "./Tracks.css";
 
 // const KPH_TO_KNOTS = 0.539957;
 
@@ -16,9 +17,9 @@ function Tracks() {
     const [savedTracks, setSavedTracks] = useSavedState("passagePlanner.tracks", /** @type {Track[]} */([]));
     const [refreshToken, setRefreshToken] = useSavedState('logbook.refreshToken', "");
 
-    const [bgCheckboxes, setBgCheckboxes] = useState(() => savedTracks.map(() => false));
+    const [visibleCheckboxes, setVisibleCheckboxes] = useState(() => savedTracks.map((_, i, arr) => i === arr.length - 1));
     const [editMode, setEditMode] = useState(false);
-    const [selectedTrackID, setSelectedTrackID] = useState(-1);
+    const [selectedTrackID, setSelectedTrackID] = useState(savedTracks.length > 0 ? savedTracks.length - 1 : -1);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(/** @type {Error|null} */(null));
 
@@ -46,6 +47,7 @@ function Tracks() {
     function removeTrack(index) {
         setSavedTracks(tracks => [...tracks.slice(0, index), ...tracks.slice(index + 1)]);
         setSelectedTrackID(oldID => oldID === index ? -1 : (oldID < index ? oldID : oldID - 1));
+        setVisibleCheckboxes(checkboxes => [...checkboxes.slice(0, index), ...checkboxes.slice(index + 1)]);
     }
 
     /**
@@ -153,16 +155,19 @@ function Tracks() {
                         }
 
                         if (gpxDoc.tracks.length > 0) {
-                            // Load the first track only
-                            const track = gpxDoc.tracks[0];
+                            // Load all tracks and select the first one
 
-                            if (!track.name) {
-                                track.name = file.name.replace(/\.gpx$/i, "");
-                            }
+                            const newTracks = gpxDoc.tracks.map((t, i, arr) => {
+                                if (!t.name) {
+                                    t.name = file.name.replace(/\.gpx$/i, "") + (arr.length > 1 ? ` (Track ${i + 1})` : "");
+                                }
+                                return t;
+                            });
 
                             setSavedTracks(tracks => {
                                 setSelectedTrackID(tracks.length);
-                                return [...tracks, track];
+                                setVisibleCheckboxes(checkboxes => [...checkboxes, ...newTracks.map((_, i, arr) => i === arr.length - 1)]);
+                                return [...tracks, ...newTracks];
                             });
                         }
                     }
@@ -193,8 +198,8 @@ function Tracks() {
         document.body.removeChild(a);
     }
 
-    function toggleBgCheckbox(index, checked) {
-        setBgCheckboxes(checkboxes => {
+    function toggleVisibleCheckbox(index, checked) {
+        setVisibleCheckboxes(checkboxes => {
             const updated = checkboxes.slice();
             updated[index] = checked;
             return updated;
@@ -216,37 +221,55 @@ function Tracks() {
         };
         setSavedTracks(tracks => {
             setSelectedTrackID(tracks.length);
+            setVisibleCheckboxes(checkboxes => [...checkboxes, true]);
             return [...tracks, track];
+        });
+    }
+
+    function handleMerge() {
+        if (!track) return;
+
+        const newTrack = {
+            name: track.name + " (Merged)",
+            segments: [...track.segments, ...bgTracks.map(t => t.segments).flat()],
+        };
+
+        setSavedTracks(tracks => {
+            setSelectedTrackID(tracks.length);
+            setVisibleCheckboxes(checkboxes => [...checkboxes.map(() => false), true]);
+            return [...tracks, newTrack];
         });
     }
 
     /** @type {Track[]} */
     // @ts-ignore
-    const bgTracks = bgCheckboxes.map((c, i) => c ? deserializeTrack(savedTracks[i]) : null).filter(x => x);
+    const bgTracks = savedTracks.filter((_, i) => i !== selectedTrackID && visibleCheckboxes[i]).map(deserializeTrack);
 
     return (
         <div style={{ padding: "1em" }}>
             <h1 style={{ margin: 0 }}>Tracks</h1>
 
-            <div>
-                <div>
-                    <button onClick={() => handleNewTrack()}>New</button>
-                    <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
-                    <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID < 0}>{editMode ? "View" : "Edit"}</button>
-                    <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
+            <div className="Tracks-Body">
+                <div className="Tracks-Nav">
+                    <div>
+                        <button onClick={() => handleNewTrack()}>New</button>
+                        <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
+                        <button onClick={() => setEditMode(!editMode)} disabled={selectedTrackID < 0}>{editMode ? "View" : "Edit"}</button>
+                        <button onClick={handleDownload} disabled={selectedTrackID < 0}>Download</button>
+                        <button onClick={handleMerge} disabled={selectedTrackID < 0 || bgTracks.length === 0}>Merge Visible</button>
+                    </div>
                     <input type="file" onChange={handleFileLoad} multiple accept=".gpx" />
                     {!refreshToken && <button onClick={() => handleLogin()}>Login</button>}
                     {error && <p style={{ color: "red" }}>{error.message}</p>}
                     <ul style={{ listStyle: "none", padding: 0 }}>
                         {
                             savedTracks.map((t, i) => (
-                                <li key={i}>
-                                    <input type="radio" id={`saved-track-select-${i}`} name="track" checked={selectedTrackID === i} onChange={() => setSelectedTrackID(i)} />{' '}
-                                    <input type="checkbox" checked={bgCheckboxes[i] || false} disabled={selectedTrackID === i} onChange={e => toggleBgCheckbox(i, e.target.checked)} />{' '}
-                                    <label htmlFor={`saved-track-select-${i}`}>{t.name || <span style={{ fontStyle: "italic", color: "grey" }}>No name</span>}</label>{' '}
-                                    <button onClick={() => renameTrack(i)}>Rename</button>{' '}
-                                    <button onClick={() => uploadTrack(t)} disabled={!refreshToken || isUploading}>Upload</button>{' '}
-                                    <button onClick={() => removeTrack(i)}>Remove</button>{' '}
+                                <li key={i} className={`Tracks-Nav-Item ${selectedTrackID === i ? "selected" : ""}`} onClick={e => setSelectedTrackID(i)}>
+                                    <input type="checkbox" checked={visibleCheckboxes[i] || selectedTrackID === i || false} disabled={selectedTrackID === i} onChange={e => toggleVisibleCheckbox(i, e.target.checked)} onClick={e => e.stopPropagation()} />{' '}
+                                    {t.name ? <span>{t.name}</span> : <span style={{ fontStyle: "italic", color: "grey" }}>No name</span>}{' '}
+                                    <button onClick={() => renameTrack(i)}>&#9998;</button>{' '}
+                                    <button onClick={() => uploadTrack(t)} disabled={!refreshToken || isUploading}>&uarr;</button>{' '}
+                                    <button onClick={() => removeTrack(i)}>&times;</button>{' '}
                                 </li>)
                             )
                         }
