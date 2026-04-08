@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.jsx";
 import { OpenStreetMapLayer } from "../Layers/OpenStreetMapLayer.jsx";
 import { MarkerLayer } from "../Layers/MarkerLayer.jsx";
-import { PathLayer } from "../Layers/PathLayer.jsx";
 import { WorldLayer } from "../Layers/WorldLayer.jsx";
 import { latlon2bearing, latlon2nm } from "../util/geo.js";
 import { makeCoursePlot } from "../util/makeCoursePlot.js";
@@ -17,6 +16,7 @@ import { VectorFieldLayer } from "../Layers/VectorFieldLayer.jsx";
 import { useTidalCurrents } from "../hooks/useTidalCurrents.js";
 import { findNearestAutomaticWeatherStation } from "../util/historicalWeather.js";
 import { useHistoricalWeather } from "../hooks/useHistoricalWeather.js";
+import { PathLayerSVG } from "../Layers/PathLayerSVG.jsx";
 
 const colorFns = {
     rainbow: (_, i) => `hsl(${i % 360},100%,50%)`,
@@ -33,6 +33,8 @@ const labelFns = {
 };
 
 const playSpeed = 60; // 1 minute per second
+
+const defaultTimeScale = 30 * 1000; // 30 seconds per point if no time data
 
 /**
  *
@@ -54,9 +56,12 @@ export function TrackDetails({ track, additionalTracks }) {
     // const [ startPlaceName, setStartPlaceName ] = useState("");
     // const [ endPlaceName, setEndPlaceName ] = useState("");
 
-    const trackPoints = track.segments.flat();
-    const startTime = +(trackPoints[0]?.time || 0);
-    const trackLength = +(trackPoints[trackPoints.length - 1]?.time || 0) - startTime;
+    const trackPoints = useMemo(() => track.segments.flat(), [track]);
+
+    const haveTime = useMemo(() => trackPoints.every(p => p.time), [trackPoints]);
+
+    const startTime = haveTime ? +trackPoints[0].time : 0;
+    const trackDuration = haveTime ? +(trackPoints[trackPoints.length - 1]?.time || 0) - startTime : trackPoints.length * defaultTimeScale;
 
     const selectedPoint = interpolatePoint(trackPoints, startTime + selectedTime);
     const selectedDate = new Date(selectedPoint?.time || Date.now());
@@ -83,35 +88,49 @@ export function TrackDetails({ track, additionalTracks }) {
             const id = setInterval(() => setSelectedTime(time => {
                 time += playSpeed * refreshInterval;
 
-                if (time > trackLength) { time = 0; }
-
-                if (followPlayingCentre) {
-                    const { lon, lat } = interpolatePoint(trackPoints, startTime + time);
-                    setCentre([lon, lat]);
-                }
+                if (time > trackDuration) { time = 0; }
 
                 return time;
             }), refreshInterval);
 
             return () => clearInterval(id);
         }
-    }, [isPlaying, followPlayingCentre, track, setCentre, startTime, trackLength]);
+    }, [isPlaying, followPlayingCentre, track, setCentre, startTime, trackDuration]);
 
-    // useEffect(() => {
-    //     const trackPoints = track ? track.segments.flat() : [];
+    useEffect(() => {
+        if (followPlayingCentre) {
+            const { lon, lat } = interpolatePoint(trackPoints, startTime + selectedTime);
+            setCentre([lon, lat]);
+        }
+    }, [selectedTime, followPlayingCentre]);
 
-    //     if (trackPoints.length < 1) {
-    //         return
-    //     }
+    useEffect(() => {
+        const cb = (e) => {
+            if (e.code === "Space") {
+                setIsPlaying(isPlaying => !isPlaying);
+                e.preventDefault();
+            }
+            else if (e.code === "ArrowRight") {
+                setSelectedTime(time => {
+                    time += playSpeed * 1000;
+                    if (time > trackDuration) { time = 0; }
+                    return time;
+                });
+                e.preventDefault();
+            }
+            else if (e.code === "ArrowLeft") {
+                setSelectedTime(time => {
+                    time -= playSpeed * 1000;
+                    if (time < 0) { time = trackDuration - playSpeed * 1000; }
+                    return time;
+                });
+                e.preventDefault();
+            }
+        }
 
-    //     const startPoint = trackPoints[0];
-    //     const endPoint = trackPoints[trackPoints.length - 1];
-
-    //     getPlaceName(startPoint).then(setStartPlaceName);
-
-    //     getPlaceName(endPoint).then(setEndPlaceName);
-
-    // }, [track]);
+        document.addEventListener("keydown", cb)
+        return () => document.removeEventListener("keydown", cb);
+    }, []);
 
     const tideVectors = useTidalCurrents(selectedDate);
 
@@ -129,9 +148,6 @@ export function TrackDetails({ track, additionalTracks }) {
 
     const trackLegs = makeTrackLegs(trackPoints);
 
-    // const selectedPoint = trackPoints[selectedPointIndex];
-    // const selectedLeg = trackLegs[selectedPointIndex];
-
     const selectedLegIndex = findLegIndexByTime(trackLegs, startTime + selectedTime);
     /**
      * @typedef {import("../util/gpx.js").Point} Point
@@ -146,8 +162,6 @@ export function TrackDetails({ track, additionalTracks }) {
         markers.push({ lon: selectedPoint.lon, lat: selectedPoint.lat, name: "red-dot" });
     }
 
-    // markers.push({ lon: centre[0], lat: centre[1], name: "grey-pin" });
-
     const plotDivisions = 16;
 
     const distancePlotData = makeCoursePlot(trackLegs, leg => leg.distance, plotDivisions);
@@ -158,16 +172,13 @@ export function TrackDetails({ track, additionalTracks }) {
     /** @type {[number, number][]} */
     const instantSpeedHeadingData = trackLegs.map(leg => [leg.heading || 0, leg.distance / leg.duration]);
 
-    // const startPoint = trackPoints[0];
-    // const endPoint = trackPoints[trackPoints.length - 1];
-
     return (
         <div className="TrackDetails" ref={containerRef}>
             <StaticMap
                 centre={centre}
                 zoom={zoom}
                 onDragEnd={(lon, lat) => { setCentre([lon, lat]); setFollowPlayingCentre(false); }}
-                onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(zoom + 1); setFollowPlayingCentre(false); }}
+                onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(zoom + 1); }}
                 width={size}
                 height={size}
             >
@@ -176,20 +187,21 @@ export function TrackDetails({ track, additionalTracks }) {
                 <HongKongMarineLayer />
                 {/* <DebugLayer /> */}
                 {tideVectors && <VectorFieldLayer field={tideVectors} />}
-                <PathLayer paths={paths} />
+                <PathLayerSVG paths={paths} />
                 <MarkerLayer markers={markers} />
                 <ControlsLayer setCentre={followPlayingCentre ? null : setCentre} setZoom={setZoom} />
             </StaticMap>
             <div style={{ flexBasis: 500 }}>
                 <div>
-                    <input type="range" min={0} max={trackLength} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{ width: 400 }} />
+                    <input type="range" min={0} max={trackDuration} value={selectedTime} onChange={e => setSelectedTime(e.target.valueAsNumber)} style={{ width: 400 }} />
                     <button onClick={() => setIsPlaying(isPlaying => !isPlaying)}>{isPlaying ? "Pause" : "Play"}</button>
                     <label style={{ display: "block" }}>
                         <input type="checkbox" checked={followPlayingCentre} onChange={e => setFollowPlayingCentre(e.target.checked)} />
                         Follow
                     </label>
-                    {selectedLeg && <p>{selectedDate.toLocaleString()} {labelFns.speed(selectedLeg.distance / selectedLeg.duration)} {selectedLeg.heading.toFixed()}°</p>}
-                    {selectedLeg && <p>{selectedLeg.from.lat}, {selectedLeg.from.lon}</p>}
+                    {haveTime && selectedLeg && <p>{selectedDate.toLocaleString()} {labelFns.speed(selectedLeg.distance / selectedLeg.duration)} {selectedLeg.heading.toFixed()}°</p>}
+                    {!haveTime && <p>{formatTime(selectedTime)}</p>}
+                    {selectedLeg && <p>{selectedPoint.lat.toFixed(3)}, {selectedPoint.lon.toFixed(3)}</p>}
                     {historicalWeather && <p>Automatic Weather: {historicalWeather.windSpeed} km/h {historicalWeather.windDirection}° @ {nearestWeatherStation}</p>}
                 </div>
                 <PolarPlotSVG values={distancePlotData} marker={selectedLeg?.heading} width={250} height={250} color="red" labelFn={labelFns.distance} arrow={historicalWeather?.windDirection} />
@@ -207,8 +219,6 @@ export function TrackDetails({ track, additionalTracks }) {
                     size={2}
                     labelFn={labelFns.speed} arrow={historicalWeather?.windDirection}
                 />
-                {/* <p>Start: {startPlaceName} ({startPoint.lon},{startPoint.lat})</p>
-                <p>End: {endPlaceName} ({endPoint.lon},{endPoint.lat})</p> */}
             </div>
         </div>
     );
@@ -251,8 +261,10 @@ function makeTrackLegs(trackPoints) {
  */
 function interpolatePoint(points, time) {
     let prev = points[0];
+    let index = 0;
     for (const point of points) {
-        if (point.time && +point.time > time) {
+        const pointTime = point.time ? +point.time : (index * defaultTimeScale);
+        if (pointTime > time) {
             if (prev && prev.time) {
                 const t = (time - +prev.time) / (+point.time - +prev.time);
 
@@ -265,6 +277,7 @@ function interpolatePoint(points, time) {
             return point;
         }
         prev = point;
+        index++;
     }
     return prev;
 }
@@ -275,4 +288,13 @@ function interpolatePoint(points, time) {
  */
 function findLegIndexByTime(legs, time) {
     return legs.findIndex(leg => +(leg.from.time || 0) <= time && +(leg.to.time || 0) > time);
+}
+
+function formatTime(time) {
+    const totalSeconds = Math.floor(time / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }

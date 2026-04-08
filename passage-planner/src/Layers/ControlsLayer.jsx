@@ -50,6 +50,7 @@ export function ControlsLayer({ setCentre, setZoom }) {
       style={{ position: "absolute", top: 20, right: 20, textAlign: "center" }}
       onClick={e => e.stopPropagation()}
       onMouseDown={e => e.stopPropagation()}
+      onMouseUp={e => e.stopPropagation()}
       onDoubleClick={e => e.stopPropagation()}
     >
       {setCentre &&

@@ -26,7 +26,7 @@ export function MarkerLayer({ markers, onClick = null }) {
     const [left, top] = useContext(DragContext);
 
     return (
-        <div style={{ width: "100%", height: "100%", position: "absolute", top, left, lineHeight: 0, }}>
+        <div style={{ width: "100%", height: "100%", position: "absolute", top, left, lineHeight: 0, pointerEvents: onClick ? "auto" : "none" }}>
             {
                 markers.map((marker, i) => {
                     if (!marker) return null;

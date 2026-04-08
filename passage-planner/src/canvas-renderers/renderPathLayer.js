@@ -34,4 +34,21 @@ export function renderPathLayer(canvas, context, paths) {
 
         ctx.stroke();
     }
+
+    if (context.zoom >= 15) {
+        // Draw points at high zoom levels
+        const pointSize = context.zoom >= 18 ? 5 * devicePixelRatio : 3 * devicePixelRatio;
+
+        for (const path of paths) {
+            ctx.fillStyle = path.color ?? "red";
+
+            for (const point of path.points) {
+                const [x, y] = projection(point.lon, point.lat);
+
+                ctx.beginPath();
+                ctx.arc(x * devicePixelRatio, y * devicePixelRatio, pointSize, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+    }
 }

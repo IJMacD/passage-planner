@@ -187,7 +187,7 @@ function Tracks() {
         const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
         const serializer = new XMLSerializer();
 
-        const blob = new Blob([serializer.serializeToString(gpxDoc)]);
+        const blob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>`, serializer.serializeToString(gpxDoc)]);
 
         a.href = URL.createObjectURL(blob);
 
@@ -250,7 +250,7 @@ function Tracks() {
             <h1 style={{ margin: 0 }}>Tracks</h1>
 
             <div className="Tracks-Body">
-                <div className="Tracks-Nav">
+                <div className="Tracks-Nav" style={{ display: editMode ? "none" : undefined }}>
                     <div>
                         <button onClick={() => handleNewTrack()}>New</button>
                         <button onClick={() => setSelectedTrackID(-1)} disabled={selectedTrackID < 0}>Clear</button>
@@ -277,10 +277,11 @@ function Tracks() {
                 </div>
                 {
                     editMode && track &&
-                    <>
+                    <div>
                         <h2 style={{ margin: 0 }}>Edit Track: {track.name}</h2>
-                        <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => setSavedTracks(tracks => [...tracks, track])} />
-                    </>
+                        <button onClick={() => setEditMode(false)}>Close</button>
+                        <TrackEdit track={track} additionalTracks={bgTracks} addTrack={track => { setSavedTracks(tracks => [...tracks, track]); setEditMode(false); }} />
+                    </div>
                 }
                 {
                     !editMode && track &&

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { HongKongMarineLayer } from "../Layers/HongKongMarineLayer.jsx";
 import { MarkerLayer } from "../Layers/MarkerLayer.jsx";
-import { PathLayer } from "../Layers/PathLayer.jsx";
 import { WorldLayer } from "../Layers/WorldLayer.jsx";
 import { StaticMap } from "./StaticMap.jsx";
 import { useCentreAndZoom } from "../hooks/useCentreAndZoom.js";
 import { ControlsLayer } from "../Layers/ControlsLayer.jsx";
 import { latlon2bearing, latlon2nm } from "../util/geo.js";
 import "./TrackEdit.css";
+import { OpenStreetMapLayer } from "../Layers/OpenStreetMapLayer.js";
+import { PathLayerSVG } from "../Layers/PathLayerSVG.jsx";
 
 /**
  * @typedef {import("../util/gpx.js").Point[]} TrackSegment
  */
+
+const colors = ["red", "blue", "green", "purple", "orange", "cyan", "magenta"];
 
 /**
  *
@@ -34,6 +37,9 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
 
     const [segments, setSegments] = useState(/** @type {TrackSegment[]} */(track ? track.segments : []));
 
+    const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(-1);
+    const [showTimeSetter, setShowTimeSetter] = useState(false);
+
     const trackPoints = segments.flat();
 
     // If track changes then recentre
@@ -44,14 +50,6 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
         setCentre(initialCentre);
         setZoom(initialZoom);
     }, [initialCentre, initialZoom]);
-
-    useEffect(() => {
-        const segments = [
-            ...(track ? track.segments : []),
-            ...additionalTracks.map(t => t.segments).flat()
-        ];
-        setSegments(segments);
-    }, [track, additionalTracks]);
 
     if (!track) {
         return null;
@@ -177,6 +175,18 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
         });
     }
 
+    function setSegmentTime(segmentIndex) {
+        setSelectedSegmentIndex(segmentIndex);
+        setShowTimeSetter(true);
+    }
+
+    function handleDeleteSegment(segmentIndex) {
+        setSegments(segments => {
+            return segments.filter((s, i) => i !== segmentIndex);
+        });
+        setExpandedSegments(expandedSegments => expandedSegments.filter(i => i !== segmentIndex));
+    }
+
     const l = trackPoints.length - 1;
 
     return (
@@ -191,11 +201,20 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                 </div>
 
                 <div style={{ display: "flex" }}>
-                    <StaticMap centre={centre} zoom={zoom} width={size} height={size} onClick={handleClick}>
+                    <StaticMap
+                        centre={centre}
+                        zoom={zoom}
+                        width={size}
+                        height={size}
+                        onClick={handleClick}
+                        onDragEnd={(lon, lat) => { setCentre([lon, lat]); }}
+                        onDoubleClick={(lon, lat) => { setCentre([lon, lat]); setZoom(zoom + 1); }}
+                    >
                         <WorldLayer />
+                        <OpenStreetMapLayer />
                         <HongKongMarineLayer />
                         {/* <DebugLayer /> */}
-                        <PathLayer paths={[{ points: trackPoints }, ...lines, { points: newTrackPoints }]} />
+                        <PathLayerSVG paths={[...segments.map((s, i) => ({ points: s, color: colors[i % colors.length] })), ...lines, { points: newTrackPoints }]} />
                         <MarkerLayer markers={markers} />
                         <ControlsLayer setCentre={setCentre} setZoom={setZoom} />
                     </StaticMap>
@@ -228,8 +247,8 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                                         (j === trkseg.length - 1 ? "segment-end" : "");
 
                                     return (
-                                        <tr key={j} className={className}>
-                                            <td>Segment {i} Point {j}</td>
+                                        <tr key={j} className={className} style={{ borderLeft: `4px solid ${colors[i % colors.length]}` }}>
+                                            <td style={{ cursor: "pointer", paddingLeft: 8 }} onClick={() => setCentre([p.lon, p.lat])}>Segment {i} Point {j}</td>
                                             <td>{p.lon.toFixed(5)}</td>
                                             <td>{p.lat.toFixed(5)}</td>
                                             <td>{p.time?.toLocaleString()}</td>
@@ -252,10 +271,10 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
 
                             return (
                                 <React.Fragment key={i}>
-                                    <tr className="segment-start">
-                                        <td>Segment {i} Start</td>
-                                        <td>{point0.lon}</td>
-                                        <td>{point0.lat}</td>
+                                    <tr className="segment-start" style={{ borderLeft: `4px solid ${colors[i % colors.length]}` }}>
+                                        <td style={{ cursor: "pointer", paddingLeft: 8 }} onClick={() => setCentre([point0.lon, point0.lat])}>Segment {i} Start</td>
+                                        <td>{point0.lon.toFixed(3)}</td>
+                                        <td>{point0.lat.toFixed(3)}</td>
                                         <td>{point0.time?.toLocaleString()}</td>
                                         <td></td>
                                         <td></td>
@@ -265,13 +284,15 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                                         <td>
                                             <button onClick={() => setExpandedSegments(s => [...s, i])}>Expand</button>
                                             <button onClick={() => handleDecimateSegment(i)} disabled={trkseg.length < 11}>Decimate</button>
+                                            <button onClick={() => setSegmentTime(i)}>Set Time</button>
+                                            <button onClick={() => handleDeleteSegment(i)}>Delete</button>
                                         </td>
                                     </tr>
                                     {pointN &&
-                                        <tr className="segment-end">
-                                            <td>Segment {i} End</td>
-                                            <td>{pointN.lon}</td>
-                                            <td>{pointN.lat}</td>
+                                        <tr className="segment-end" style={{ borderLeft: `4px solid ${colors[i % colors.length]}` }}>
+                                            <td style={{ cursor: "pointer", paddingLeft: 8 }} onClick={() => setCentre([pointN.lon, pointN.lat])}>Segment {i} End</td>
+                                            <td>{pointN.lon.toFixed(3)}</td>
+                                            <td>{pointN.lat.toFixed(3)}</td>
                                             <td>{pointN.time?.toLocaleString()}</td>
                                         </tr>
                                     }
@@ -309,8 +330,80 @@ export function TrackEdit({ track, addTrack, additionalTracks = [] }) {
                     }
                 </tbody>
             </table>
+            <TimeSetter open={showTimeSetter} onClose={() => setShowTimeSetter(false)} segment={segments[selectedSegmentIndex]} segmentIndex={selectedSegmentIndex} onUpdateTime={(newTime, newDelta) => {
+                setSegments(segments => segments.map((s, i) => {
+                    if (i === selectedSegmentIndex) {
+                        const firstPoint = s[0];
+                        const timeDiff = newTime.getTime() - (firstPoint.time?.getTime() || 0);
+                        return s.map((p, i) => ({ ...p, time: newDelta ? new Date(newTime.getTime() + newDelta * i) : p.time ? new Date(p.time.getTime() + timeDiff) : undefined }));
+                    }
+                    return s;
+                }));
+            }} />
         </>
     );
+}
+
+function TimeSetter({ open, onClose, segment, segmentIndex, onUpdateTime }) {
+    const [newTime, setNewTime] = useState("");
+    const [newDelta, setNewDelta] = useState(30000);
+
+    useEffect(() => {
+        if (segment) {
+            const firstTime = segment[0].time;
+            setNewTime(inputDateTime(firstTime));
+        }
+    }, [segment]);
+
+    function handleSubmit() {
+        if (!newTime) return;
+        onUpdateTime(new Date(newTime), newDelta);
+        onClose();
+    }
+
+    const segmentDuration = segment && segment[0].time && segment[segment.length - 1].time ? (segment[segment.length - 1].time.getTime() - segment[0].time.getTime()) : 0;
+
+    const hasTime = segmentDuration > 0;
+
+    const newSegmentDuration = (segment && newDelta) ? newDelta * (segment.length - 1) : segmentDuration;
+
+    const newEndTime = new Date(new Date(newTime).getTime() + newSegmentDuration);
+
+    return (
+        <dialog open={open} onClose={onClose} style={{ position: "fixed", top: 200, width: 640, margin: "0 auto" }}>
+            <h3>Set Segment {segmentIndex} Time</h3>
+            <p>Setting the time of the first point in the segment will update the times of all subsequent points in the segment accordingly.</p>
+            <div style={{ marginBottom: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: 420 }}>
+                <label htmlFor="start-time" style={{ fontWeight: "bold" }}>Start Time</label>
+                <input id="start-time" type="datetime-local" step="1" value={newTime} onChange={e => setNewTime(e.target.value)} />
+                {!hasTime &&
+                    <>
+                        <label htmlFor="time-delta" style={{ fontWeight: "bold" }}>Time Delta (seconds)</label>
+                        <input id="time-delta" type="number" step={0.1} value={newDelta ? (newDelta / 1000).toFixed(1) : ""} onChange={e => setNewDelta(e.target.value * 1000)} />
+                </>
+                }
+                <label htmlFor="duration" style={{ fontWeight: "bold" }}>Segment Duration</label>
+                <input id="duration" step={0.1} value={newSegmentDuration ? formatTime(newSegmentDuration) : formatTime(segmentDuration)} disabled />
+                <label htmlFor="end-time" style={{ fontWeight: "bold" }}>End Time</label>
+                <input id="end-time" type="datetime-local" step="1" value={inputDateTime(newEndTime) || ""} disabled />
+            </div>
+
+            <p>Number of points: {segment ? segment.length : 0}</p>
+
+            <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={handleSubmit}>Save</button>
+            </div>
+        </dialog>
+    );
+}
+
+function formatTime(duration) {
+    const hours = Math.floor(duration / 3600000);
+    const minutes = Math.floor((duration % 3600000) / 60000);
+    const seconds = Math.floor((duration % 60000) / 1000);
+
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -321,6 +414,8 @@ function inputDateTime(value) {
     if (!value) return undefined;
 
     if (typeof value === "string") value = new Date(value);
+
+    if (isNaN(value.getTime())) return undefined;
 
     return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}T${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
 }
@@ -397,6 +492,6 @@ function decimatePoints(points, factor, method) {
         return newPoints;
     }
 
-    // Unrecognised methed
+    // Unrecognised method
     throw Error(`Method ${method} is not recognised`);
 }
