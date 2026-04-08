@@ -20,6 +20,7 @@
  * @prop {number} lat
  * @prop {string?} [name]
  * @prop {Date?} [time]
+ * @prop {{[extensionName: string]: string}} [extensions]
 */
 
 /**
@@ -88,7 +89,29 @@ function parsePoint(el) {
         lat,
         name,
         time,
+        extensions: parseExtensions(el),
     };
+}
+
+/**
+ * @param {Element} el
+ * @returns {{[extensionName: string]: string}}
+ */
+function parseExtensions(el) {
+    const extensions = {};
+    const extElements = el.getElementsByTagName("extensions");
+    for (const extEl of extElements) {
+        for (const child of extEl.children) {
+            if (child.children.length > 0) {
+                for (const grandChild of child.children) {
+                    extensions[`${child.tagName}/${grandChild.tagName}`] = grandChild.textContent || "";
+                }
+            } else {
+                extensions[child.tagName] = child.textContent || "";
+            }
+        }
+    }
+    return extensions;
 }
 
 /**
@@ -102,6 +125,13 @@ export function toGPXDocument (gpx) {
     const template = `<gpx version="1.1" creator="${creator}" xmlns="${xmlns}"></gpx>`;
     const parser = new DOMParser();
     const doc = parser.parseFromString(template, "text/xml");
+
+    const xmlnsMap = {
+        "": xmlns,
+        "gpxtpx": "http://www.garmin.com/xmlschemas/TrackPointExtension/v1",
+        "gpxx": "http://www.garmin.com/xmlschemas/GpxExtensions/v3",
+        "raymarine": "http://www.raymarine.com",
+    };
 
     for (const track of gpx.tracks) {
         const trackEl = doc.createElementNS(xmlns, "trk");
@@ -136,6 +166,34 @@ export function toGPXDocument (gpx) {
                     const timeEl = doc.createElementNS(xmlns, "time");
                     timeEl.textContent = point.time.toISOString();
                     pointEl.append(timeEl);
+                }
+
+                if (point.extensions) {
+                    const extEl = doc.createElementNS(xmlns, "extensions");
+                    for (const [extName, extValue] of Object.entries(point.extensions)) {
+                        if (extName.includes("/")) {
+                            const [parentName, childName] = extName.split("/");
+                            const parentNS = parentName.includes(":") ? parentName.split(":")[0] : "";
+                            let parentEl = extEl.getElementsByTagName(parentName).item(0);
+                            if (!parentEl) {
+                                doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + parentNS, xmlnsMap[parentNS]);
+                                parentEl = doc.createElementNS(xmlnsMap[parentNS], parentName);
+                                extEl.append(parentEl);
+                            }
+                            const childNS = childName.includes(":") ? childName.split(":")[0] : "";
+                            doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + childNS, xmlnsMap[childNS]);
+                            const childEl = doc.createElementNS(xmlnsMap[childNS], childName);
+                            childEl.textContent = extValue;
+                            parentEl.append(childEl);
+                        } else {
+                            const childNS = extName.includes(":") ? extName.split(":")[0] : "";
+                            doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + childNS, xmlnsMap[childNS]);
+                            const childEl = doc.createElementNS(xmlnsMap[childNS], extName);
+                            childEl.textContent = extValue;
+                            extEl.append(childEl);
+                        }
+                    }
+                    pointEl.append(extEl);
                 }
 
                 segEl.append(pointEl);
