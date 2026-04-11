@@ -9,6 +9,8 @@ planner:
   replicaCount: 1
   repository:
     image: k3d-registry.localhost:5111/ijmacd/passage-planner
+  gateway:
+    enabled: false
   ingress:
     tls:
       enabled: true

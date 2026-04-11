@@ -19,7 +19,7 @@ planner:
     image: ijmacd/passage-planner
   gateway:
     enabled: true
-    path: "/logbook"
+    path: "/"
     parentRef:
       name: gateway
       namespace: default

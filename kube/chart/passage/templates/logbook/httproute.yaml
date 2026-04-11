@@ -1,8 +1,8 @@
-{{ if .Values.planner.gateway.enabled }}
+{{ if .Values.logbook.gateway.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ .Release.Name }}-planner
+  name: {{ .Release.Name }}-logbook
   namespace: {{ .Release.Namespace }}
 spec:
   hostnames:
@@ -10,17 +10,17 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: {{ .Values.planner.gateway.parentRef.name }}
-      namespace: {{ .Values.planner.gateway.parentRef.namespace }}
-      sectionName: {{ .Values.planner.gateway.parentRef.sectionName }}
+      name: {{ .Values.logbook.gateway.parentRef.name }}
+      namespace: {{ .Values.logbook.gateway.parentRef.namespace }}
+      sectionName: {{ .Values.logbook.gateway.parentRef.sectionName }}
   rules:
     - backendRefs:
         - kind: Service
-          name: {{ .Release.Name }}-planner
+          name: {{ .Release.Name }}-logbook
           port: 80
           weight: 1
       matches:
         - path:
             type: PathPrefix
-            value: {{ .Values.planner.gateway.path }}
+            value: {{ .Values.logbook.gateway.path }}
 {{ end }}
