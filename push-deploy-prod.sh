@@ -14,7 +14,11 @@ source ${SCRIPT_DIR}/vars.sh
 
 CURRENT_CONTEXT=$(kubectl config current-context)
 
-echo "Deploying version $GIT_TAG to cluster $CURRENT_CONTEXT"
+if [ -z "${HELM_KUBECONTEXT+x}" ]; then
+  export HELM_KUBECONTEXT=$CURRENT_CONTEXT
+fi
+
+echo "Deploying version $GIT_TAG to cluster $HELM_KUBECONTEXT"
 
 for project in ${PROJECTS}; do
   docker push ${REGISTRY_NAME}/${REPO}/${project}:${GIT_TAG}
