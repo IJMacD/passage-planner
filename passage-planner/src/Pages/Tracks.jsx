@@ -92,8 +92,13 @@ function Tracks() {
                 method: "post",
                 body,
             })
-                .then(r => r.json())
-                .then(result => {
+                .then(r => r.json(), e => {
+                    setError(e);
+                    // Refresh token may have expired, clear it so next request will trigger re-login
+                    setRefreshToken("");
+                    return Promise.reject(e);
+                })
+                .then(async result => {
                     const { id } = result;
 
                     const gpxDoc = toGPXDocument({ tracks: [track], waypoints: [], routes: [] });
@@ -103,17 +108,20 @@ function Tracks() {
 
                     body.set("gpx", new Blob([serializer.serializeToString(gpxDoc)]));
 
-                    return authFetch(`/logbook/api/v1/logs/${id}/track`, {
-                        method: "post",
-                        body,
-                    })
-                        .then(r => r.json())
-                        .then(d => {
-                            console.log(d);
-                            alert("Uploaded");
+                    try {
+                        const r = await authFetch(`/logbook/api/v1/logs/${id}/track`, {
+                            method: "post",
+                            body,
                         });
+                        const d = await r.json();
+                        console.log(d);
+                        alert("Uploaded");
+                    } catch (e) {
+                        setError(e);
+                        // Refresh token may have expired, clear it so next request will trigger re-login
+                        setRefreshToken("");
+                    }
                 })
-                .catch(setError)
                 .finally(() => {
                     setIsUploading(false);
                 });

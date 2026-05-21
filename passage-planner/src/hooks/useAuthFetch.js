@@ -12,20 +12,28 @@ export function useAuthFetch ({ exchangeURL, refreshToken }) {
      * @param {string} url
      * @param {RequestInit} [init]
      */
-    function authFetch (url, init) {
+    async function authFetch(url, init) {
         init = makeInit(accessTokenRef.current, init);
 
-        return fetch(url, init).then(async r => {
-            if (r.status === 401 || r.status === 403) {
-                accessTokenRef.current = await getAccessToken(exchangeURL, refreshToken);
-                init = makeInit(accessTokenRef.current, init);
+        const r = await fetch(url, init);
+        if (r.status === 401 || r.status === 403) {
+            accessTokenRef.current = await getAccessToken(exchangeURL, refreshToken);
+            init = makeInit(accessTokenRef.current, init);
 
-                // Just retry once
-                return fetch(url, init);
-            }
+            // Just retry once
+            return fetch(url, init).then(r => {
+                if (r.status === 401 || r.status === 403) {
+                    // If it still fails, clear the token so that next time it will try to get a new one
+                    accessTokenRef.current = "";
 
-            return r;
-        });
+                    return Promise.reject(Error(`Refresh token is invalid or expired. Received status ${r.status} from ${url}`));
+                }
+
+                return r;
+            });
+        }
+
+        return r;
     }
 
     return authFetch;
