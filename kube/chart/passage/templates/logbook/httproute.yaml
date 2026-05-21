@@ -14,13 +14,19 @@ spec:
       namespace: {{ .Values.logbook.gateway.parentRef.namespace }}
       sectionName: {{ .Values.logbook.gateway.parentRef.sectionName }}
   rules:
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.logbook.gateway.path }}
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /  # Replaces "/logbook" with "/"
+      backendRefs:
         - kind: Service
           name: {{ .Release.Name }}-logbook
           port: 80
           weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: {{ .Values.logbook.gateway.path }}
 {{ end }}
