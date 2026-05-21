@@ -35,9 +35,9 @@ export function renderPathLayer(canvas, context, paths) {
         ctx.stroke();
     }
 
-    if (context.zoom >= 15) {
+    if (context.zoom >= 18) {
         // Draw points at high zoom levels
-        const pointSize = context.zoom >= 18 ? 5 * devicePixelRatio : 3 * devicePixelRatio;
+        const pointSize = context.zoom >= 20 ? 5 * devicePixelRatio : 3 * devicePixelRatio;
 
         for (const path of paths) {
             ctx.fillStyle = path.color ?? "red";
