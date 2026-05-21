@@ -130,6 +130,7 @@ export function toGPXDocument (gpx) {
         "": xmlns,
         "gpxtpx": "http://www.garmin.com/xmlschemas/TrackPointExtension/v1",
         "gpxx": "http://www.garmin.com/xmlschemas/GpxExtensions/v3",
+        "osmand": "https://osmand.net/docs/technical/osmand-file-formats/osmand-gpx",
         "raymarine": "http://www.raymarine.com",
     };
 
@@ -176,17 +177,29 @@ export function toGPXDocument (gpx) {
                             const parentNS = parentName.includes(":") ? parentName.split(":")[0] : "";
                             let parentEl = extEl.getElementsByTagName(parentName).item(0);
                             if (!parentEl) {
+                                if (!xmlnsMap[parentNS]) {
+                                    console.warn(`Namespace prefix ${parentNS} not found in xmlnsMap, skipping extension ${extName}`);
+                                    continue;
+                                }
                                 doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + parentNS, xmlnsMap[parentNS]);
                                 parentEl = doc.createElementNS(xmlnsMap[parentNS], parentName);
                                 extEl.append(parentEl);
                             }
                             const childNS = childName.includes(":") ? childName.split(":")[0] : "";
+                            if (!xmlnsMap[childNS]) {
+                                console.warn(`Namespace prefix ${childNS} not found in xmlnsMap, skipping extension ${extName}`);
+                                continue;
+                            }
                             doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + childNS, xmlnsMap[childNS]);
                             const childEl = doc.createElementNS(xmlnsMap[childNS], childName);
                             childEl.textContent = extValue;
                             parentEl.append(childEl);
                         } else {
                             const childNS = extName.includes(":") ? extName.split(":")[0] : "";
+                            if (!xmlnsMap[childNS]) {
+                                console.warn(`Namespace prefix ${childNS} not found in xmlnsMap, skipping extension ${extName}`);
+                                continue;
+                            }
                             doc.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + childNS, xmlnsMap[childNS]);
                             const childEl = doc.createElementNS(xmlnsMap[childNS], extName);
                             childEl.textContent = extValue;
