@@ -1,0 +1,32 @@
+{{ if .Values.logbook.gateway.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-logbook
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+    - {{ .Values.hostname }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.logbook.gateway.parentRef.name }}
+      namespace: {{ .Values.logbook.gateway.parentRef.namespace }}
+      sectionName: {{ .Values.logbook.gateway.parentRef.sectionName }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.logbook.gateway.path }}
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /  # Replaces "/logbook" with "/"
+      backendRefs:
+        - kind: Service
+          name: {{ .Release.Name }}-logbook
+          port: 80
+          weight: 1
+{{ end }}

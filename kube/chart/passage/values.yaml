@@ -17,7 +17,15 @@ planner:
   replicaCount: 1
   repository:
     image: ijmacd/passage-planner
+  gateway:
+    enabled: true
+    path: "/"
+    parentRef:
+      name: gateway
+      namespace: default
+      sectionName: https
   ingress:
+    enabled: false
     path: "/"
     tls:
       enabled: false
@@ -27,7 +35,15 @@ logbook:
   replicaCount: 1
   repository:
     image: ijmacd/logbook
+  gateway:
+    enabled: true
+    path: "/logbook"
+    parentRef:
+      name: gateway
+      namespace: default
+      sectionName: https
   ingress:
+    enabled: false
     path: "/logbook"
     class: nginx
     tls:
@@ -41,7 +57,15 @@ websockify:
   replicaCount: 1
   repository:
     image: efrecon/websockify
+  gateway:
+    enabled: true
+    path: "/wsais"
+    parentRef:
+      name: gateway
+      namespace: default
+      sectionName: https
   ingress:
+    enabled: false
     path: "/wsais"
     tls:
       enabled: false

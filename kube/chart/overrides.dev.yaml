@@ -9,6 +9,8 @@ planner:
   replicaCount: 1
   repository:
     image: k3d-registry.localhost:5111/ijmacd/passage-planner
+  gateway:
+    enabled: false
   ingress:
     tls:
       enabled: true
@@ -19,14 +21,19 @@ logbook:
   repository:
     image: k3d-registry.localhost:5111/ijmacd/logbook
   ingress:
+    enabled: true
     class: traefik
     tls:
       enabled: true
+  gateway:
+    enabled: false
   local:
     enabled: true
   auth:
     password: password
 websockify:
+  gateway:
+    enabled: false
   ingress:
     tls:
       enabled: true

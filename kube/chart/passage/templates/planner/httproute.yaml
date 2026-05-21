@@ -1,0 +1,26 @@
+{{ if .Values.planner.gateway.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-planner
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+    - {{ .Values.hostname }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.planner.gateway.parentRef.name }}
+      namespace: {{ .Values.planner.gateway.parentRef.namespace }}
+      sectionName: {{ .Values.planner.gateway.parentRef.sectionName }}
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: {{ .Release.Name }}-planner
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.planner.gateway.path }}
+{{ end }}
