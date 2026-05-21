@@ -32,6 +32,8 @@ logbook:
   auth:
     password: password
 websockify:
+  gateway:
+    enabled: false
   ingress:
     tls:
       enabled: true

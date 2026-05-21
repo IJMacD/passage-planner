@@ -57,6 +57,13 @@ websockify:
   replicaCount: 1
   repository:
     image: efrecon/websockify
+  gateway:
+    enabled: true
+    path: "/wsais"
+    parentRef:
+      name: gateway
+      namespace: default
+      sectionName: https
   ingress:
     enabled: false
     path: "/wsais"
