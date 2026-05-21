@@ -39,9 +39,9 @@ export function PathLayerSVG({ paths }) {
                         strokeWidth={2}
                         strokeDasharray={path.lineDash ? path.lineDash.join(",") : undefined}
                     />
-                    {context.zoom >= 15 && path.points.map((p, j) => {
+                    {context.zoom >= 18 && path.points.map((p, j) => {
                         const [x, y] = projection(p.lon, p.lat);
-                        const pointSize = context.zoom >= 18 ? 5 : 3;
+                        const pointSize = context.zoom >= 20 ? 5 : 3;
 
                         return (
                             <circle key={j} cx={x} cy={y} r={pointSize} fill={path.color ?? "red"}>
