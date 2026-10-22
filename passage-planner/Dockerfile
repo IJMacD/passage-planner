@@ -9,8 +9,12 @@ RUN ["yarn", "build"]
 
 FROM nginx:1.25.4 AS final
 RUN apt-get update && apt-get install -y \
-    php8.2-curl \
-    php8.2-fpm \
+    php8.2-cli=8.2.35-1~deb12u1 \
+    php8.2-common=8.2.35-1~deb12u1 \
+    php8.2-curl=8.2.35-1~deb12u1 \
+    php8.2-fpm=8.2.35-1~deb12u1 \
+    php8.2-opcache=8.2.35-1~deb12u1 \
+    php8.2-readline=8.2.35-1~deb12u1 \
     && rm -rf /var/lib/apt/lists/*
 COPY 50-start-php-fpm.sh /docker-entrypoint.d/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
